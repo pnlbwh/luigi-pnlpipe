@@ -235,7 +235,7 @@ def makeAtlases(target, trainingTable, outPrefix, fusion, threads, debug):
         pool = multiprocessing.Pool(threads)  # Use all available cores, otherwise specify the number you want as an argument
         for labelname in list(trainingTable)[1:]:  # list(d) gets column names
 
-            out = os.path.abspath(outPrefix+ f'-{labelname}.nii.gz')
+            out = os.path.abspath(outPrefix+ f'_{labelname}.nii.gz')
             if os.path.exists(out):
                 os.remove(out)
             labelmaps = tmpdir // (labelname + '*')
