@@ -53,7 +53,7 @@ def create_dirs(cases, dir):
         makedirs(pjoin(dir, f'sub-{id}', 'anat'), exist_ok= True)
         makedirs(pjoin(dir, f'sub-{id}', 'dwi'), exist_ok= True)
         makedirs(pjoin(dir, f'sub-{id}', 'tracts'), exist_ok= True)
-        makedirs(pjoin(dir, f'sub-{id}', 'anat', 'freesurfer'), exist_ok= True)
+        # makedirs(pjoin(dir, f'sub-{id}', 'anat', 'freesurfer'), exist_ok= True)
         makedirs(pjoin(dir, f'sub-{id}', 'fs2dwi'), exist_ok= True)
         makedirs(pjoin(dir, f'sub-{id}', 'tracts', 'wmql'), exist_ok= True)
         makedirs(pjoin(dir, f'sub-{id}', 'tracts', 'wmqlqc'), exist_ok= True)
