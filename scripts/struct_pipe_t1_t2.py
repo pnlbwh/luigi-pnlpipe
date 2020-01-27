@@ -440,7 +440,6 @@ if __name__ == '__main__':
     inter= define_outputs_wf(cases[0], bids_derivatives)
 
     # individual task
-    '''
     luigi.build([StructMask(id=cases[0],
                             bids_data_dir=bids_data_dir,
                             struct_template=t1_template,
@@ -493,8 +492,7 @@ if __name__ == '__main__':
                               no_skullstrip= no_skullstrip,
                               outDir= inter['fs_dir'])])
 
-                                  
-    
+
     # individual task
     luigi.build([FreesurferT1T2(bids_data_dir = bids_data_dir,
                                 bids_derivatives=bids_derivatives,
@@ -518,7 +516,7 @@ if __name__ == '__main__':
                                 outDir= inter['fs_dir'])])
 
 
-    
+
     # group task
     luigi.build([GenerateAllStructMask(bids_data_dir = bids_data_dir,
                                        bids_derivatives = bids_derivatives,
@@ -554,7 +552,7 @@ if __name__ == '__main__':
                                  no_hires= no_hires,
                                  no_skullstrip= no_skullstrip)], workers= 4)
     
-    '''
+    
     # group task
     luigi.build([RunFreesurferT1T2(bids_data_dir = bids_data_dir,
                                    bids_derivatives = bids_derivatives,
@@ -574,7 +572,6 @@ if __name__ == '__main__':
                                    freesurfer_nproc= freesurfer_nproc,
                                    expert_file= expert_file,
                                    no_hires= no_hires,
-                                   no_skullstrip= no_skullstrip)], workers= 2)
+                                   no_skullstrip= no_skullstrip)], workers= 4)
     
 
-    
