@@ -61,6 +61,8 @@ class StructMask(luigi.Task):
     struct_img= luigi.Parameter(default= None)
     struct_label= luigi.Parameter(default= None)
 
+    slicer_exec= luigi.Parameter()
+
 
     def run(self):
 
@@ -86,14 +88,147 @@ class StructMask(luigi.Task):
             p = Popen(cmd, shell=True)
             p.wait()
 
+        if self.slicer_exec:
+            cmd= (' ').join([self.slicer_exec, '--python-code',
+                            '\"slicer.util.loadVolume(\'{}\'); '
+                            'slicer.util.loadLabelVolume(\'{}\')\"'
+                            .format(self.input()['aligned'],self.output()['mabs_mask'])])
+
+            p = Popen(cmd, shell= True)
+            p.wait()
+
 
     def output(self):
-        return dict(mabs_mask= local.path(self.mabs_mask_prefix._path + '_mask.nii.gz'))
+        return dict(mabs_mask= local.path(self.mabs_mask_prefix._path + '_mask.nii.gz'), aligned= self.input()['aligned'])
 
 
-class GenerateStructMask(luigi.WrapperTask):
+
+class T1T2Mask(luigi.Task):
 
     bids_data_dir= luigi.Parameter()
+    bids_derivatives= luigi.Parameter()
+    id= luigi.Parameter()
+    t1_template= luigi.Parameter(default='')
+    t2_template= luigi.Parameter(default='')
+
+    # for atlas.py
+    debug= luigi.BoolParameter(default=False)
+    t1_csvFile= luigi.Parameter(default='')
+    t2_csvFile= luigi.Parameter(default='')
+    fusion= luigi.Parameter(default='')
+    mabs_mask_nproc= luigi.Parameter(default='')
+
+    # for makeRigidMask.py
+    t1_struct_img= luigi.Parameter(default='')
+    t1_struct_label= luigi.Parameter(default='')
+    t2_struct_img= luigi.Parameter(default='')
+    t2_struct_label= luigi.Parameter(default='')
+
+    slicer_exec= luigi.Parameter(default='')
+
+
+    def requires(self):
+
+        inter= define_outputs_wf(self.id, self.bids_derivatives)
+
+        yield StructMask(id=self.id,
+                         bids_data_dir=self.bids_data_dir,
+                         struct_template=self.t1_template,
+                         struct_align_prefix=inter['t1_align_prefix'],
+                         mabs_mask_prefix=inter['t1_mabsmask_prefix'],
+                         debug= self.debug,
+                         csvFile= self.t1_csvFile,
+                         fusion= self.fusion,
+                         mabs_mask_nproc= self.mabs_mask_nproc,
+                         struct_img= self.t1_struct_img,
+                         struct_label= self.t1_struct_label,
+                         slicer_exec= self.slicer_exec)
+
+
+        yield StructMask(id=self.id,
+                         bids_data_dir=self.bids_data_dir,
+                         struct_template=self.t2_template,
+                         struct_align_prefix=inter['t2_align_prefix'],
+                         mabs_mask_prefix=inter['t2_mabsmask_prefix'],
+                         debug= self.debug,
+                         csvFile= self.t2_csvFile,
+                         fusion= self.fusion,
+                         mabs_mask_nproc= self.mabs_mask_nproc,
+                         struct_img= self.t2_struct_img,
+                         struct_label= self.t2_struct_label,
+                         slicer_exec=self.slicer_exec)
+
+    def output(self):
+        inter= define_outputs_wf(self.id, self.bids_derivatives)
+        return dict(t1_aligned= inter['t1_align_prefix'].with_suffix('.nii.gz'),
+                    t1_mask= local.path(inter['t1_mabsmask_prefix']._path+'_mask.nii.gz'),
+                    t2_aligned= inter['t2_align_prefix'].with_suffix('.nii.gz'),
+                    t2_mask= local.path(inter['t2_mabsmask_prefix']._path+'_mask.nii.gz'))
+
+
+
+@inherits(StructAlign,StructMask)
+class FreesurferT1(luigi.Task):
+
+    freesurfer_nproc= luigi.Parameter()
+    expert_file= luigi.Parameter()
+    no_hires= luigi.BoolParameter(default=False)
+    no_skullstrip= luigi.BoolParameter(default=False)
+    outDir= luigi.Parameter()
+
+    def requires(self):
+        return dict(aligned= self.clone(StructAlign), mabs_mask= self.clone(StructMask))
+
+    def run(self):
+        cmd = (' ').join(['fs.py',
+                          '-i', self.input()['aligned']['aligned'],
+                          '-m', self.input()['mabs_mask']['mabs_mask'],
+                          '-o', self.outDir,
+                          f'-n {self.freesurfer_nproc}' if self.freesurfer_nproc else '',
+                          f'--expert {self.expert_file}' if self.expert_file else '',
+                          '--nohires' if self.no_hires else '',
+                          '--noskullstrip' if self.no_skullstrip else ''])
+
+        p = Popen(cmd, shell=True)
+        p.wait()
+
+    def output(self):
+        return dict(fsdir= self.outDir)
+
+
+@requires(T1T2Mask)
+class FreesurferT1T2(luigi.Task):
+
+    freesurfer_nproc= luigi.Parameter()
+    expert_file= luigi.Parameter()
+    no_hires= luigi.BoolParameter(default=False)
+    no_skullstrip= luigi.BoolParameter(default=False)
+    outDir= luigi.Parameter()
+
+    def run(self):
+
+        cmd = (' ').join(['fs.py',
+                          '-i', self.input()['t1_aligned'],
+                          '-m', self.input()['t1_mask'],
+                          '--t2', self.input()['t2_aligned'],
+                          '--t2mask', self.input()['t2_mask'],
+                          '-o', self.outDir,
+                          f'-n {self.freesurfer_nproc}' if self.freesurfer_nproc else '',
+                          f'--expert {self.expert_file}' if self.expert_file else '',
+                          '--nohires' if self.no_hires else '',
+                          '--noskullstrip' if self.no_skullstrip else ''])
+
+        p = Popen(cmd, shell=True)
+        p.wait()
+
+    def output(self):
+        return dict(fsdir= self.outDir)
+
+
+class GenerateAllStructMask(luigi.WrapperTask):
+
+    bids_data_dir= luigi.Parameter()
+    bids_derivatives= luigi.Parameter()
     cases= luigi.ListParameter()
     t1_template= luigi.Parameter(default='')
     t2_template= luigi.Parameter(default='')
@@ -111,12 +246,12 @@ class GenerateStructMask(luigi.WrapperTask):
     t2_struct_img= luigi.Parameter(default='')
     t2_struct_label= luigi.Parameter(default='')
 
+    slicer_exec= luigi.Parameter(default='')
 
     def requires(self):
-        bids_derivatives = pjoin(abspath(bids_data_dir), 'derivatives', 'luigi-pnlpipe')
         for id in cases:
 
-            inter= define_outputs_wf(id, bids_derivatives)
+            inter= define_outputs_wf(id, self.bids_derivatives)
 
             yield StructMask(id=id,
                              bids_data_dir=self.bids_data_dir,
@@ -128,8 +263,11 @@ class GenerateStructMask(luigi.WrapperTask):
                              fusion= self.fusion,
                              mabs_mask_nproc= self.mabs_mask_nproc,
                              struct_img= self.t1_struct_img,
-                             struct_label= self.t1_struct_label)
+                             struct_label= self.t1_struct_label,
+                             slicer_exec= self.slicer_exec)
 
+            if not self.t2_template:
+                continue
 
             yield StructMask(id=id,
                              bids_data_dir=self.bids_data_dir,
@@ -141,37 +279,116 @@ class GenerateStructMask(luigi.WrapperTask):
                              fusion= self.fusion,
                              mabs_mask_nproc= self.mabs_mask_nproc,
                              struct_img= self.t2_struct_img,
-                             struct_label= self.t2_struct_label)
+                             struct_label= self.t2_struct_label,
+                             slicer_exec=self.slicer_exec)
 
 
+class RunFreesurferT1(luigi.WrapperTask):
 
-@inherits(StructAlign,StructMask)
-class FreesurferT1(luigi.Task):
+    bids_data_dir= luigi.Parameter()
+    bids_derivatives = luigi.Parameter()
+    cases= luigi.ListParameter()
+    t1_template= luigi.Parameter(default='')
 
+    # for atlas.py
+    debug= luigi.BoolParameter(default=False)
+    t1_csvFile= luigi.Parameter(default='')
+    fusion= luigi.Parameter(default='')
+    mabs_mask_nproc= luigi.Parameter(default='')
+
+    # for makeRigidMask.py
+    t1_struct_img= luigi.Parameter(default='')
+    t1_struct_label= luigi.Parameter(default='')
+
+    slicer_exec= luigi.Parameter(default='')
+
+    # for fs.py
     freesurfer_nproc= luigi.Parameter()
     expert_file= luigi.Parameter()
-    no_hires= luigi.Parameter()
-    no_skullstrip= luigi.Parameter()
-    outDir= luigi.Parameter()
+    no_hires= luigi.BoolParameter(default=False)
+    no_skullstrip= luigi.BoolParameter(default=False)
 
     def requires(self):
-        return dict(aligned= self.clone(StructAlign), mask= self.clone(StructMask))
 
-    def run(self):
-        cmd = (' ').join(['fs.py',
-                          '-i', self.input()['aligned'],
-                          '-m', self.input()['mask'],
-                          '-o', self.outDir,
-                          '-n' if self.freesurfer_nproc else '',
-                          '--expert' if self.expert_file else '',
-                          '--nohires' if self.no_hires else '',
-                          '--noskullstrip' if self.no_skullstrip else ''])
+        for id in cases:
 
-        p = Popen(cmd, shell=True)
-        p.wait()
+            inter= define_outputs_wf(id, self.bids_derivatives)
 
-    def output(self):
-        return dict(fsdir= self.outDir)
+            yield FreesurferT1(id=id,
+                               bids_data_dir=self.bids_data_dir,
+                               struct_template=self.t1_template,
+                               struct_align_prefix=inter['t1_align_prefix'],
+                               mabs_mask_prefix=inter['t1_mabsmask_prefix'],
+                               debug= self.debug,
+                               csvFile= self.t1_csvFile,
+                               fusion= self.fusion,
+                               mabs_mask_nproc= self.mabs_mask_nproc,
+                               struct_img= self.t1_struct_img,
+                               struct_label= self.t1_struct_label,
+                               slicer_exec= self.slicer_exec,
+                               freesurfer_nproc= self.freesurfer_nproc,
+                               expert_file= self.expert_file,
+                               no_hires= self.no_hires,
+                               no_skullstrip= self.no_skullstrip,
+                               outDir= inter['fs_dir'])
+
+
+
+class RunFreesurferT1T2(luigi.WrapperTask):
+
+    bids_data_dir = luigi.Parameter()
+    bids_derivatives = luigi.Parameter()
+    cases = luigi.ListParameter()
+    t1_template = luigi.Parameter(default='')
+    t2_template = luigi.Parameter(default='')
+
+    # for atlas.py
+    debug = luigi.BoolParameter(default=False)
+    t1_csvFile = luigi.Parameter(default='')
+    t2_csvFile = luigi.Parameter(default='')
+    fusion = luigi.Parameter(default='')
+    mabs_mask_nproc = luigi.Parameter(default='')
+
+    # for makeRigidMask.py
+    t1_struct_img = luigi.Parameter(default='')
+    t1_struct_label = luigi.Parameter(default='')
+    t2_struct_img = luigi.Parameter(default='')
+    t2_struct_label = luigi.Parameter(default='')
+
+    slicer_exec = luigi.Parameter(default='')
+
+    # for fs.py
+    freesurfer_nproc= luigi.Parameter()
+    expert_file= luigi.Parameter()
+    no_hires= luigi.BoolParameter(default=False)
+    no_skullstrip= luigi.BoolParameter(default=False)
+
+    def requires(self):
+
+        for id in cases:
+            
+            inter= define_outputs_wf(id, self.bids_derivatives)
+            
+            yield FreesurferT1T2(bids_data_dir = bids_data_dir,
+                                 bids_derivatives = bids_derivatives,
+                                 id = id,
+                                 t1_template = t1_template,
+                                 t2_template = t2_template,
+                                 debug = debug,
+                                 t1_csvFile = t1CsvFile,
+                                 t2_csvFile = t2CsvFile,
+                                 t1_struct_img = t1SiteImg,
+                                 t1_struct_label = t1SiteMask,
+                                 t2_struct_img=t2SiteImg,
+                                 t2_struct_label=t2SiteMask,
+                                 fusion = fusion,
+                                 mabs_mask_nproc = mabs_mask_nproc,
+                                 slicer_exec=slicer_exec,
+                                 freesurfer_nproc= freesurfer_nproc,
+                                 expert_file= expert_file,
+                                 no_hires= no_hires,
+                                 no_skullstrip= no_skullstrip,
+                                 outDir= inter['fs_dir'])
 
 
 
@@ -184,7 +401,7 @@ if __name__ == '__main__':
     cases= ['003GNX012', '003GNX021']
     # cases = ['003GNX007', '003GNX012', '003GNX021']
 
-    overwrite = True
+    overwrite = False
     if overwrite:
         try:
             for id in cases:
@@ -213,23 +430,151 @@ if __name__ == '__main__':
     t2SiteMask= '/home/tb571/Downloads/INTRuST_BIDS/derivatives/luigi-pnlpipe/sub-003GNX007/anat/sub-003GNX007_desc-T2wXcMabs_mask.nii.gz'
 
     # fs.py
-    freesurfer_nproc= 1
+    freesurfer_nproc= '1'
     expert_file= ''
     no_hires= False
-    no_skullstrip= False
+    no_skullstrip= True
+
+    slicer_exec= ''#'/home/tb571/Downloads/Slicer-4.10.2-linux-amd64/Slicer'
+
+    inter= define_outputs_wf(cases[0], bids_derivatives)
+
+    # individual task
+    '''
+    luigi.build([StructMask(id=cases[0],
+                            bids_data_dir=bids_data_dir,
+                            struct_template=t1_template,
+                            struct_align_prefix=inter['t1_align_prefix'],
+                            mabs_mask_prefix=inter['t1_mabsmask_prefix'],
+                            debug=debug,
+                            csvFile=t1CsvFile,
+                            fusion=fusion,
+                            mabs_mask_nproc=mabs_mask_nproc,
+                            struct_img=t1SiteImg,
+                            struct_label=t1SiteMask,
+                            slicer_exec=slicer_exec)])
+    
+
+    # individual task
+    luigi.build([T1T2Mask(bids_data_dir = bids_data_dir,
+                          bids_derivatives=bids_derivatives,
+                          id = cases[0],
+                          t1_template = t1_template,
+                          t2_template= t2_template,
+                          debug = debug,
+                          t1_csvFile = t1CsvFile,
+                          t2_csvFile= t2CsvFile,
+                          t1_struct_img = t1SiteImg,
+                          t1_struct_label = t1SiteMask,
+                          t2_struct_img = t2SiteImg,
+                          t2_struct_label = t2SiteMask,
+                          fusion = fusion,
+                          mabs_mask_nproc = mabs_mask_nproc,
+                          slicer_exec=slicer_exec)])
+
+    
+    
+    # individual task
+    luigi.build([FreesurferT1(bids_data_dir = bids_data_dir,
+                              id  = cases[0],
+                              struct_template = t1_template,
+                              struct_align_prefix=inter['t1_align_prefix'],
+                              mabs_mask_prefix=inter['t1_mabsmask_prefix'],
+                              debug = debug,
+                              csvFile = t1CsvFile,
+                              fusion = fusion,
+                              mabs_mask_nproc = mabs_mask_nproc,
+                              struct_img = t1SiteImg,
+                              struct_label = t1SiteMask,
+                              slicer_exec=slicer_exec,
+                              freesurfer_nproc= freesurfer_nproc,
+                              expert_file= expert_file,
+                              no_hires= no_hires,
+                              no_skullstrip= no_skullstrip,
+                              outDir= inter['fs_dir'])])
+
+                                  
+    
+    # individual task
+    luigi.build([FreesurferT1T2(bids_data_dir = bids_data_dir,
+                                bids_derivatives=bids_derivatives,
+                                id  = cases[0],
+                                t1_template = t1_template,
+                                t2_template = t2_template,
+                                debug = debug,
+                                t1_csvFile = t1CsvFile,
+                                t2_csvFile = t2CsvFile,
+                                t1_struct_img = t1SiteImg,
+                                t1_struct_label = t1SiteMask,
+                                t2_struct_img=t2SiteImg,
+                                t2_struct_label=t2SiteMask,
+                                fusion = fusion,
+                                mabs_mask_nproc = mabs_mask_nproc,
+                                slicer_exec=slicer_exec,
+                                freesurfer_nproc= freesurfer_nproc,
+                                expert_file= expert_file,
+                                no_hires= no_hires,
+                                no_skullstrip= no_skullstrip,
+                                outDir= inter['fs_dir'])])
 
 
-    luigi.build([GenerateStructMask(bids_data_dir = bids_data_dir,
-                                    cases = cases,
-                                    t1_template = t1_template,
-                                    t2_template= t2_template,
-                                    debug = debug,
-                                    t1_csvFile = t1CsvFile,
-                                    t2_csvFile= t2CsvFile,
-                                    t1_struct_img = t1SiteImg,
-                                    t1_struct_label = t1SiteMask,
-                                    t2_struct_img = t2SiteImg,
-                                    t2_struct_label = t2SiteMask,
-                                    fusion = fusion,
-                                    mabs_mask_nproc = mabs_mask_nproc)], workers=4)
+    
+    # group task
+    luigi.build([GenerateAllStructMask(bids_data_dir = bids_data_dir,
+                                       bids_derivatives = bids_derivatives,
+                                       cases = cases,
+                                       t1_template = t1_template,
+                                       t2_template= t2_template,
+                                       debug = debug,
+                                       t1_csvFile = t1CsvFile,
+                                       t2_csvFile= t2CsvFile,
+                                       t1_struct_img = t1SiteImg,
+                                       t1_struct_label = t1SiteMask,
+                                       t2_struct_img = t2SiteImg,
+                                       t2_struct_label = t2SiteMask,
+                                       fusion = fusion,
+                                       mabs_mask_nproc = mabs_mask_nproc,
+                                       slicer_exec=slicer_exec)], workers=4)
+    
+    
+    # group task
+    luigi.build([RunFreesurferT1(bids_data_dir = bids_data_dir,
+                                 bids_derivatives = bids_derivatives,
+                                 cases  = cases,
+                                 t1_template = t1_template,
+                                 debug = debug,
+                                 t1_csvFile = t1CsvFile,
+                                 t1_struct_img = t1SiteImg,
+                                 t1_struct_label = t1SiteMask,
+                                 fusion = fusion,
+                                 mabs_mask_nproc = mabs_mask_nproc,
+                                 slicer_exec=slicer_exec,
+                                 freesurfer_nproc= freesurfer_nproc,
+                                 expert_file= expert_file,
+                                 no_hires= no_hires,
+                                 no_skullstrip= no_skullstrip)], workers= 4)
+    
+    '''
+    # group task
+    luigi.build([RunFreesurferT1T2(bids_data_dir = bids_data_dir,
+                                   bids_derivatives = bids_derivatives,
+                                   cases = cases,
+                                   t1_template = t1_template,
+                                   t2_template = t2_template,
+                                   debug = debug,
+                                   t1_csvFile = t1CsvFile,
+                                   t2_csvFile = t2CsvFile,
+                                   t1_struct_img = t1SiteImg,
+                                   t1_struct_label = t1SiteMask,
+                                   t2_struct_img=t2SiteImg,
+                                   t2_struct_label=t2SiteMask,
+                                   fusion = fusion,
+                                   mabs_mask_nproc = mabs_mask_nproc,
+                                   slicer_exec=slicer_exec,
+                                   freesurfer_nproc= freesurfer_nproc,
+                                   expert_file= expert_file,
+                                   no_hires= no_hires,
+                                   no_skullstrip= no_skullstrip)], workers= 2)
+    
 
+    
