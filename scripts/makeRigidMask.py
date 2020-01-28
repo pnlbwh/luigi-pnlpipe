@@ -29,7 +29,8 @@ class App(cli.Application):
             tmpdir = local.path(tmpdir)
             pre = tmpdir / 'ants'
             rigidxfm = pre + '0GenericAffine.mat'
-            check_call((' ').join([pjoin(FILEDIR,'antsRegistrationSyNMI.sh'),'-f', self.target,
+            check_call((' ').join([pjoin(FILEDIR,'antsRegistrationSyNMI.sh'),
+                        '-f', self.target,
                         '-m', self.infile,
                         '-t', 'r',
                         '-o', pre,
