@@ -13,11 +13,16 @@ def define_outputs_wf(id, dir):
     
     inter['fs_dir'] = local.path(pjoin(dir, f'sub-{id}', 'anat', 'freesurfer'))
 
-    inter['eddy_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBseBet'))
-
+    inter['aligned_bse_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXc_bse'))
     inter['eddy_bse_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcEd_bse'))
-    inter['eddy_bse_masked_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcEdMa_bse'))
     inter['eddy_epi_bse_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcEdEp_bse'))
+
+    inter['aligned_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBet'))
+    inter['eddy_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBseBet'))
+    inter['eddy_epi_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBseBet'))
+
+    inter['aligned_bse_masked_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcMa_bse'))
+    inter['eddy_bse_masked_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcEdMa_bse'))
     inter['eddy_epi_bse_masked_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcEdEpMa_bse'))
 
     inter['eddy_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcEd_dwi'))
@@ -42,7 +47,6 @@ def define_outputs_wf(id, dir):
 
 def create_dirs(cases, dir):
     from os import makedirs
-    from os.path import isdir
     from os.path import join as pjoin
 
     for id in cases:
