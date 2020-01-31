@@ -242,7 +242,7 @@ class WithT2(cli.Application):
                 label2vol('--seg', wmparcmgz, '--temp', brainmgz,
                           '--regheader', wmparcmgz, '--o', wmparc)
 
-            if self.parent.bse:
+            if not self.parent.bse:
                 print('Extracting B0 from DWI and masking it')
                 check_call((' ').join([pjoin(FILEDIR, 'bse.py'), '-i', self.parent.dwi, '-m', self.parent.dwimask, '-o', b0masked]), shell= True)
                 print('Made masked B0')
