@@ -28,18 +28,21 @@ class App(cli.Application):
         with TemporaryDirectory() as tmpdir:
             tmpdir = local.path(tmpdir)
             pre = tmpdir / 'ants'
-            rigidxfm = pre + '0GenericAffine.mat'
+
+            warp = pre + '1Warp.nii.gz'
+            affine = pre + '0GenericAffine.mat'
+
             check_call((' ').join([pjoin(FILEDIR,'antsRegistrationSyNMI.sh'),
                         '-f', self.target,
                         '-m', self.infile,
-                        '-t', 'r',
                         '-o', pre,
                         '-n', ANTSREG_THREADS
                         ]), shell= True)
 
             antsApplyTransforms['-d', '3'
                                 ,'-i', self.labelmap
-                                ,'-t', rigidxfm
+                                ,'-t', warp
+                                ,'-t', affine
                                 ,'-r', self.target
                                 ,'-o', self.out
                                 ,'--interpolation', 'NearestNeighbor'] & FG
