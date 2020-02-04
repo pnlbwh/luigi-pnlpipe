@@ -17,9 +17,9 @@ def define_outputs_wf(id, dir):
     inter['eddy_bse_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcEd_bse'))
     inter['eddy_epi_bse_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcEdEp_bse'))
 
-    inter['aligned_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBet'))
-    inter['eddy_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBseBet'))
-    inter['eddy_epi_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBseBet'))
+    inter['aligned_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBseBet'))
+    inter['eddy_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcEdBseBet'))
+    inter['eddy_epi_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcEdEpBseBet'))
 
     inter['aligned_bse_masked_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcMa_bse'))
     inter['eddy_bse_masked_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcEdMa_bse'))
