@@ -17,7 +17,7 @@ from subprocess import Popen
 class SelectStructFiles(ExternalTask):
     id = Parameter()
     bids_data_dir = Parameter()
-    struct_template = Parameter()
+    struct_template = Parameter(default='')
 
     def output(self):
         struct = glob(pjoin(abspath(self.bids_data_dir), self.struct_template.replace('id', self.id)))[0]
@@ -27,7 +27,7 @@ class SelectStructFiles(ExternalTask):
 
 @requires(SelectStructFiles)
 class StructAlign(Task):
-    struct_align_prefix = Parameter()
+    struct_align_prefix = Parameter(default='')
 
     def run(self):
         cmd = (' ').join(['align.py',
@@ -44,7 +44,7 @@ class StructAlign(Task):
 @requires(StructAlign)
 class StructMask(Task):
 
-    mabs_mask_prefix= Parameter()
+    mabs_mask_prefix= Parameter(default='')
 
     # for atlas.py
     debug= BoolParameter(default= False)
@@ -62,7 +62,7 @@ class StructMask(Task):
 
     def run(self):
 
-        if self.csvFile:
+        if not (self.model_img and self.model_mask):
             cmd = (' ').join(['atlas.py',
                               '-t', self.input(),
                               '--train', self.csvFile,
@@ -99,72 +99,23 @@ class StructMask(Task):
 
 
 
-class T1T2Mask(Task):
+@inherits(StructMask)
+class Freesurfer(Task):
 
-    bids_data_dir= Parameter()
-    bids_derivatives= Parameter()
-    id= Parameter()
-    t1_template= Parameter(default='')
-    t2_template= Parameter(default='')
-
-    # for atlas.py
-    debug= BoolParameter(default='')
-    t1_csvFile= Parameter(default='')
-    t2_csvFile= Parameter(default='')
-    fusion= Parameter(default='')
-    mabs_mask_nproc= IntParameter(default='')
-
-    # for makeRigidMask.py
+    t1_template= Parameter()
+    t1_align_prefix= Parameter()
+    t1_mask_prefix= Parameter()
+    t1_csvFile = Parameter(default='')
     t1_model_img= Parameter(default='')
     t1_model_mask= Parameter(default='')
+
+    t2_template= Parameter(default='')
+    t2_align_prefix= Parameter(default='')
+    t2_mask_prefix= Parameter(default='')
+    t2_csvFile = Parameter(default='')
     t2_model_img= Parameter(default='')
     t2_model_mask= Parameter(default='')
 
-    # for qc'ing the created mask
-    slicer_exec= Parameter(default='')
-
-
-    def requires(self):
-
-        inter= define_outputs_wf(self.id, self.bids_derivatives)
-
-        t1_img_mask= yield StructMask(id=self.id,
-                         bids_data_dir=self.bids_data_dir,
-                         struct_template=self.t1_template,
-                         struct_align_prefix=inter['t1_align_prefix'],
-                         mabs_mask_prefix=inter['t1_mabsmask_prefix'],
-                         debug= self.debug,
-                         csvFile= self.t1_csvFile,
-                         fusion= self.fusion,
-                         mabs_mask_nproc= self.mabs_mask_nproc,
-                         model_img= self.t1_model_img,
-                         model_mask= self.t1_model_mask,
-                         slicer_exec= self.slicer_exec)
-
-
-        t2_img_mask= yield StructMask(id=self.id,
-                         bids_data_dir=self.bids_data_dir,
-                         struct_template=self.t2_template,
-                         struct_align_prefix=inter['t2_align_prefix'],
-                         mabs_mask_prefix=inter['t2_mabsmask_prefix'],
-                         debug= self.debug,
-                         csvFile= self.t2_csvFile,
-                         fusion= self.fusion,
-                         mabs_mask_nproc= self.mabs_mask_nproc,
-                         model_img= self.t2_model_img,
-                         model_mask= self.t2_model_mask,
-                         slicer_exec=self.slicer_exec)
-
-        return (t1_img_mask,t2_img_mask)
-
-
-    def output(self):
-        return dict(t1=self.input()[0],t2=self.input()[1])
-
-
-@inherits(StructMask)
-class FreesurferT1(Task):
-
     freesurfer_nproc= IntParameter(default=1)
     expert_file= Parameter()
     no_hires= BoolParameter(default=False)
@@ -172,46 +123,42 @@ class FreesurferT1(Task):
     fs_dir= Parameter()
 
     def requires(self):
-        return self.clone(StructMask)
+        self.struct_template= self.t1_template
+        self.struct_align_prefix= self.t1_align_prefix
+        self.mabs_mask_prefix= self.t1_mask_prefix
+        self.csvFile= self.t1_csvFile
+        self.model_img= self.t1_model_img
+        self.model_mask= self.t1_model_mask
+
+        t1_attr= yield self.clone(StructMask)
+
+        if self.t2_template:
+            self.struct_template = self.t2_template
+            self.struct_align_prefix = self.t2_align_prefix
+            self.mabs_mask_prefix = self.t2_mask_prefix
+            self.csvFile = self.t2_csvFile
+            self.model_img = self.t2_model_img
+            self.model_mask = self.t2_model_mask
+
+            t2_attr= yield self.clone(StructMask)
+
+            return (t1_attr,t2_attr)
+
+        else:
+            return (t1_attr)
+
 
     def run(self):
         cmd = (' ').join(['fs.py',
-                          '-i', self.input()['aligned'],
-                          '-m', self.input()['mask'],
+                          '-i', self.input()[0]['aligned'],
+                          '-m', self.input()[0]['mask'],
                           '-o', self.fs_dir,
                           f'-n {self.freesurfer_nproc}' if self.freesurfer_nproc else '',
                           f'--expert {self.expert_file}' if self.expert_file else '',
                           '--nohires' if self.no_hires else '',
-                          '--noskullstrip' if self.no_skullstrip else ''])
-
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-    def output(self):
-        return self.fs_dir
-
-
-@requires(T1T2Mask)
-class FreesurferT1T2(Task):
-
-    freesurfer_nproc= IntParameter(default=1)
-    expert_file= Parameter()
-    no_hires= BoolParameter(default=False)
-    no_skullstrip= BoolParameter(default=False)
-    fs_dir= Parameter()
-
-    def run(self):
-
-        cmd = (' ').join(['fs.py',
-                          '-i', self.input()['t1']['aligned'],
-                          '-m', self.input()['t1']['mask'],
-                          '--t2', self.input()['t2']['aligned'],
-                          '--t2mask', self.input()['t2']['mask'],
-                          '-o', self.fs_dir,
-                          f'-n {self.freesurfer_nproc}' if self.freesurfer_nproc else '',
-                          f'--expert {self.expert_file}' if self.expert_file else '',
-                          '--nohires' if self.no_hires else '',
-                          '--noskullstrip' if self.no_skullstrip else ''])
+                          '--noskullstrip' if self.no_skullstrip else '',
+                          '--t2 {} --t2mask {}'.format(self.input()[1]['aligned'],self.input()[1]['mask'])
+                                                if self.t2_template else ''])
 
         p = Popen(cmd, shell=True)
         p.wait()
@@ -262,6 +209,7 @@ if __name__ == '__main__':
     expert_file= ''
     no_hires= False
     no_skullstrip= True
+    mode= 'witht2'
 
     # for qc'ing the created mask
     slicer_exec= ''#'/home/tb571/Downloads/Slicer-4.10.2-linux-amd64/Slicer'
@@ -283,118 +231,52 @@ if __name__ == '__main__':
                       struct_img=t1_model_img,
                       struct_label=t1_model_mask,
                       slicer_exec=slicer_exec)])
-                            
-    # individual task
-    build([T1T2Mask(bids_data_dir = bids_data_dir,
-                    bids_derivatives=bids_derivatives,
-                    id = cases[0],
-                    t1_template = t1_template,
-                    t2_template= t2_template,
-                    t1_csvFile = t1_csvFile,
-                    t2_csvFile= t2_csvFile,
-                    t1_model_img = t1_model_img,
-                    t1_model_mask = t1_model_mask,
-                    t2_model_img = t2_model_img,
-                    t2_model_mask = t2_model_mask,
-                    debug=debug,
-                    fusion = fusion,
-                    mabs_mask_nproc = mabs_mask_nproc,
-                    slicer_exec=slicer_exec)])
+
+
+
+    # individual task with both t1 and t2
+    build([Freesurfer(bids_data_dir=bids_data_dir,
+                      id=cases[0],
+                      t1_template=t1_template,
+                      t2_template=t2_template,
+                      t1_align_prefix=inter['t1_align_prefix'],
+                      t1_mask_prefix=inter['t1_mabsmask_prefix'],
+                      t2_align_prefix=inter['t2_align_prefix'],
+                      t2_mask_prefix=inter['t2_mabsmask_prefix'],
+                      t1_csvFile=t1_csvFile,
+                      t2_csvFile=t2_csvFile,
+                      t1_model_img=t1_model_img,
+                      t1_model_mask=t1_model_mask,
+                      t2_model_img=t2_model_img,
+                      t2_model_mask=t2_model_mask,
+                      debug=debug,
+                      fusion=fusion,
+                      mabs_mask_nproc=mabs_mask_nproc,
+                      slicer_exec=slicer_exec,
+                      freesurfer_nproc=freesurfer_nproc,
+                      expert_file=expert_file,
+                      no_hires=no_hires,
+                      no_skullstrip=no_skullstrip,
+                      fs_dir=inter['fs_dir'])])
     
-    
-    # individual task
-    build([FreesurferT1(bids_data_dir = bids_data_dir,
-                        id = cases[0],
-                        struct_template = t1_template,
-                        struct_align_prefix=inter['t1_align_prefix'],
-                        mabs_mask_prefix=inter['t1_mabsmask_prefix'],
-                        debug = debug,
-                        csvFile = t1_csvFile,
-                        fusion = fusion,
-                        mabs_mask_nproc = mabs_mask_nproc,
-                        model_img = t1_model_img,
-                        model_mask = t1_model_mask,
-                        slicer_exec=slicer_exec,
-                        freesurfer_nproc= freesurfer_nproc,
-                        expert_file= expert_file,
-                        no_hires= no_hires,
-                        no_skullstrip= no_skullstrip,
-                        fs_dir= inter['fs_dir'])])
-
-    # individual task
-    build([FreesurferT1T2(bids_data_dir=bids_data_dir,
-                          bids_derivatives=bids_derivatives,
-                          id=cases[0],
-                          t1_template=t1_template,
-                          t2_template=t2_template,
-                          t1_csvFile=t1_csvFile,
-                          t2_csvFile=t2_csvFile,
-                          t1_model_img=t1_model_img,
-                          t1_model_mask=t1_model_mask,
-                          t2_model_img=t2_model_img,
-                          t2_model_mask=t2_model_mask,
-                          debug=debug,
-                          fusion=fusion,
-                          mabs_mask_nproc=mabs_mask_nproc,
-                          slicer_exec=slicer_exec,
-                          freesurfer_nproc=freesurfer_nproc,
-                          expert_file=expert_file,
-                          no_hires=no_hires,
-                          no_skullstrip=no_skullstrip,
-                          fs_dir=inter['fs_dir'])])
-
-    # group task
-    FsT1Tasks=[]
-    for id in cases:
-        inter= define_outputs_wf(id, bids_derivatives)
-
-        FsT1Tasks.append(FreesurferT1(bids_data_dir = bids_data_dir,
-                                      id = cases[0],
-                                      struct_template = t1_template,
-                                      struct_align_prefix=inter['t1_align_prefix'],
-                                      mabs_mask_prefix=inter['t1_mabsmask_prefix'],
-                                      debug = debug,
-                                      csvFile = t1_csvFile,
-                                      fusion = fusion,
-                                      mabs_mask_nproc = mabs_mask_nproc,
-                                      model_img = t1_model_img,
-                                      model_mask = t1_model_mask,
-                                      slicer_exec=slicer_exec,
-                                      freesurfer_nproc= freesurfer_nproc,
-                                      expert_file= expert_file,
-                                      no_hires= no_hires,
-                                      no_skullstrip= no_skullstrip,
-                                      fs_dir= inter['fs_dir']))
-
-    build(FsT1Tasks, workers=4)
 
 
-    # group task
-    FsT1T2Tasks=[]
-    for id in cases:
-        inter= define_outputs_wf(id, bids_derivatives)
-
-        FsT1T2Tasks.append(FreesurferT1T2(bids_data_dir = bids_data_dir,
-                                          bids_derivatives=bids_derivatives,
-                                          id = id,
-                                          t1_template = t1_template,
-                                          t2_template = t2_template,
-                                          t1_csvFile = t1_csvFile,
-                                          t2_csvFile = t2_csvFile,
-                                          t1_model_img = t1_model_img,
-                                          t1_model_mask = t1_model_mask,
-                                          t2_model_img=t2_model_img,
-                                          t2_model_mask=t2_model_mask,
-                                          debug=debug,
-                                          fusion = fusion,
-                                          mabs_mask_nproc = mabs_mask_nproc,
-                                          slicer_exec=slicer_exec,
-                                          freesurfer_nproc= freesurfer_nproc,
-                                          expert_file= expert_file,
-                                          no_hires= no_hires,
-                                          no_skullstrip= no_skullstrip,
-                                          fs_dir= inter['fs_dir']))
-
-    build(FsT1T2Tasks, workers=4)
-
+    # individual task with t1
+    build([Freesurfer(bids_data_dir=bids_data_dir,
+                      id=cases[0],
+                      t1_template=t1_template,
+                      t1_align_prefix=inter['t1_align_prefix'],
+                      t1_mask_prefix=inter['t1_mabsmask_prefix'],
+                      t1_csvFile=t1_csvFile,
+                      t1_model_img=t1_model_img,
+                      t1_model_mask=t1_model_mask,
+                      debug=debug,
+                      fusion=fusion,
+                      mabs_mask_nproc=mabs_mask_nproc,
+                      slicer_exec=slicer_exec,
+                      freesurfer_nproc=freesurfer_nproc,
+                      expert_file=expert_file,
+                      no_hires=no_hires,
+                      no_skullstrip=no_skullstrip,
+                      fs_dir=inter['fs_dir'])])
 

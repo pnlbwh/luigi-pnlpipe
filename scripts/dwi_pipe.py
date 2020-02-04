@@ -50,228 +50,174 @@ class DwiAlign(Task):
         return dict(dwi=dwi, bval=bval, bvec=bvec)
 
 
-@requires(DwiAlign)
-class PnlEddy(Task):
-    eddy_prefix = Parameter()
-    debug= BoolParameter(default=False)
-    eddy_nproc= IntParameter(default=int(N_PROC))
+class BseExtract(Task):
+    dwi= Parameter(default='')
+    bse_prefix = Parameter(default='')
+    b0_threshold= FloatParameter(default=float(B0_THRESHOLD))
+    which_bse= Parameter(default='')
 
     def run(self):
-        cmd = (' ').join(['pnl_eddy.py',
-                          '-i', self.input()['dwi'],
-                          '--bvals', self.input()['bval'],
-                          '--bvecs', self.input()['bvec'],
-                          '-o', self.eddy_prefix,
-                          '-d' if self.debug else '',
-                          f'-n {self.eddy_nproc}' if self.eddy_nproc else ''])
+
+        cmd = (' ').join(['bse.py',
+                          '-i', self.dwi,
+                          '--bvals', self.dwi.with_suffix('.bval', depth=2),
+                          '-o', self.output(),
+                          f'-t {self.b0_threshold}' if self.b0_threshold else '',
+                          self.which_bse if self.which_bse else ''])
         p = Popen(cmd, shell=True)
         p.wait()
+
+    def output(self):
+        return self.bse_prefix.with_suffix('.nii.gz')
+
+
+
+@requires(BseExtract)
+class BseBetMask(Task):
+    bse_betmask_prefix = Parameter(default='')
+    bet_threshold = FloatParameter(default=float(BET_THRESHOLD))
+    slicer_exec = Parameter(default='')
+
+    def run(self):
+        cmd = (' ').join(['bet_mask.py',
+                          '-i', self.input(),
+                          '-o', self.bse_betmask_prefix,
+                          f'-f {self.bet_threshold}' if self.bet_threshold else ''])
+        p = Popen(cmd, shell=True)
+        p.wait()
+
+        # mask the baseline image
+        cmd = (' ').join(['ImageMath', '3', self.output()['bse'], 'm', self.output()['bse'], self.output()['mask']])
+        p = Popen(cmd, shell=True)
+        p.wait()
+
+        if self.slicer_exec:
+            cmd = (' ').join([self.slicer_exec, '--python-code',
+                              '\"slicer.util.loadVolume(\'{}\'); '
+                              'slicer.util.loadLabelVolume(\'{}\')\"'
+                             .format(self.input(), self.output())])
+
+            p = Popen(cmd, shell=True)
+            p.wait()
+
+    def output(self):
+        return dict(bse=self.input(), mask=local.path(self.bse_betmask_prefix+ '_mask.nii.gz'))
+
+
+
+@requires(DwiAlign)
+@inherits(BseBetMask)
+class PnlEddy(Task):
+    eddy_prefix = Parameter(default='')
+    eddy_bse_masked_prefix = Parameter(default='')
+    eddy_bse_betmask_prefix = Parameter(default='')
+    debug = BoolParameter(default=False)
+    eddy_nproc = IntParameter(default=int(N_PROC))
+
+    def requires(self):
+        return self.clone(DwiAlign)
+
+    def run(self):
+    
+        for name in self.output().keys():
+            if not self.output()[name].exists():        
+                cmd = (' ').join(['pnl_eddy.py',
+                                  '-i', self.input()['dwi'],
+                                  '--bvals', self.input()['bval'],
+                                  '--bvecs', self.input()['bvec'],
+                                  '-o', self.eddy_prefix,
+                                  '-d' if self.debug else '',
+                                  f'-n {self.eddy_nproc}' if self.eddy_nproc else ''])
+                p = Popen(cmd, shell=True)
+                p.wait()
+                
+            break
+
+        self.dwi= self.output()['dwi']
+        self.bse_prefix= self.eddy_bse_masked_prefix
+        self.bse_betmask_prefix= self.eddy_bse_betmask_prefix
+        yield self.clone(BseBetMask)
+
 
     def output(self):
         dwi = self.eddy_prefix.with_suffix('.nii.gz')
         bval = self.eddy_prefix.with_suffix('.bval')
         bvec = self.eddy_prefix.with_suffix('.bvec')
+        bse = self.eddy_bse_masked_prefix.with_suffix('.nii.gz')
+        mask= local.path(self.eddy_bse_betmask_prefix+'_mask.nii.gz')
 
-        return dict(dwi=dwi, bval=bval, bvec=bvec)
-
-
-@requires(PnlEddy)
-class PnlEddyBseExtract(Task):
-    eddy_bse_prefix = Parameter()
-    b0_threshold= FloatParameter(default=float(B0_THRESHOLD))
-    which_bse= Parameter(default='')
-
-    def run(self):
-
-        cmd = (' ').join(['bse.py',
-                          '-i', self.input()['dwi'],
-                          '--bvals', self.input()['bval'],
-                          '-o', self.output(),
-                          f'-t {self.b0_threshold}' if self.b0_threshold else '',
-                          self.which_bse if self.which_bse else ''])
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-    def output(self):
-        return self.eddy_bse_prefix.with_suffix('.nii.gz')
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
 
 
 
-@requires(PnlEddyBseExtract)
-class PnlEddyBseBetMask(Task):
-    eddy_bse_betmask_prefix = Parameter()
-    bet_threshold = FloatParameter(default=float(BET_THRESHOLD))
-    slicer_exec = Parameter(default='')
-
-    def run(self):
-        cmd = (' ').join(['bet_mask.py',
-                          '-i', self.input(),
-                          '-o', self.eddy_bse_betmask_prefix,
-                          f'-f {self.bet_threshold}' if self.bet_threshold else ''])
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-        # mask the baseline image
-        cmd = (' ').join(['ImageMath', '3', self.output()['bse'], 'm', self.output()['bse'], self.output()['mask']])
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-        if self.slicer_exec:
-            cmd = (' ').join([self.slicer_exec, '--python-code',
-                              '\"slicer.util.loadVolume(\'{}\'); '
-                              'slicer.util.loadLabelVolume(\'{}\')\"'
-                             .format(self.input(), self.output())])
-
-            p = Popen(cmd, shell=True)
-            p.wait()
-
-    def output(self):
-        return dict(bse=self.input(), mask=local.path(self.eddy_bse_betmask_prefix+ '_mask.nii.gz'))
-
-
-
-@requires(PnlEddy,PnlEddyBseBetMask)
-class PnlEddyUkf(Task):
-    tract_prefix = Parameter()
-    ukf_params = Parameter()
-
-    def run(self):
-        cmd = (' ').join(['ukf.py',
-                          '-i', self.input()[0]['dwi'],
-                          '--bvals', self.input()[0]['bval'],
-                          '--bvecs', self.input()[0]['bvec'],
-                          '-m', self.input()[1]['mask'],
-                          '-o', self.output(),
-                          '--params', self.ukf_params])
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-    def output(self):
-        return self.tract_prefix.with_suffix('.vtk')
-
-
-
-@inherits(PnlEddy,PnlEddyBseBetMask,StructMask)
+@inherits(PnlEddy,BseBetMask,StructMask)
 class PnlEddyEpi(Task):
-    eddy_epi_prefix = Parameter()
+    eddy_epi_prefix = Parameter(default='')
+    eddy_epi_bse_masked_prefix = Parameter(default='')
+    eddy_epi_bse_betmask_prefix = Parameter(default='')
     debug= BoolParameter(default=False)
     epi_nproc= IntParameter(default=N_PROC)
 
+
     def requires(self):
-        return dict(eddy= self.clone(PnlEddy), bet= self.clone(PnlEddyBseBetMask), t2= self.clone(StructMask))
+        return dict(eddy= self.clone(PnlEddy), t2= self.clone(StructMask))
 
     def run(self):
-        cmd = (' ').join(['pnl_epi.py',
-                          '--dwi', self.input()['eddy']['dwi'],
-                          '--bvals', self.input()['eddy']['bval'],
-                          '--bvecs', self.input()['eddy']['bvec'],
-                          '--dwimask', self.input()['bet']['mask'],
-                          '--bse', self.input()['bet']['bse'],
-                          '--t2', self.input()['t2']['aligned'],
-                          '--t2mask', self.input()['t2']['mask'],
-                          '-o', self.eddy_epi_prefix,
-                          '-d' if self.debug else '',
-                          f'-n {self.epi_nproc}' if self.epi_nproc else ''])
-        p = Popen(cmd, shell=True)
-        p.wait()
+    
+        for name in self.output().keys():
+            if not self.output()[name].exists():        
+                cmd = (' ').join(['pnl_epi.py',
+                                  '--dwi', self.input()['eddy']['dwi'],
+                                  '--bvals', self.input()['eddy']['bval'],
+                                  '--bvecs', self.input()['eddy']['bvec'],
+                                  '--dwimask', self.input()['eddy']['mask'],
+                                  '--bse', self.input()['eddy']['bse'],
+                                  '--t2', self.input()['t2']['aligned'],
+                                  '--t2mask', self.input()['t2']['mask'],
+                                  '-o', self.eddy_epi_prefix,
+                                  '-d' if self.debug else '',
+                                  f'-n {self.epi_nproc}' if self.epi_nproc else ''])
+                p = Popen(cmd, shell=True)
+                p.wait()
+            
+            break
+
+        self.dwi= self.output()['dwi']
+        self.bse_prefix= self.eddy_epi_bse_masked_prefix
+        self.bse_betmask_prefix= self.eddy_epi_bse_betmask_prefix
+        yield self.clone(BseBetMask)
 
     def output(self):
         dwi = self.eddy_epi_prefix.with_suffix('.nii.gz')
         bval = self.eddy_epi_prefix.with_suffix('.bval')
         bvec = self.eddy_epi_prefix.with_suffix('.bvec')
+        bse = self.eddy_epi_bse_masked_prefix.with_suffix('.nii.gz')
+        mask= local.path(self.eddy_epi_bse_betmask_prefix+'_mask.nii.gz')
 
-        return dict(dwi=dwi, bval=bval, bvec=bvec, mask= local.path(self.eddy_epi_prefix+ '_mask.nii.gz'))
-
-
-
-# @requires(PnlEddyEpi)
-# class PnlEddyEpiUkf(Task):
-#     tract_prefix = Parameter()
-#     ukf_params = Parameter()
-#
-#     def run(self):
-#         cmd = (' ').join(['ukf.py',
-#                           '-i', self.input()['dwi'],
-#                           '--bvals', self.input()['bval'],
-#                           '--bvecs', self.input()['bvec'],
-#                           '-m', self.input()['mask'],
-#                           '-o', self.output(),
-#                           '--params', self.ukf_params])
-#         p = Popen(cmd, shell=True)
-#         p.wait()
-#
-#     def output(self):
-#         return self.tract_prefix.with_suffix('.vtk')
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
 
 
 
-# optional task after PnlEddyEpi
-@requires(PnlEddyEpi)
-class PnlEddyEpiBseExtract(Task):
-    eddy_epi_bse_prefix = Parameter()
-    b0_threshold= FloatParameter(default=float(B0_THRESHOLD))
-    which_bse= Parameter(default='')
+@inherits(PnlEddy,PnlEddyEpi)
+class Ukf(Task):
 
-    def run(self):
-
-        cmd = (' ').join(['bse.py',
-                          '-i', self.input()['dwi'],
-                          '--bvals', self.input()['bval'],
-                          '-o', self.output(),
-                          f'-t {self.b0_threshold}' if self.b0_threshold else '',
-                          self.which_bse if self.which_bse else ''])
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-    def output(self):
-        return self.eddy_epi_bse_prefix.with_suffix('.nii.gz')
-
-    
-# optional task after PnlEddyEpi
-@requires(PnlEddyEpiBseExtract)
-class PnlEddyEpiBseBetMask(Task):
-    eddy_epi_bse_betmask_prefix = Parameter()
-    bet_threshold = FloatParameter(default=float(BET_THRESHOLD))
-    slicer_exec = Parameter(default='')
-
-    def run(self):
-        cmd = (' ').join(['bet_mask.py',
-                          '-i', self.input(),
-                          '-o', self.eddy_epi_bse_betmask_prefix,
-                          f'-f {self.bet_threshold}' if self.bet_threshold else ''])
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-        # mask the baseline image
-        cmd = (' ').join(['ImageMath', '3', self.output()['bse'], 'm', self.output()['bse'], self.output()['mask']])
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-        if self.slicer_exec:
-            cmd = (' ').join([self.slicer_exec, '--python-code',
-                              '\"slicer.util.loadVolume(\'{}\'); '
-                              'slicer.util.loadLabelVolume(\'{}\')\"'
-                             .format(self.input(), self.output())])
-
-            p = Popen(cmd, shell=True)
-            p.wait()
-
-    def output(self):
-        return dict(bse=self.input(), mask=local.path(self.eddy_epi_bse_betmask_prefix+ '_mask.nii.gz'))
-
-
-# optional task after PnlEddyEpi
-@requires(PnlEddyEpi,PnlEddyEpiBseBetMask)
-class PnlEddyEpiUkf(Task):
-    tract_prefix = Parameter()
+    tract_prefix = Parameter(default='')
     ukf_params = Parameter()
 
-    def run(self):
+    def requires(self):
+        if self.struct_template:
+            return self.clone(PnlEddyEpi)
+        else:
+            return self.clone(PnlEddy)
+
+        #TODO can be extended to include FslEddy task
+
+    def run(self):            
         cmd = (' ').join(['ukf.py',
-                          '-i', self.input()[0]['dwi'],
-                          '--bvals', self.input()[0]['bval'],
-                          '--bvecs', self.input()[0]['bvec'],
-                          '-m', self.input()[1]['mask'],
+                          '-i', self.input()['dwi'],
+                          '--bvals', self.input()['dwi'].with_suffix('.bval', depth=2),
+                          '--bvecs', self.input()['dwi'].with_suffix('.bvec', depth=2),
+                          '-m', self.input()['mask'],
                           '-o', self.output(),
                           '--params', self.ukf_params])
         p = Popen(cmd, shell=True)
@@ -279,7 +225,6 @@ class PnlEddyEpiUkf(Task):
 
     def output(self):
         return self.tract_prefix.with_suffix('.vtk')
-
 
 
 
@@ -354,7 +299,7 @@ if __name__ == '__main__':
                    dwi_template = dwi_template,
                    dwi_align_prefix=inter['dwi_align_prefix'],
                    eddy_prefix=inter['eddy_prefix'],
-                   eddy_bse_prefix=inter['eddy_bse_prefix'],
+                   eddy_bse_masked_prefix=inter['eddy_bse_masked_prefix'],
                    eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
                    which_bse= which_bse,
                    b0_threshold= b0_threshold,
@@ -362,27 +307,8 @@ if __name__ == '__main__':
                    slicer_exec= slicer_exec,
                    debug= debug,
                    eddy_nproc= eddy_nproc)])
-    
 
-    # individual task
-    build([PnlEddyUkf(bids_data_dir = bids_data_dir,
-                      id = cases[0],
-                      dwi_template = dwi_template,
-                      dwi_align_prefix=inter['dwi_align_prefix'],
-                      eddy_prefix=inter['eddy_prefix'],
-                      eddy_bse_prefix=inter['eddy_bse_prefix'],
-                      eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
-                      which_bse= which_bse,
-                      b0_threshold= b0_threshold,
-                      bet_threshold= bet_threshold,
-                      slicer_exec= slicer_exec,
-                      debug= debug,
-                      eddy_nproc= eddy_nproc,
-                      ukf_params = ukf_params,
-                      tract_prefix= inter['eddy_tract_prefix'])])
-    
 
-    
     # individual task
     build([PnlEddyEpi(bids_data_dir = bids_data_dir,
                       id=cases[0],
@@ -390,9 +316,9 @@ if __name__ == '__main__':
                       dwi_align_prefix=inter['dwi_align_prefix'],
                       eddy_prefix=inter['eddy_prefix'],
                       eddy_epi_prefix=inter['eddy_epi_prefix'],
-                      eddy_bse_prefix=inter['eddy_bse_prefix'],
+                      eddy_bse_masked_prefix=inter['eddy_bse_masked_prefix'],
                       eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
-                      eddy_epi_bse_prefix=inter['eddy_epi_bse_prefix'],
+                      eddy_epi_bse_masked_prefix=inter['eddy_epi_bse_masked_prefix'],
                       eddy_epi_bse_betmask_prefix=inter['eddy_epi_bse_betmask_prefix'],
                       which_bse= which_bse,
                       b0_threshold= b0_threshold,
@@ -411,33 +337,51 @@ if __name__ == '__main__':
                       model_mask=t2_model_mask)])
     
 
+    
+    # individual task, based on PnlEddy
+    build([Ukf(bids_data_dir = bids_data_dir,
+               id = cases[0],
+               dwi_template = dwi_template,
+               dwi_align_prefix=inter['dwi_align_prefix'],
+               eddy_prefix=inter['eddy_prefix'],
+               eddy_bse_masked_prefix=inter['eddy_bse_masked_prefix'],
+               eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
+               which_bse= which_bse,
+               b0_threshold= b0_threshold,
+               bet_threshold= bet_threshold,
+               slicer_exec= slicer_exec,
+               debug= debug,
+               eddy_nproc= eddy_nproc,
+               ukf_params = ukf_params,
+               tract_prefix= inter['eddy_tract_prefix'])])
+    
 
-    # individual task
-    build([PnlEddyEpiUkf(bids_data_dir = bids_data_dir,
-                         id=cases[0],
-                         dwi_template = dwi_template,
-                         dwi_align_prefix=inter['dwi_align_prefix'],
-                         eddy_prefix=inter['eddy_prefix'],
-                         eddy_epi_prefix=inter['eddy_epi_prefix'],
-                         eddy_bse_prefix=inter['eddy_bse_prefix'],
-                         eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
-                         eddy_epi_bse_prefix=inter['eddy_epi_bse_prefix'],
-                         eddy_epi_bse_betmask_prefix=inter['eddy_epi_bse_betmask_prefix'],
-                         which_bse= which_bse,
-                         b0_threshold= b0_threshold,
-                         bet_threshold= bet_threshold,
-                         slicer_exec= slicer_exec,
-                         debug= debug,
-                         eddy_nproc= eddy_nproc,
-                         epi_nproc= epi_nproc,
-                         struct_template= t2_template,
-                         struct_align_prefix=inter['t2_align_prefix'],
-                         mabs_mask_prefix=inter['t2_mabsmask_prefix'],
-                         csvFile=t2_csvFile,
-                         fusion=fusion,
-                         mabs_mask_nproc=mabs_mask_nproc,
-                         model_img=t2_model_img,
-                         model_mask=t2_model_mask,
-                         ukf_params=ukf_params,
-                         tract_prefix= inter['eddy_epi_tract_prefix'])])
+    # individual task, based on PnlEddyEpi
+    build([Ukf(bids_data_dir = bids_data_dir,
+               id=cases[0],
+               dwi_template = dwi_template,
+               dwi_align_prefix=inter['dwi_align_prefix'],
+               eddy_prefix=inter['eddy_prefix'],
+               eddy_epi_prefix=inter['eddy_epi_prefix'],
+               eddy_bse_masked_prefix=inter['eddy_bse_masked_prefix'],
+               eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
+               eddy_epi_bse_masked_prefix=inter['eddy_epi_bse_masked_prefix'],
+               eddy_epi_bse_betmask_prefix=inter['eddy_epi_bse_betmask_prefix'],
+               which_bse= which_bse,
+               b0_threshold= b0_threshold,
+               bet_threshold= bet_threshold,
+               slicer_exec= slicer_exec,
+               debug= debug,
+               eddy_nproc= eddy_nproc,
+               epi_nproc= epi_nproc,
+               struct_template= t2_template,
+               struct_align_prefix=inter['t2_align_prefix'],
+               mabs_mask_prefix=inter['t2_mabsmask_prefix'],
+               csvFile=t2_csvFile,
+               fusion=fusion,
+               mabs_mask_nproc=mabs_mask_nproc,
+               t1_model_img=t2_model_img,
+               t1_model_mask=t2_model_mask,
+               ukf_params=ukf_params,
+               tract_prefix= inter['eddy_epi_tract_prefix'])])
 
