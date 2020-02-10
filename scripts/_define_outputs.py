@@ -1,6 +1,9 @@
-def define_outputs_wf(id, dir):
-    from os.path import join as pjoin
+def IO(id, bids_data_dir):
+    from os.path import join as pjoin, abspath
     from plumbum import local
+
+    # bids_derivatives
+    dir= pjoin(abspath(bids_data_dir), 'derivatives', 'luigi-pnlpipe')
 
     inter= {}
 
@@ -44,16 +47,4 @@ def define_outputs_wf(id, dir):
 
     return inter
 
-
-def create_dirs(cases, dir):
-    from os import makedirs
-    from os.path import join as pjoin
-
-    for id in cases:
-        makedirs(pjoin(dir, f'sub-{id}', 'anat'), exist_ok= True)
-        makedirs(pjoin(dir, f'sub-{id}', 'dwi'), exist_ok= True)
-        makedirs(pjoin(dir, f'sub-{id}', 'tracts'), exist_ok= True)
-        makedirs(pjoin(dir, f'sub-{id}', 'fs2dwi'), exist_ok= True)
-        makedirs(pjoin(dir, f'sub-{id}', 'tracts', 'wmql'), exist_ok= True)
-        makedirs(pjoin(dir, f'sub-{id}', 'tracts', 'wmqlqc'), exist_ok= True)
 
