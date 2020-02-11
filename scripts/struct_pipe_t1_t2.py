@@ -18,7 +18,7 @@ from conversion import read_cases
 class SelectStructFiles(ExternalTask):
     id = Parameter()
     bids_data_dir = Parameter()
-    struct_template = Parameter()
+    struct_template = Parameter(default='')
 
     def output(self):
         struct = glob(pjoin(abspath(self.bids_data_dir), self.struct_template.replace('id', self.id)))[0]
@@ -28,7 +28,7 @@ class SelectStructFiles(ExternalTask):
 
 @requires(SelectStructFiles)
 class StructAlign(Task):
-    struct_align_prefix = Parameter()
+    struct_align_prefix = Parameter(default='')
 
     def run(self):
         self.struct_align_prefix.dirname.mkdir()
@@ -47,7 +47,7 @@ class StructAlign(Task):
 @requires(StructAlign)
 class StructMask(Task):
 
-    mabs_mask_prefix= Parameter()
+    mabs_mask_prefix= Parameter(default='')
 
     # for atlas.py
     csvFile= Parameter(default= '')
