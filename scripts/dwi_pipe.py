@@ -151,9 +151,9 @@ class PnlEddy(Task):
 
 @inherits(PnlEddy,BseBetMask,StructMask)
 class PnlEddyEpi(Task):
-    eddy_epi_prefix = Parameter()
-    eddy_epi_bse_masked_prefix = Parameter()
-    eddy_epi_bse_betmask_prefix = Parameter()
+    eddy_epi_prefix = Parameter(default='')
+    eddy_epi_bse_masked_prefix = Parameter(default='')
+    eddy_epi_bse_betmask_prefix = Parameter(default='')
     debug= BoolParameter(default=False)
     epi_nproc= IntParameter(default=N_PROC)
 
