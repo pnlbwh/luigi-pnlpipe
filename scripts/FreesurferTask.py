@@ -5,7 +5,7 @@ from conversion import read_cases
 from luigi import build
 from _define_outputs import IO
 from struct_pipe_t1_t2 import Freesurfer
-from os.path import abspath
+from os.path import abspath, isfile
 
 if __name__ == '__main__':
 
@@ -16,8 +16,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--bids-data-dir', required= True, type=str, default= argparse.SUPPRESS,
                         help='/path/to/bids/data/directory')
-    parser.add_argument('--caselist', required= True, type=str, default= argparse.SUPPRESS,
-                        help='a txt file where each line is a caseid')
+    parser.add_argument('-c', required= True, type=str, default= argparse.SUPPRESS,
+                        help='a single caseid or a .txt file where each line is a caseid')
     parser.add_argument('--t1-template', type=str, default='sub-id/anat/*_T1w.nii.gz',
                         help='glob bids-data-dir/t1-template to find input data')
     parser.add_argument('--t2-template', type=str,
@@ -27,8 +27,8 @@ if __name__ == '__main__':
     # parser.add_argument('--bids-derivatives', type= str, default='luigi-pnlpipe', help= 'name of bids derivatives directory')
 
     args = parser.parse_args()
-
-    cases = read_cases(abspath(args.caselist))
+    
+    cases = read_cases(abspath(args.c)) if isfile(abspath(args.c)) else [args.c]
     args.bids_data_dir= abspath(args.bids_data_dir)
 
     FsTasks = []
@@ -46,5 +46,5 @@ if __name__ == '__main__':
                                   t2_mask_prefix=inter['t2_mabsmask_prefix'],
                                   fs_dir=inter['fs_dir']))
 
-    build(FsTasks, workers=args.num_workers)
+    build(FsTasks, workers=args.num_workers,scheduler_url='http://localhost:8082')
 
