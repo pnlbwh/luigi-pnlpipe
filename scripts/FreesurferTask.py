@@ -46,5 +46,5 @@ if __name__ == '__main__':
                                   t2_mask_prefix=inter['t2_mabsmask_prefix'],
                                   fs_dir=inter['fs_dir']))
 
-    build(FsTasks, workers=args.num_workers,scheduler_url='http://localhost:8082')
+    build(FsTasks, workers=args.num_workers)
 
