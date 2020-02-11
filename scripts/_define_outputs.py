@@ -4,6 +4,7 @@ def IO(id, bids_data_dir):
 
     # bids_derivatives
     dir= pjoin(abspath(bids_data_dir), 'derivatives', 'luigi-pnlpipe')
+    local.path(dir).mkdir()
 
     inter= {}
 
