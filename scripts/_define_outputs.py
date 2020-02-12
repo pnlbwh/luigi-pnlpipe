@@ -1,9 +1,9 @@
-def IO(id, bids_data_dir):
-    from os.path import join as pjoin, abspath
+def IO(id, bids_data_dir, derivatives_dir):
+    from os.path import join as pjoin, abspath, basename
     from plumbum import local
 
     # bids_derivatives
-    dir= pjoin(abspath(bids_data_dir), 'derivatives', 'luigi-pnlpipe')
+    dir= pjoin(abspath(bids_data_dir), 'derivatives', basename(derivatives_dir))
     local.path(dir).mkdir()
 
     inter= {}
