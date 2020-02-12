@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 
-from luigi import Task, build, Parameter, BoolParameter, IntParameter
+from luigi import Task, Parameter, BoolParameter, IntParameter
 from luigi.util import inherits, requires
-
-from os.path import join as pjoin, abspath, isdir
 
 from dwi_pipe import PnlEddy, PnlEddyEpi, Ukf
 from struct_pipe_t1_t2 import Freesurfer, StructMask
 
 from subprocess import Popen
 
-from util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, FILEDIR
+from util import N_PROC
 
 
 @inherits(Freesurfer,PnlEddy,PnlEddyEpi,StructMask)
