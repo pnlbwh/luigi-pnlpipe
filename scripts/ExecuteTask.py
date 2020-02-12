@@ -4,7 +4,7 @@ import argparse
 from conversion import read_cases
 from luigi import build
 from _define_outputs import IO
-from struct_pipe_t1_t2 import Freesurfer
+from struct_pipe_t1_t2 import StructMask, Freesurfer
 from dwi_pipe import PnlEddy, PnlEddyEpi, Ukf
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc
 from os.path import abspath, isfile
@@ -32,11 +32,13 @@ if __name__ == '__main__':
                         help='glob bids-data-dir/t2-template to find input data')
 
     parser.add_argument('--task', type=str, required=True, help='number of Luigi workers',
-                        choices=['Freesurfer', 'PnlEddy', 'PnlEddyEpi', 'Ukf', 'Fs2Dwi', 'Wmql', 'Wmqlqc'])
+                        choices=['StructMask', 'Freesurfer', 'PnlEddy', 'PnlEddyEpi', 'Ukf', 'Fs2Dwi', 'Wmql', 'Wmqlqc'])
 
     parser.add_argument('--num-workers', type=int, default=1, help='number of Luigi workers')
 
-    # parser.add_argument('--bids-derivatives', type= str, default='luigi-pnlpipe', help= 'name of bids derivatives directory')
+    parser.add_argument('--derivatives-dir', type= str, default='luigi-pnlpipe',
+                        help='''relative name of bids derivatives directory, 
+                            translates to bids-data-dir/derivatives/derivatives-dir''')
 
     args = parser.parse_args()
     
@@ -45,11 +47,18 @@ if __name__ == '__main__':
 
     jobs = []
     for id in cases:
-        inter = IO(id, args.bids_data_dir)
+        inter = IO(id, args.bids_data_dir, args.derivatives_dir)
 
         if args.t2_template:
 
-            if args.task=='Freesurfer':
+            if args.task=='StructMask':
+                jobs.append(StructMask(bids_data_dir=args.bids_data_dir,
+                                       id=id,
+                                       struct_template=args.t2_template,
+                                       struct_align_prefix=inter['t2_align_prefix'],
+                                       mabs_mask_prefix=inter['t2_mabsmask_prefix']))
+
+            elif args.task=='Freesurfer':
                 jobs.append(Freesurfer(bids_data_dir=args.bids_data_dir,
                                        id=id,
                                        t1_template=args.t1_template,
@@ -71,12 +80,9 @@ if __name__ == '__main__':
                                        eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
                                        eddy_epi_bse_masked_prefix=inter['eddy_epi_bse_masked_prefix'],
                                        eddy_epi_bse_betmask_prefix=inter['eddy_epi_bse_betmask_prefix'],
-                                       t1_template=args.t1_template,
-                                       t1_align_prefix=inter['t1_align_prefix'],
-                                       t1_mask_prefix=inter['t1_mabsmask_prefix'],
-                                       t2_template=args.t2_template,
-                                       t2_align_prefix=inter['t2_align_prefix'],
-                                       t2_mask_prefix=inter['t2_mabsmask_prefix']))
+                                       struct_template=args.t2_template,
+                                       struct_align_prefix=inter['t2_align_prefix'],
+                                       mabs_mask_prefix=inter['t2_mabsmask_prefix']))
 
             elif args.task=='Ukf':
                 jobs.append(Ukf(bids_data_dir = args.bids_data_dir,
@@ -163,8 +169,17 @@ if __name__ == '__main__':
                                    wmql_out=inter['epi_wmql_dir'],
                                    wmqlqc_out= inter['epi_wmqlqc_dir']))
 
+
+        # just t1_template
         else:
-            if args.task=='Freesurfer':
+            if args.task=='StructMask':
+                jobs.append(StructMask(bids_data_dir=args.bids_data_dir,
+                                       id=id,
+                                       struct_template=args.t1_template,
+                                       struct_align_prefix=inter['t1_align_prefix'],
+                                       mabs_mask_prefix=inter['t1_mabsmask_prefix']))
+
+            elif args.task=='Freesurfer':
                 jobs.append(Freesurfer(bids_data_dir=args.bids_data_dir,
                                        id=id,
                                        t1_template=args.t1_template,
@@ -179,10 +194,7 @@ if __name__ == '__main__':
                                     dwi_align_prefix=inter['dwi_align_prefix'],
                                     eddy_prefix=inter['eddy_prefix'],
                                     eddy_bse_masked_prefix=inter['eddy_bse_masked_prefix'],
-                                    eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
-                                    t1_template=args.t1_template,
-                                    t1_align_prefix=inter['t1_align_prefix'],
-                                    t1_mask_prefix=inter['t1_mabsmask_prefix']))
+                                    eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix']))
 
             elif args.task=='Ukf':
                 jobs.append(Ukf(bids_data_dir = args.bids_data_dir,
@@ -192,7 +204,7 @@ if __name__ == '__main__':
                                 eddy_prefix=inter['eddy_prefix'],
                                 eddy_bse_masked_prefix=inter['eddy_bse_masked_prefix'],
                                 eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
-                                tract_prefix= inter['eddy_epi_tract_prefix']))
+                                tract_prefix= inter['eddy_tract_prefix']))
 
 
             elif args.task=='Fs2Dwi':
@@ -241,6 +253,7 @@ if __name__ == '__main__':
                                    tract_prefix=inter['eddy_tract_prefix'],
                                    wmql_out=inter['eddy_wmql_dir'],
                                    wmqlqc_out= inter['eddy_wmqlqc_dir']))
+
 
 
     build(jobs, workers=args.num_workers)
