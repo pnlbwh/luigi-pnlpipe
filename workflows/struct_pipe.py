@@ -133,14 +133,14 @@ class Freesurfer(Task):
     t1_template= Parameter()
     t1_align_prefix= Parameter()
     t1_mask_prefix= Parameter()
-    t1_csvFile = Parameter(default='--t1')
+    t1_csvFile = Parameter(default='t1')
     t1_model_img= Parameter(default='')
     t1_model_mask= Parameter(default='')
 
     t2_template= Parameter(default='')
     t2_align_prefix= Parameter(default='')
     t2_mask_prefix= Parameter(default='')
-    t2_csvFile = Parameter(default='--t2')
+    t2_csvFile = Parameter(default='t2')
     t2_model_img= Parameter(default='')
     t2_model_mask= Parameter(default='')
 
