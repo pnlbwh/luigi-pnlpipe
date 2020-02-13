@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Copy this file to your project folder (usually called run.lsf), change
+# NUM_CORES below, edit the command to be run, and then start a
+# cluster job by running: 
+#     bsub < run.lsf
+
+# source pnlpipe3 environment
+source /data/pnl/soft/pnlpipe3/bashrc3
+
+#BSUB -J luigi-pnlpipe
+#BSUB -o %J.out
+#BSUB -e %J.err
+#BSUB -q big-multi
+#BSUB -n NUM_CORES
+
+# copy and edit /data/pnl/soft/pnlpipe3/luigi-pnlpipe/scripts/params/*.cfg
+# export LUIGI_CONFIG_PATH=/path/to/your/pipe_params.cfg
+
+# run command
+for id in $(cat ~/INTRuST_BIDS/caselist.txt)
+do
+    /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task Freesurfer \
+    --bids-data-dir ~/Downloads/INTRuST_BIDS -c $id \
+    --t1-template sub-id/anat/*_T1w.nii.gz \
+    --t2-template sub-id/anat/*_T2w.nii.gz \
+    --dwi-template sub-id/dwi/*_dwi.nii.gz
+done
+
+
