@@ -1,6 +1,6 @@
 __version__ = '0.1.3'
 
-from os.path import abspath, dirname, join as pjoin
+from os.path import abspath, dirname, join as pjoin, isfile
 import os
 from plumbum import local
 from tempfile import mkdtemp
