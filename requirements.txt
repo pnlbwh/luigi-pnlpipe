@@ -8,4 +8,6 @@ nibabel
 psutil
 python_log_indenter
 pynrrd
+luigi
+sqlalchemy
 git+https://github.com/pnlbwh/conversion.git
