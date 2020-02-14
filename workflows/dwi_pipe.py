@@ -228,6 +228,8 @@ class Ukf(Task):
     ukf_params = Parameter(default='')
 
     def requires(self):
+        self.tract_prefix.dirname.mkdir()
+
         if self.struct_template:
             return self.clone(PnlEddyEpi)
         else:
