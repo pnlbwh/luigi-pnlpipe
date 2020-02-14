@@ -119,12 +119,7 @@ class StructMask(Task):
     def output(self):
         mask = _mask_name(self.mabs_mask_prefix, self.slicer_exec, self.mask_qc)
         return dict(aligned= self.input(), mask=mask)
-        '''
-        if self.slicer_exec or self.mask_qc:
-            return dict(aligned= self.input(), mask=local.path(self.mabs_mask_prefix._path + 'Qc_mask.nii.gz'))
-        else:
-            return dict(aligned= self.input(), mask=local.path(self.mabs_mask_prefix._path + '_mask.nii.gz'))
-        '''
+
 
 
 @inherits(StructMask)
