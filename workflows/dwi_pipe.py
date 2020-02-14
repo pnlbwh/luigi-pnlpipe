@@ -31,6 +31,8 @@ class DwiAlign(Task):
     dwi_align_prefix = Parameter()
 
     def run(self):
+        self.dwi_align_prefix.dirname.mkdir()
+
         cmd = (' ').join(['align.py',
                           '-i', self.input()['dwi'],
                           '--bvals', self.input()['bval'],
@@ -123,12 +125,7 @@ class BseBetMask(Task):
     def output(self):
         mask = _mask_name(self.bse_betmask_prefix, self.slicer_exec, self.mask_qc)
         return dict(bse= self.input(), mask=mask)
-        '''
-        if self.slicer_exec or self.mask_qc:
-            return dict(bse= self.input(), mask=local.path(self.bse_betmask_prefix._path + 'Qc_mask.nii.gz'))
-        else:
-            return dict(bse= self.input(), mask=local.path(self.bse_betmask_prefix._path + '_mask.nii.gz'))
-        '''
+
 
 
 @requires(DwiAlign)
