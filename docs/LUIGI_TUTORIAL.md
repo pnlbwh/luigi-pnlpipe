@@ -646,7 +646,7 @@ Then, you should edit only the parameters relevant to your task(s).
 
 
 ```ini
-
+[DEFAULT]
 ## SelectDwiFiles, PnlEddy, PnlEddyEpi, Ukf
 dwi_template: sub-id/dwi/*_dwi.nii.gz
 
