@@ -283,12 +283,13 @@ Then
 BIDS specification for naming derivatives is under development and not yet standardized. 
 See [here](https://bids-specification.readthedocs.io/en/derivatives/05-derivatives/01-introduction.html) for more details.
 
-(i) mention how desc comes 
-(ii) mention how _mask, _bse come
+* Every derivative file should have a `desc` field with relevant value
+* The file name should have only one suffix that identifies what the file is 
+such as `_bse` for baseline image, `_mask` for mask etc.
 
     
     derivatives
-    └── pnlNipype
+    └── pnlpipe
         └── sub-003GNX007
             ├── anat
             │   ├── freesurfer
@@ -800,7 +801,7 @@ You should:
 * mark that job as done on the visualizer 
 * or kill and restart `luigid` server to re-run successfully
 
-To kill `luigid` server, obtain pid with `ps aux | grep luigid` and then `kill -9 pid`.
+To kill `luigid` server, use `killall -9 luigid`.
 
 
 Feel free to report any other issues at https://github.com/pnlbwh/luigi-pnlpipe/issues
