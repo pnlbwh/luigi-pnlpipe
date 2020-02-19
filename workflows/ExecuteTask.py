@@ -7,12 +7,12 @@ from _define_outputs import IO
 from struct_pipe import StructMask, Freesurfer
 from dwi_pipe import PnlEddy, PnlEddyEpi, Ukf
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc
-from scripts.util import abspath, isfile, pjoin, FILEDIR
+from os.path import abspath, isfile, join as pjoin, dirname
 
 if __name__ == '__main__':
 
     config = configuration.get_config()
-    config.read(pjoin(FILEDIR, 'luigi.cfg'))
+    config.read(pjoin(abspath(dirname(__file__)), 'luigi.cfg'))
 
     parser = argparse.ArgumentParser(description='''pnlpipe glued together using Luigi, 
                                     optional parameters can be set by environment variable LUIGI_CONFIG_PATH, 
