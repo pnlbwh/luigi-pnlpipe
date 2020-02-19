@@ -287,62 +287,62 @@ See [here](https://bids-specification.readthedocs.io/en/derivatives/05-derivativ
 * The file name should have only one suffix that identifies what the file is 
 such as `_bse` for baseline image, `_mask` for mask etc.
 
-   
-    
-    derivatives
-    └── pnlpipe
-        └── sub-003GNX007
-            ├── anat
-            │   ├── freesurfer
-            │   │   ├── label
-            │   │   ├── mri
-            │   │   ├── scripts
-            │   │   ├── stats
-            │   │   ├── surf
-            │   │   ├── tmp
-            │   │   ├── touch
-            │   │   └── trash
-            │   ├── sub-003GNX007_desc-T1wXcMabs_mask.nii.gz
-            │   ├── sub-003GNX007_desc-T2wXcMabs_mask.nii.gz
-            │   ├── sub-003GNX007_desc-Xc_T1w.nii.gz
-            │   └── sub-003GNX007_desc-Xc_T2w.nii.gz
-            ├── dwi
-            │   ├── sub-003GNX007_desc-dwiXcEd_bse.nii.gz
-            │   ├── sub-003GNX007_desc-dwiXcEdMa_bse.nii.gz
-            │   ├── sub-003GNX007_desc-XcBseBet_mask.nii.gz
-            │   ├── sub-003GNX007_desc-Xc_dwi.bval
-            │   ├── sub-003GNX007_desc-Xc_dwi.bvec
-            │   ├── sub-003GNX007_desc-Xc_dwi.nii.gz
-            │   ├── sub-003GNX007_desc-XcEd_dwi.bval
-            │   ├── sub-003GNX007_desc-XcEd_dwi.bvec
-            │   ├── sub-003GNX007_desc-XcEd_dwi.nii.gz
-            │   ├── sub-003GNX007_desc-XcEd_dwi_xfms.tgz
-            │   ├── sub-003GNX007_desc-XcEdEp_dwi_bse.nii.gz
-            │   ├── sub-003GNX007_desc-XcEdEp_dwi.bval
-            │   ├── sub-003GNX007_desc-XcEdEp_dwi.bvec
-            │   ├── sub-003GNX007_desc-XcEdEp_dwi_mask.nii.gz
-            │   └── sub-003GNX007_desc-XcEdEp_dwi.nii.gz
-            ├── fs2dwi
-            │   ├── eddy_fs2dwi
-            │   │   ├── b0maskedbrain.nii.gz
-            │   │   ├── b0masked.nii.gz
-            │   │   ├── wmparcInBrain.nii.gz
-            │   │   └── wmparcInDwi.nii.gz
-            │   └── epi_fs2dwi
-            │       ├── b0maskedbrain.nii.gz
-            │       ├── b0masked.nii.gz
-            │       ├── wmparcInBrain.nii.gz
-            │       └── wmparcInDwi.nii.gz
-            └── tracts
-                ├── sub-003GNX007_desc-XcEdEp.vtk
-                ├── sub-003GNX007_desc-XcEd.vtk
-                ├── wmql
-                │   ├── eddy
-                │   └── epi
-                └── wmqlqc
-                    ├── eddy
-                    └── epi
-                
+```    
+derivatives
+└── pnlpipe
+    └── sub-003GNX007
+        ├── anat
+        │   ├── freesurfer
+        │   │   ├── label
+        │   │   ├── mri
+        │   │   ├── scripts
+        │   │   ├── stats
+        │   │   ├── surf
+        │   │   ├── tmp
+        │   │   ├── touch
+        │   │   └── trash
+        │   ├── sub-003GNX007_desc-T1wXcMabs_mask.nii.gz
+        │   ├── sub-003GNX007_desc-T2wXcMabs_mask.nii.gz
+        │   ├── sub-003GNX007_desc-Xc_T1w.nii.gz
+        │   └── sub-003GNX007_desc-Xc_T2w.nii.gz
+        ├── dwi
+        │   ├── sub-003GNX007_desc-dwiXcEd_bse.nii.gz
+        │   ├── sub-003GNX007_desc-dwiXcEdMa_bse.nii.gz
+        │   ├── sub-003GNX007_desc-XcBseBet_mask.nii.gz
+        │   ├── sub-003GNX007_desc-Xc_dwi.bval
+        │   ├── sub-003GNX007_desc-Xc_dwi.bvec
+        │   ├── sub-003GNX007_desc-Xc_dwi.nii.gz
+        │   ├── sub-003GNX007_desc-XcEd_dwi.bval
+        │   ├── sub-003GNX007_desc-XcEd_dwi.bvec
+        │   ├── sub-003GNX007_desc-XcEd_dwi.nii.gz
+        │   ├── sub-003GNX007_desc-XcEd_dwi_xfms.tgz
+        │   ├── sub-003GNX007_desc-XcEdEp_dwi_bse.nii.gz
+        │   ├── sub-003GNX007_desc-XcEdEp_dwi.bval
+        │   ├── sub-003GNX007_desc-XcEdEp_dwi.bvec
+        │   ├── sub-003GNX007_desc-XcEdEp_dwi_mask.nii.gz
+        │   └── sub-003GNX007_desc-XcEdEp_dwi.nii.gz
+        ├── fs2dwi
+        │   ├── eddy_fs2dwi
+        │   │   ├── b0maskedbrain.nii.gz
+        │   │   ├── b0masked.nii.gz
+        │   │   ├── wmparcInBrain.nii.gz
+        │   │   └── wmparcInDwi.nii.gz
+        │   └── epi_fs2dwi
+        │       ├── b0maskedbrain.nii.gz
+        │       ├── b0masked.nii.gz
+        │       ├── wmparcInBrain.nii.gz
+        │       └── wmparcInDwi.nii.gz
+        └── tracts
+            ├── sub-003GNX007_desc-XcEdEp.vtk
+            ├── sub-003GNX007_desc-XcEd.vtk
+            ├── wmql
+            │   ├── eddy
+            │   └── epi
+            └── wmqlqc
+                ├── eddy
+                └── epi
+
+```                
 
                 
 # Example commands
