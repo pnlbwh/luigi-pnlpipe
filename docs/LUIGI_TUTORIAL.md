@@ -805,6 +805,13 @@ You should:
 To kill `luigid` server, use `killall -9 luigid`.
 
 
+4. There are two types of *Dependency Graph*: `SVG` and `D3`. You can switch between them by clicking on the tab on 
+top right corner. When the parent task has a bunch of dependencies, `SVG` graph depicts the order in which jobs are 
+picked up for running. On the other hand, `D3` graph shows the actual dependency. 
+See [luigi/issues/2889](https://github.com/spotify/luigi/issues/2889) for better explanation. So, it is always advisable 
+to look at `D3` graph.
+
+
 Feel free to report any other issues at https://github.com/pnlbwh/luigi-pnlpipe/issues
 We shall get back to you at our earliest convenience.
 
