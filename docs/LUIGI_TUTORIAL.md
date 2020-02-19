@@ -303,23 +303,23 @@ derivatives
         │   │   └── trash
         │   ├── sub-003GNX007_desc-T1wXcMabs_mask.nii.gz
         │   ├── sub-003GNX007_desc-T2wXcMabs_mask.nii.gz
+        │   ├── sub-003GNX007_desc-T1wXcMabsQc_mask.nii.gz
+        │   ├── sub-003GNX007_desc-T2wXcMabsQc_mask.nii.gz
         │   ├── sub-003GNX007_desc-Xc_T1w.nii.gz
         │   └── sub-003GNX007_desc-Xc_T2w.nii.gz
         ├── dwi
         │   ├── sub-003GNX007_desc-dwiXcEd_bse.nii.gz
         │   ├── sub-003GNX007_desc-dwiXcEdMa_bse.nii.gz
         │   ├── sub-003GNX007_desc-XcBseBet_mask.nii.gz
+        │   ├── sub-003GNX007_desc-XcBseBetQc_mask.nii.gz
         │   ├── sub-003GNX007_desc-Xc_dwi.bval
         │   ├── sub-003GNX007_desc-Xc_dwi.bvec
         │   ├── sub-003GNX007_desc-Xc_dwi.nii.gz
         │   ├── sub-003GNX007_desc-XcEd_dwi.bval
         │   ├── sub-003GNX007_desc-XcEd_dwi.bvec
         │   ├── sub-003GNX007_desc-XcEd_dwi.nii.gz
-        │   ├── sub-003GNX007_desc-XcEd_dwi_xfms.tgz
-        │   ├── sub-003GNX007_desc-XcEdEp_dwi_bse.nii.gz
         │   ├── sub-003GNX007_desc-XcEdEp_dwi.bval
         │   ├── sub-003GNX007_desc-XcEdEp_dwi.bvec
-        │   ├── sub-003GNX007_desc-XcEdEp_dwi_mask.nii.gz
         │   └── sub-003GNX007_desc-XcEdEp_dwi.nii.gz
         ├── fs2dwi
         │   ├── eddy_fs2dwi
