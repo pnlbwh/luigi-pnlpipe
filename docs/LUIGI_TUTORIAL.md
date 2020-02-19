@@ -287,6 +287,7 @@ See [here](https://bids-specification.readthedocs.io/en/derivatives/05-derivativ
 * The file name should have only one suffix that identifies what the file is 
 such as `_bse` for baseline image, `_mask` for mask etc.
 
+   
     
     derivatives
     └── pnlpipe
