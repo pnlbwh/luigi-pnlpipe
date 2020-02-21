@@ -10,6 +10,7 @@ Table of Contents
 
    * [Luigi pipeline](#luigi-pipeline)
    * [Citation](#citation)
+   * [Installation](#installation)
    * [How Luigi works](#how-luigi-works)
    * [Running luigi-pnlpipe](#running-luigi-pnlpipe)
       * [1. Organize data according to BIDS](#1-organize-data-according-to-bids)
