@@ -73,11 +73,15 @@ https://github.com/pnlbwh/luigi-pnlpipe, 2020, DOI: 10.5281/zenodo.3666802
 
 # Installation
 
-The pipeline depends on https://github.com/pnlbwh/pnlNipype individual modules. So, we have to install *pnlNipype* first. 
-In addition, we need two more packages: `luigi` and `sqlalchemy`. They are specified in [luigi-pnlpipe/requirements.txt](../requirements.txt)
-So for the `pip install -r requirements.txt` part, use the `requirements.txt` provided with this repository.
+The pipeline depends on [external software](https://github.com/pnlbwh/pnlNipype#dependencies). Please follow [this](https://github.com/pnlbwh/pnlNipype#ii-independently) 
+instruction to install those software. Then, you can install *luigi-pnlpipe* as follows:
 
-In addition, please see [pnlNipype/README.md](https://github.com/pnlbwh/pnlNipype/blob/master/docs/README.md) for details about installing *pnlNipype*. 
+    git clone https://github.com/pnlbwh/luigi-pnlpipe.git
+    cd luigi-pnlpipe
+    pip install -r requirements.txt
+
+
+The pipeline is built upon https://github.com/pnlbwh/pnlNipype individual modules.
 Documentation about individual *pnlNipype* modules can be found in [pnlNipype/TUTORIAL.md](https://github.com/pnlbwh/pnlNipype/blob/master/docs/TUTORIAL.md).
 
 Finally, see [Running luigi-pnlpipe](#running-luigi-pnlpipe) for running the pipeline.
