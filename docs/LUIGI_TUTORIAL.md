@@ -70,6 +70,18 @@ Billah, Tashrif; Bouix, Sylvain, *A Luigi workflow joining individual modules of
 https://github.com/pnlbwh/luigi-pnlpipe, 2020, DOI: 10.5281/zenodo.3666802
 
 
+# Installation
+
+The pipeline depends on https://github.com/pnlbwh/pnlNipype individual modules. So, we have to install *pnlNipype* first. 
+In addition, we need two more packages: `luigi` and `sqlalchemy`. They are specified in [luigi-pnlpipe/requirements.txt](../requirements.txt)
+So for the `pip install -r requirements.txt` part, use the `requirements.txt` provided with this repository.
+
+In addition, please see [pnlNipype/README.md](https://github.com/pnlbwh/pnlNipype/blob/master/docs/README.md) for details about installing *pnlNipype*. 
+Documentation about individual *pnlNipype* modules can be found in [pnlNipype/TUTORIAL.md](https://github.com/pnlbwh/pnlNipype/blob/master/docs/TUTORIAL.md).
+
+
+
+
 # How Luigi works
 
 A [Luigi task](https://luigi.readthedocs.io/en/stable/tasks.html) consists of four building blocks:
