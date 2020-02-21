@@ -638,6 +638,31 @@ model_mask: /path/to/T1w/atlas/mask
 ```
 
 
+The `StructMask` and `BseBetMask` tasks come with quality checking feature enabled. They do not do the quality checking 
+automatically, but let you do it and advance from there. If you set: 
+
+    slicer_exec: /path/to/a/valid/slicer
+    
+Then, the pipeline will load the created mask overlaid on the structural/baseline image for you to check quality.
+After you check the mask or potentially edit it, save it with `Qc` at the end of the value in _`desc` field. A direction 
+will already be available on your console:
+
+    ** Check quality of created mask /tmp/sub-003GNX007_desc-T1wXc_mask.nii.gz . 
+    Once you are done, save the (edited) mask as /tmp/sub-003GNX007_desc-T1wXcQc_mask.nii.gz **
+
+
+There is one limitation with the above integration. You need to be in front of the machine where you are creating the mask. 
+So, it is feasible on a workstation or an individual HPC node through NoMachine. However, if you use `bsub` to run a job, 
+you will not have GUI support. In that case, you can use: 
+
+    mask_qc: True
+    
+Like the above, after mask is created, the program will poll the file system for `/tmp/sub-003GNX007_desc-T1wXcQc_mask.nii.gz`. 
+Once file is obtained, the pipeline will progress from there. But unlike the function triggered by `slicer_exec`, it will 
+not attempt to load the mask on a visualizer. After you see the above direction on your console, you can quality check 
+the mask using your favorite visualizer and save it like shown above.
+
+
 ### dwi_pipe_params.cfg
 
 Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `PnlEddyEpi`, and `Ukf` tasks.
