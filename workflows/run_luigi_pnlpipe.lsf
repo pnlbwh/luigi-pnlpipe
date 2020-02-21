@@ -20,7 +20,7 @@ source /data/pnl/soft/pnlpipe3/bashrc3
 # run command
 for id in $(cat ~/INTRuST_BIDS/caselist.txt)
 do
-    /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task Freesurfer \
+    /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task Wmql \
     --bids-data-dir ~/Downloads/INTRuST_BIDS -c $id \
     --t1-template sub-id/anat/*_T1w.nii.gz \
     --t2-template sub-id/anat/*_T2w.nii.gz \
