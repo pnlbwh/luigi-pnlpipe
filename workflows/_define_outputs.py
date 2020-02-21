@@ -1,6 +1,10 @@
-def define_outputs_wf(id, dir):
-    from os.path import join as pjoin
+def IO(id, bids_data_dir, derivatives_dir):
+    from os.path import join as pjoin, abspath, basename
     from plumbum import local
+
+    # bids_derivatives
+    dir= pjoin(abspath(bids_data_dir), 'derivatives', basename(derivatives_dir))
+    local.path(dir).mkdir()
 
     inter= {}
 
@@ -17,9 +21,9 @@ def define_outputs_wf(id, dir):
     inter['eddy_bse_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcEd_bse'))
     inter['eddy_epi_bse_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcEdEp_bse'))
 
-    inter['aligned_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBet'))
-    inter['eddy_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBseBet'))
-    inter['eddy_epi_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBseBet'))
+    inter['aligned_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcBseBet'))
+    inter['eddy_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcEdBseBet'))
+    inter['eddy_epi_bse_betmask_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-XcEdEpBseBet'))
 
     inter['aligned_bse_masked_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcMa_bse'))
     inter['eddy_bse_masked_prefix'] = local.path(pjoin(dir, f'sub-{id}', 'dwi', f'sub-{id}_desc-dwiXcEdMa_bse'))
@@ -44,16 +48,4 @@ def define_outputs_wf(id, dir):
 
     return inter
 
-
-def create_dirs(cases, dir):
-    from os import makedirs
-    from os.path import join as pjoin
-
-    for id in cases:
-        makedirs(pjoin(dir, f'sub-{id}', 'anat'), exist_ok= True)
-        makedirs(pjoin(dir, f'sub-{id}', 'dwi'), exist_ok= True)
-        makedirs(pjoin(dir, f'sub-{id}', 'tracts'), exist_ok= True)
-        makedirs(pjoin(dir, f'sub-{id}', 'fs2dwi'), exist_ok= True)
-        makedirs(pjoin(dir, f'sub-{id}', 'tracts', 'wmql'), exist_ok= True)
-        makedirs(pjoin(dir, f'sub-{id}', 'tracts', 'wmqlqc'), exist_ok= True)
 

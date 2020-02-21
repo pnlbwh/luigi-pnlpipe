@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.DEBUG, format=logfmt(__file__))
 
 
 class App(cli.Application):
-    """Rigidly align a given labelmap (usually a mask) to make another labelmap"""
+    """Align a given labelmap (usually a mask) to make another labelmap"""
 
     infile = cli.SwitchAttr(['-i','--input'],
                             cli.ExistingFile, help='structural (nrrd/nii)',mandatory=True)
@@ -22,7 +22,10 @@ class App(cli.Application):
     target = cli.SwitchAttr(['-t','--target'],
                             cli.ExistingFile, help='target image (nrrd/nii)',mandatory=True)
 
-    out = cli.SwitchAttr(['-o', '--output'], help='output labelmap (nrrd/nii)', mandatory=True)
+    out = cli.SwitchAttr(['-o', '--output'], help='output labelmap (nrrd/nii)',mandatory=True)
+
+    reg_method= cli.SwitchAttr(['--reg'], cli.Set('rigid','SyN', case_sensitive=False),
+                               help='ANTs registration method: rigid or SyN', default='rigid')
 
     def main(self):
         with TemporaryDirectory() as tmpdir:
@@ -36,16 +39,18 @@ class App(cli.Application):
                         '-f', self.target,
                         '-m', self.infile,
                         '-o', pre,
-                        '-n', ANTSREG_THREADS
+                        '-n', ANTSREG_THREADS,
+                        '-t r' if self.reg_method=='rigid' else ''
                         ]), shell= True)
 
-            antsApplyTransforms['-d', '3'
-                                ,'-i', self.labelmap
-                                ,'-t', warp
-                                ,'-t', affine
-                                ,'-r', self.target
-                                ,'-o', self.out
-                                ,'--interpolation', 'NearestNeighbor'] & FG
+            xfrms= f'-t {warp} -t {affine}' if self.reg_method=='SyN' else f'-t {affine}'
+
+            antsApplyTransforms['-d', '3',
+                                '-i', self.labelmap,
+                                xfrms.split(),
+                                '-r', self.target,
+                                '-o', self.out,
+                                '--interpolation', 'NearestNeighbor'] & FG
 
 if __name__ == '__main__':
     App.run()
