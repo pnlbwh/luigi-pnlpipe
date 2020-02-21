@@ -79,7 +79,7 @@ So for the `pip install -r requirements.txt` part, use the `requirements.txt` pr
 In addition, please see [pnlNipype/README.md](https://github.com/pnlbwh/pnlNipype/blob/master/docs/README.md) for details about installing *pnlNipype*. 
 Documentation about individual *pnlNipype* modules can be found in [pnlNipype/TUTORIAL.md](https://github.com/pnlbwh/pnlNipype/blob/master/docs/TUTORIAL.md).
 
-
+Finally, see [Running luigi-pnlpipe](#running-luigi-pnlpipe) for running the pipeline.
 
 
 # How Luigi works
