@@ -695,7 +695,7 @@ Then, you should edit only the parameters relevant to your task(s).
 dwi_template: sub-id/dwi/*_dwi.nii.gz
 
 ## StructMask, PnlEddyEpi, Ukf
-csvFile:
+csvFile: t2
 mabs_mask_nproc: 8
 fusion:
 model_img:
