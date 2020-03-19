@@ -25,10 +25,10 @@ if __name__ == '__main__':
     parser.add_argument('-c', required= True, type=str, default= argparse.SUPPRESS,
                         help='a single caseid or a .txt file where each line is a caseid')
 
-    parser.add_argument('--dwi-template', type=str, default='sub-id/dwi/*_dwi.nii.gz',
+    parser.add_argument('--dwi-template', type=str, default='sub-$/dwi/*_dwi.nii.gz',
                         help='glob bids-data-dir/t1-template to find input data')
 
-    parser.add_argument('--t1-template', type=str, default='sub-id/anat/*_T1w.nii.gz',
+    parser.add_argument('--t1-template', type=str, default='sub-$/anat/*_T1w.nii.gz',
                         help='glob bids-data-dir/t2-template to find input data')
 
     parser.add_argument('--t2-template', type=str,
@@ -39,38 +39,34 @@ if __name__ == '__main__':
 
     parser.add_argument('--num-workers', type=int, default=1, help='number of Luigi workers')
 
-    parser.add_argument('--derivatives-dir', type= str, default='luigi-pnlpipe',
+    parser.add_argument('--derivatives-name', type= str, default='pnlpipe',
                         help='''relative name of bids derivatives directory, 
-                            translates to bids-data-dir/derivatives/derivatives-dir''')
+                            translates to bids-data-dir/derivatives/derivatives-name''')
 
     args = parser.parse_args()
     
     cases = read_cases(abspath(args.c)) if isfile(abspath(args.c)) else [args.c]
     args.bids_data_dir= abspath(args.bids_data_dir)
-
+    derivatives_dir= pjoin('derivatives', args.derivatives_name)
+    
     jobs = []
     for id in cases:
-        inter = IO(id, args.bids_data_dir, args.derivatives_dir)
+        # inter = IO(id, args.bids_data_dir, args.derivatives_dir)
 
         if args.t2_template:
 
             if args.task=='StructMask':
                 jobs.append(StructMask(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir,
                                        id=id,
-                                       struct_template=args.t2_template,
-                                       struct_align_prefix=inter['t2_align_prefix'],
-                                       mabs_mask_prefix=inter['t2_mabsmask_prefix']))
+                                       struct_template=args.t2_template))
 
             elif args.task=='Freesurfer':
                 jobs.append(Freesurfer(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir, 
                                        id=id,
                                        t1_template=args.t1_template,
-                                       t2_template=args.t2_template,
-                                       t1_align_prefix=inter['t1_align_prefix'],
-                                       t1_mask_prefix=inter['t1_mabsmask_prefix'],
-                                       t2_align_prefix=inter['t2_align_prefix'],
-                                       t2_mask_prefix=inter['t2_mabsmask_prefix'],
-                                       fs_dir=inter['fs_dir']))
+                                       t2_template=args.t2_template))
 
             elif args.task=='PnlEddyEpi':
                 jobs.append(PnlEddyEpi(bids_data_dir=args.bids_data_dir,
@@ -177,18 +173,15 @@ if __name__ == '__main__':
         else:
             if args.task=='StructMask':
                 jobs.append(StructMask(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir,
                                        id=id,
-                                       struct_template=args.t1_template,
-                                       struct_align_prefix=inter['t1_align_prefix'],
-                                       mabs_mask_prefix=inter['t1_mabsmask_prefix']))
+                                       struct_template=args.t1_template))
 
             elif args.task=='Freesurfer':
                 jobs.append(Freesurfer(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir,
                                        id=id,
-                                       t1_template=args.t1_template,
-                                       t1_align_prefix=inter['t1_align_prefix'],
-                                       t1_mask_prefix=inter['t1_mabsmask_prefix'],
-                                       fs_dir=inter['fs_dir']))
+                                       t1_template=args.t1_template))
 
             elif args.task=='PnlEddy':
                 jobs.append(PnlEddy(bids_data_dir=args.bids_data_dir,
