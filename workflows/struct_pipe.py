@@ -3,7 +3,8 @@
 from luigi import Task, ExternalTask, Parameter, BoolParameter, IntParameter
 from luigi.util import inherits, requires
 from glob import glob
-from os.path import join as pjoin, abspath, isfile
+from os.path import join as pjoin, abspath, isfile, basename, dirname
+import re
 
 from plumbum import local
 from subprocess import Popen
@@ -17,33 +18,39 @@ class SelectStructFiles(ExternalTask):
     struct_template = Parameter(default='')
 
     def output(self):
-        struct = glob(pjoin(abspath(self.bids_data_dir), self.struct_template.replace('id', self.id)))[0]
+        struct = glob(pjoin(abspath(self.bids_data_dir), self.struct_template.replace('$', self.id)))[0]
 
         return local.path(struct)
 
 
 @requires(SelectStructFiles)
 class StructAlign(Task):
-    struct_align_prefix = Parameter(default='')
-
+    
+    derivatives_dir= Parameter()
+    
     def run(self):
-        self.struct_align_prefix.dirname.mkdir()
+        self.output().dirname.mkdir()
 
         cmd = (' ').join(['align.py',
                           '-i', self.input(),
-                          '-o', self.struct_align_prefix])
+                          '-o', self.output().split('.nii.gz')[0]])
         p = Popen(cmd, shell=True)
         p.wait()
 
     def output(self):
-        return self.struct_align_prefix.with_suffix('.nii.gz')
 
-
+        subject_dir= dirname(self.input().replace('rawdata', self.derivatives_dir))
+        prefix= basename(self.input())
+        
+        if '_T1w' in prefix:
+            return local.path(pjoin(subject_dir, prefix.split('_T1w.nii')[0]+ '_desc-Xc_T1w.nii.gz'))
+        
+        elif '_T2w' in prefix:
+            return local.path(pjoin(subject_dir, prefix.split('_T2w.nii')[0]+ '_desc-Xc_T2w.nii.gz'))
+       
 
 @requires(StructAlign)
 class StructMask(Task):
-
-    mabs_mask_prefix= Parameter(default='')
 
     # for atlas.py
     csvFile= Parameter(default= '')
@@ -52,8 +59,8 @@ class StructMask(Task):
     mabs_mask_nproc= IntParameter(default= int(N_PROC))
 
     # for makeAlignedMask.py
-    model_img= Parameter(default= '')
-    model_mask= Parameter(default= '')
+    ref_img= Parameter(default= '')
+    ref_mask= Parameter(default= '')
     reg_method= Parameter(default='rigid')
 
     # for qc'ing the created mask
@@ -63,14 +70,14 @@ class StructMask(Task):
 
     def run(self):
 
-        mabs_mask = self.mabs_mask_prefix._path + '_mask.nii.gz'
+        auto_mask = self.output()['mask'].replace('Qc','')
 
-        if not isfile(mabs_mask):
-            if not (self.model_img and self.model_mask):
+        if not isfile(auto_mask):
+            if self.csvFile:
                 cmd = (' ').join(['atlas.py',
                                   '-t', self.input(),
                                   '--train', self.csvFile,
-                                  '-o', self.mabs_mask_prefix,
+                                  '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
                                   f'-n {self.mabs_mask_nproc}',
                                   '-d' if self.debug else '',
                                   f'--fusion {self.fusion}' if self.fusion else ''])
@@ -79,11 +86,12 @@ class StructMask(Task):
                 p.wait()
 
             else:
+                
                 cmd = (' ').join(['makeAlignedMask.py',
                                   '-t', self.input(),
                                   '-o', self.output()['mask'],
-                                  '-i', self.model_img,
-                                  '-l', self.model_mask,
+                                  '-i', glob(pjoin(self.input().dirname, self.ref_img))[0],
+                                  '-l', glob(pjoin(self.input().dirname, self.ref_mask))[0],
                                   '--reg', self.reg_method])
 
                 p = Popen(cmd, shell=True)
@@ -95,14 +103,14 @@ class StructMask(Task):
 
         if self.slicer_exec or self.mask_qc:
             print('\n\n** Check quality of created mask {} . Once you are done, save the (edited) mask as {} **\n\n'
-                  .format(mabs_mask,self.output()['mask']))
+                  .format(auto_mask,self.output()['mask']))
 
 
         if self.slicer_exec:
             cmd= (' ').join([self.slicer_exec, '--python-code',
                             '\"slicer.util.loadVolume(\'{}\'); '
                             'slicer.util.loadLabelVolume(\'{}\')\"'
-                            .format(self.input()['aligned'],mabs_mask)])
+                            .format(self.input()['aligned'],auto_mask)])
 
             p = Popen(cmd, shell= True)
             p.wait()
@@ -111,13 +119,27 @@ class StructMask(Task):
         elif self.mask_qc:
             while 1:
                 sleep(QC_POLL)
-                if isfile(self.mabs_mask_prefix._path + 'Qc_mask.nii.gz'):
+                if isfile(self.output()['mask'].rsplit('_mask.nii.gz')[0] + 'Qc_mask.nii.gz'):
                     break
 
 
 
     def output(self):
-        mask = _mask_name(self.mabs_mask_prefix, self.slicer_exec, self.mask_qc)
+
+        prefix= self.input().basename
+        
+        if self.csvFile:
+            desc= 'T1wXcMabs' if '_T1w' in prefix else 'T2wXcMabs'
+        
+        elif self.ref_img:
+            ref_desc= glob(pjoin(self.input().dirname, self.ref_mask))[0]
+            desc= re.search('_desc-(.+?)_mask.nii.gz', ref_desc).group(1)
+            desc+= 'ToT1wXc' if '_T1w' in prefix else 'ToT2wXc'
+        
+        
+        mask_prefix= local.path(pjoin(self.input().dirname, prefix.split('_desc-')[0])+ '_desc-'+ desc)
+        mask = _mask_name(mask_prefix, self.slicer_exec, self.mask_qc)
+        
         return dict(aligned= self.input(), mask=mask)
 
 
@@ -126,43 +148,40 @@ class StructMask(Task):
 class Freesurfer(Task):
 
     t1_template= Parameter()
-    t1_align_prefix= Parameter()
-    t1_mask_prefix= Parameter()
-    t1_csvFile = Parameter(default='t1')
-    t1_model_img= Parameter(default='')
-    t1_model_mask= Parameter(default='')
+    t1_csvFile = Parameter(default='')
+    t1_ref_img= Parameter(default='')
+    t1_ref_mask= Parameter(default='')
+    # t1_mask_qc= BoolParameter(default=False)
 
     t2_template= Parameter(default='')
-    t2_align_prefix= Parameter(default='')
-    t2_mask_prefix= Parameter(default='')
-    t2_csvFile = Parameter(default='t2')
-    t2_model_img= Parameter(default='')
-    t2_model_mask= Parameter(default='')
+    t2_csvFile = Parameter(default='')
+    t2_ref_img= Parameter(default='')
+    t2_ref_mask= Parameter(default='')
+    # t2_mask_qc= BoolParameter(default=False)
 
     freesurfer_nproc= IntParameter(default=1)
     expert_file= Parameter(default=pjoin(FILEDIR,'expert_file.txt'))
     no_hires= BoolParameter(default=False)
     no_skullstrip= BoolParameter(default=False)
-    fs_dir= Parameter()
+    # fsWithT2= BoolParameter(default=False)
 
     def requires(self):
+    
         self.struct_template= self.t1_template
-        self.struct_align_prefix= self.t1_align_prefix
-        self.mabs_mask_prefix= self.t1_mask_prefix
         self.csvFile= self.t1_csvFile
-        self.model_img= self.t1_model_img
-        self.model_mask= self.t1_model_mask
+        self.ref_img= self.t1_ref_img
+        self.ref_mask= self.t1_ref_mask
+        # self.mask_qc= self.t1_mask_qc
 
         t1_attr= self.clone(StructMask)
 
         if self.t2_template:
             self.struct_template = self.t2_template
-            self.struct_align_prefix = self.t2_align_prefix
-            self.mabs_mask_prefix = self.t2_mask_prefix
             self.csvFile = self.t2_csvFile
-            self.model_img = self.t2_model_img
-            self.model_mask = self.t2_model_mask
-
+            self.ref_img = self.t2_ref_img
+            self.ref_mask = self.t2_ref_mask
+            # self.mask_qc = self.t2_mask_qc
+            
             t2_attr= self.clone(StructMask)
 
             return (t1_attr,t2_attr)
@@ -175,7 +194,7 @@ class Freesurfer(Task):
         cmd = (' ').join(['fs.py',
                           '-i', self.input()[0]['aligned'],
                           '-m', self.input()[0]['mask'],
-                          '-o', self.fs_dir,
+                          '-o', self.output(),
                           f'-n {self.freesurfer_nproc}',
                           f'--expert {self.expert_file}' if self.expert_file else '',
                           '--nohires' if self.no_hires else '',
@@ -187,5 +206,6 @@ class Freesurfer(Task):
         p.wait()
 
     def output(self):
-        return self.fs_dir
+        return local.path(pjoin(self.input()[0]['aligned'].dirname, 'freesurfer'))
+        
 
