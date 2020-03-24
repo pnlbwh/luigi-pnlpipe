@@ -256,36 +256,13 @@ optional arguments:
 
 #### a. Launch job
 
-Save the following as `run.lsf`
+Copy the example [run_luigi_pnlpipe.lsf](../workflows/run_luigi_pnlpipe.lsf) script to your directory, 
+edit it, and run as follows:
 
-```bash
-#!/bin/bash
+> bsub < /path/to/your/luigi-pnlpipe/workflows/run_luigi_pnlpipe.lsf
 
-# Copy this file to your project folder (usually called run.lsf), change
-# NAME_OF_JOB and NUM_CORES below, edit the command to be run, and then start a
-# cluster job by running: 
-#     bsub < run.lsf
-
-source /PHShome/tb571/luigi-pnlpipe/scripts/luigi_env
-
-#BSUB -J luigi-pnlpipe
-#BSUB -o %J.out
-#BSUB -e %J.err
-#BSUB -q big
-#BSUB -n 4
-
-
-luigid --logdir /PHShome/tb571/Downloads/luigi-pnlpipe/scripts/luigi-server.log --background
-
-for id in $(cat ~/INTRuST_BIDS/caselist.txt)
-do
-    luigi/scripts/ExecuteTask.py --task Freesurfer --bids-data-dir ~/Downloads/INTRuST_BIDS/ -c $id
-done
-```
-
-Then
-
-> bsub < run.lsf
+**NOTE** [luigid server](#3-initialize-luigid-server) should be running in the background in a host 
+where all job running hosts can connect to.
 
 
 #### b. Monitor progress
