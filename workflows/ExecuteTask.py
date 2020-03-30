@@ -185,12 +185,9 @@ if __name__ == '__main__':
 
             elif args.task=='PnlEddy':
                 jobs.append(PnlEddy(bids_data_dir=args.bids_data_dir,
+                                    derivatives_dir=derivatives_dir,
                                     id=id,
-                                    dwi_template=args.dwi_template,
-                                    dwi_align_prefix=inter['dwi_align_prefix'],
-                                    eddy_prefix=inter['eddy_prefix'],
-                                    eddy_bse_masked_prefix=inter['eddy_bse_masked_prefix'],
-                                    eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix']))
+                                    dwi_template=args.dwi_template))
 
             elif args.task=='Ukf':
                 jobs.append(Ukf(bids_data_dir = args.bids_data_dir,
