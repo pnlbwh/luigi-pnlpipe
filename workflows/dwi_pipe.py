@@ -44,11 +44,9 @@ class DwiAlign(Task):
         p.wait()
 
     def output(self):
-        
-        subject_dir= dirname(self.input()['dwi'].replace('rawdata', self.derivatives_dir))
-        prefix= self.input()['dwi'].basename
-        
-        dwi = local.path(pjoin(subject_dir, prefix.split('_dwi.nii')[0]+ '_desc-Xc_dwi.nii.gz'))
+    
+        suffix= '_dwi.nii.gz'        
+        dwi = local.path(self.input()['dwi'].replace('rawdata', self.derivatives_dir).rsplit(suffix)[0]+ '_desc-Xc'+ suffix)
         bval = dwi.with_suffix('.bval', depth=2)
         bvec = dwi.with_suffix('.bvec', depth=2)
 
@@ -72,19 +70,20 @@ class BseExtract(Task):
         p.wait()
 
     def output(self):
-        bse_prefix= self.dwi.basename
-        desc= re.search('_desc-(.+?)_dwi.nii.gz', bse_prefix).group(1)
-        desc= 'dwi'+ desc
         
-        bse= local.path(pjoin(self.dwi.dirname, bse_prefix.split('_desc-')[0])+ '_desc-'+ desc+ '_bse.nii.gz')
+        prefix= self.dwi._path
+        desc= re.search('_desc-(.+?)_dwi.nii.gz', prefix).group(1)
+        desc= 'dwi'+ desc        
+        bse= local.path(prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
         
         return bse
 
 
 
 @requires(BseExtract)
-class BseBetMask(Task):
+class BseMask(Task):
     bet_threshold = FloatParameter(default=float(BET_THRESHOLD))
+    mask_method = Parameter(default='Bet')
     slicer_exec = Parameter(default='')
     mask_qc= BoolParameter(default=False)
 
@@ -95,7 +94,7 @@ class BseBetMask(Task):
         if not isfile(auto_mask):
             cmd = (' ').join(['bet_mask.py',
                               '-i', self.input(),
-                              '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
+                              '-o', auto_mask.rsplit('_mask.nii.gz')[0],
                               f'-f {self.bet_threshold}' if self.bet_threshold else ''])
             p = Popen(cmd, shell=True)
             p.wait()
@@ -134,15 +133,15 @@ class BseBetMask(Task):
 
     def output(self):
     
-        bse_betmask_prefix= local.path(self.input().rsplit('_bse.nii.gz')[0]+ 'BseBet')
-        mask= _mask_name(bse_betmask_prefix, self.slicer_exec, self.mask_qc)
+        prefix= local.path(self.input().rsplit('_bse.nii.gz')[0]+ self.mask_method)
+        mask= _mask_name(prefix, self.slicer_exec, self.mask_qc)
         
         return dict(bse= self.input(), mask=mask)
 
 
 
 @requires(DwiAlign)
-@inherits(BseBetMask)
+@inherits(BseMask)
 class PnlEddy(Task):
     
     debug = BoolParameter(default=False)
@@ -165,30 +164,29 @@ class PnlEddy(Task):
                 break
 
         self.dwi= self.output()['dwi']
-        yield self.clone(BseBetMask)
+        yield self.clone(BseMask)
 
 
     def output(self):
     
-        eddy_prefix= self.input()['dwi'].rsplit('_dwi.nii.gz')[0]+ 'Ed'
-                
+        eddy_prefix= self.input()['dwi'].rsplit('_dwi.nii.gz')[0]+ 'Ed'                
         dwi = local.path(eddy_prefix+ '_dwi.nii.gz')
         bval = dwi.with_suffix('.bval', depth= 2)
         bvec = dwi.with_suffix('.bvec', depth= 2)
         
-        bse_prefix= dwi.basename
+        bse_prefix= dwi._path
         desc= re.search('_desc-(.+?)_dwi.nii.gz', bse_prefix).group(1)
-        desc= 'dwi'+ desc
+        desc= 'dwi'+ desc        
+        bse= local.path(bse_prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
         
-        bse= local.path(pjoin(dwi.dirname, bse_prefix.split('_desc-')[0])+ '_desc-'+ desc+ '_bse.nii.gz')
-        eddy_bse_betmask_prefix= local.path(bse.rsplit('_bse.nii.gz')[0]+ 'BseBet')
-        mask = _mask_name(eddy_bse_betmask_prefix, self.slicer_exec, self.mask_qc)
+        eddy_bse_mask_prefix= local.path(bse.rsplit('_bse.nii.gz')[0]+ self.mask_method)
+        mask = _mask_name(eddy_bse_mask_prefix, self.slicer_exec, self.mask_qc)
         
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
 
 
 
-@inherits(PnlEddy,BseBetMask,StructMask)
+@inherits(PnlEddy,BseMask,StructMask)
 class PnlEddyEpi(Task):
     eddy_epi_prefix = Parameter(default='')
     eddy_epi_bse_masked_prefix = Parameter(default='')
