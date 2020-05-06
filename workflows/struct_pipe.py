@@ -232,6 +232,9 @@ class FreesurferUnCorrect(Task):
         p = Popen(cmd, shell=True)
         p.wait()
 
+        check_call(f'recon-all --version > {self.output()}/version.txt', shell=True)
+
+
     def output(self):
         return local.path(pjoin(self.input()[0]['aligned'].dirname, self.fs_dirname))
         
