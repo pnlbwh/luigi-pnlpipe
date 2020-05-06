@@ -119,7 +119,7 @@ class StructMask(Task):
         elif self.mask_qc:
             while 1:
                 sleep(QC_POLL)
-                if isfile(self.output()['mask'].rsplit('_mask.nii.gz')[0] + 'Qc_mask.nii.gz'):
+                if isfile(self.output()['mask']):
                     break
 
 
