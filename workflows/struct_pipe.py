@@ -151,19 +151,23 @@ class Freesurfer(Task):
     t1_csvFile = Parameter(default='')
     t1_ref_img= Parameter(default='')
     t1_ref_mask= Parameter(default='')
-    # t1_mask_qc= BoolParameter(default=False)
+    t1_mask_qc= BoolParameter(default=False)
 
     t2_template= Parameter(default='')
     t2_csvFile = Parameter(default='')
     t2_ref_img= Parameter(default='')
     t2_ref_mask= Parameter(default='')
-    # t2_mask_qc= BoolParameter(default=False)
+    t2_mask_qc= BoolParameter(default=False)
 
     freesurfer_nproc= IntParameter(default=1)
     expert_file= Parameter(default=pjoin(FILEDIR,'expert_file.txt'))
     no_hires= BoolParameter(default=False)
     no_skullstrip= BoolParameter(default=False)
+    subfields= BoolParameter(default=False)
+    
     # fsWithT2= BoolParameter(default=False)
+    
+    fs_dirname= Parameter(default='freesurfer')
 
     def requires(self):
     
@@ -171,7 +175,7 @@ class Freesurfer(Task):
         self.csvFile= self.t1_csvFile
         self.ref_img= self.t1_ref_img
         self.ref_mask= self.t1_ref_mask
-        # self.mask_qc= self.t1_mask_qc
+        self.mask_qc= self.t1_mask_qc
 
         t1_attr= self.clone(StructMask)
 
@@ -180,7 +184,7 @@ class Freesurfer(Task):
             self.csvFile = self.t2_csvFile
             self.ref_img = self.t2_ref_img
             self.ref_mask = self.t2_ref_mask
-            # self.mask_qc = self.t2_mask_qc
+            self.mask_qc = self.t2_mask_qc
             
             t2_attr= self.clone(StructMask)
 
@@ -199,6 +203,7 @@ class Freesurfer(Task):
                           f'--expert {self.expert_file}' if self.expert_file else '',
                           '--nohires' if self.no_hires else '',
                           '--noskullstrip' if self.no_skullstrip else '',
+                          '--subfields' if self.subfields else '',
                           '--t2 {} --t2mask {}'.format(self.input()[1]['aligned'],self.input()[1]['mask'])
                                                 if self.t2_template else ''])
 
@@ -206,6 +211,6 @@ class Freesurfer(Task):
         p.wait()
 
     def output(self):
-        return local.path(pjoin(self.input()[0]['aligned'].dirname, 'freesurfer'))
+        return local.path(pjoin(self.input()[0]['aligned'].dirname, self.fs_dirname))
         
 
