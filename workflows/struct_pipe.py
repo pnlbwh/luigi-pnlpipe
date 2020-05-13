@@ -33,7 +33,7 @@ class StructAlign(Task):
 
         cmd = (' ').join(['align.py',
                           '-i', self.input(),
-                          '-o', self.output().split('.nii.gz')[0]])
+                          '-o', self.output().rsplit('.nii.gz')[0]])
         p = Popen(cmd, shell=True)
         p.wait()
 
@@ -47,6 +47,9 @@ class StructAlign(Task):
         
         elif '_T2w' in prefix:
             return local.path(pjoin(subject_dir, prefix.split('_T2w.nii')[0]+ '_desc-Xc_T2w.nii.gz'))
+
+        elif '_AXT2' in prefix:
+            return local.path(pjoin(subject_dir, prefix.split('_AXT2.nii')[0]+ '_desc-Xc_AXT2.nii.gz'))
        
 
 @requires(StructAlign)
@@ -134,7 +137,12 @@ class StructMask(Task):
         elif self.ref_img:
             ref_desc= glob(pjoin(self.input().dirname, self.ref_mask))[0]
             desc= re.search('_desc-(.+?)_mask.nii.gz', ref_desc).group(1)
-            desc+= 'ToT1wXc' if '_T1w' in prefix else 'ToT2wXc'
+            if '_T1w' in prefix:
+                desc+= 'ToT1wXc'
+            elif '_T2w' in prefix:
+                desc+= 'ToT2wXc'
+            elif '_AXT2' in prefix:
+                desc+= 'ToAXT2Xc'
         
         
         mask_prefix= local.path(pjoin(self.input().dirname, prefix.split('_desc-')[0])+ '_desc-'+ desc)
