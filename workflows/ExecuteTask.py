@@ -5,7 +5,7 @@ from conversion import read_cases
 from luigi import build, configuration
 from _define_outputs import IO
 from struct_pipe import StructMask, Freesurfer
-from dwi_pipe import PnlEddy, PnlEddyEpi, Ukf
+from dwi_pipe import PnlEddy, FslEddy, PnlEddyEpi, FslEddyEpi, Ukf
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc
 from scripts.util import abspath, isfile, pjoin, LIBDIR
 
@@ -35,7 +35,10 @@ if __name__ == '__main__':
                         help='glob bids-data-dir/t2-template to find input data')
 
     parser.add_argument('--task', type=str, required=True, help='number of Luigi workers',
-                        choices=['StructMask', 'Freesurfer', 'PnlEddy', 'PnlEddyEpi', 'Ukf', 'Fs2Dwi', 'Wmql', 'Wmqlqc'])
+                        choices=['StructMask', 'Freesurfer',
+                                 'PnlEddy', 'PnlEddyEpi',
+                                 'FslEddy', 'FslEddyEpi',
+                                 'Ukf', 'Fs2Dwi', 'Wmql', 'Wmqlqc'])
 
     parser.add_argument('--num-workers', type=int, default=1, help='number of Luigi workers')
 
@@ -68,20 +71,12 @@ if __name__ == '__main__':
                                        t1_template=args.t1_template,
                                        t2_template=args.t2_template))
 
-            elif args.task=='PnlEddyEpi':
-                jobs.append(PnlEddyEpi(bids_data_dir=args.bids_data_dir,
-                                       id=id,
-                                       dwi_template=args.dwi_template,
-                                       dwi_align_prefix=inter['dwi_align_prefix'],
-                                       eddy_prefix=inter['eddy_prefix'],
-                                       eddy_epi_prefix=inter['eddy_epi_prefix'],
-                                       eddy_bse_masked_prefix=inter['eddy_bse_masked_prefix'],
-                                       eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
-                                       eddy_epi_bse_masked_prefix=inter['eddy_epi_bse_masked_prefix'],
-                                       eddy_epi_bse_betmask_prefix=inter['eddy_epi_bse_betmask_prefix'],
-                                       struct_template=args.t2_template,
-                                       struct_align_prefix=inter['t2_align_prefix'],
-                                       mabs_mask_prefix=inter['t2_mabsmask_prefix']))
+            elif args.task=='PnlEddyEpi' or args.task=='FslEddyEpi':
+                jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
+                                            derivatives_dir=derivatives_dir,
+                                            id=id,
+                                            dwi_template=args.dwi_template,
+                                            struct_template=args.t2_template))
 
             elif args.task=='Ukf':
                 jobs.append(Ukf(bids_data_dir = args.bids_data_dir,
@@ -183,8 +178,8 @@ if __name__ == '__main__':
                                        id=id,
                                        t1_template=args.t1_template))
 
-            elif args.task=='PnlEddy':
-                jobs.append(PnlEddy(bids_data_dir=args.bids_data_dir,
+            elif args.task=='PnlEddy' or args.task=='FslEddy':
+                jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
                                     derivatives_dir=derivatives_dir,
                                     id=id,
                                     dwi_template=args.dwi_template))
