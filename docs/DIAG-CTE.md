@@ -1,4 +1,39 @@
-Pipeline looks for previous output, if does not exist, then create and move forward.
+![](./pnl-bwh-hms.png)
+
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.3666802.svg)](https://doi.org/10.5281/zenodo.3666802) [![Python](https://img.shields.io/badge/Python-3.6-green.svg)]() [![Platform](https://img.shields.io/badge/Platform-linux--64%20%7C%20osx--64-orange.svg)]()
+
+Developed by Tashrif Billah and Sylvain Bouix, Brigham and Women's Hospital (Harvard Medical School).
+
+
+Table of Contents
+=================
+
+   * [Recap](#recap)
+   * [Providing input](#providing-input)
+   * [Structural pipeline](#structural-pipeline)
+      * [Create masks](#create-masks)
+         * [MABS mask](#mabs-mask)
+         * [Warped mask](#warped-mask)
+      * [Run FreeSurfer](#run-freesurfer)
+         * [With T1w only](#with-t1w-only)
+         * [With both T1w and T2w](#with-both-t1w-and-t2w)
+   * [DWI pipeline](#dwi-pipeline)
+      * [Create masks](#create-masks-1)
+      * [Run FslEddyEpi](#run-fsleddyepi)
+      * [Run FSL eddy](#run-fsl-eddy)
+
+Table of Contents created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+
+
+# Recap
+This tutorial assumes you have made yourself familiar with [how Luigi works](README.md#how-luigi-works). In brief, 
+each Luigi task executes its prerequisite tasks before executing the task itself. If expected output of a task exist, 
+that will not rerun. Progress of the pipelines can be viewed in [http://cmu166.research.partners.org:8082](). 
+
+Another assumption is-- you have [organized your data](#1-organize-data-according-to-bids) according to BIDS convention. 
+In the following, we shall explain how to run pipelines on DIAGNOSE_CTE data.
+
+# Providing input 
 
 The [Luigi workflows](../workflows/) accept input in two ways-- through the command line and through a config file. 
 The motivation for that compartmentalization is to differentiate between high-level (former) and low-level (latter) inputs.
@@ -73,7 +108,7 @@ However, you can set `mask_qc: False`, obtain all masks, and then quality check 
 So the content of `LUIGI_CONFIG_PATH` is following:
 
 ```cfg
-[DEFAULT]
+[StructMask]
 mabs_mask_nproc: 8
 fusion:
 debug: False
@@ -81,8 +116,6 @@ reg_method:
 slicer_exec:
 mask_qc: False
 
-
-[StructMask]
 csvFile: /path/to/trainingDataT2Masks.csv
 ref_img:
 ref_mask:
@@ -134,7 +167,7 @@ images. Alternatively, you can create masks for T1w images first and then use th
 for T2w and AXT2 images. Once again, we need a configuration to be provided via `LUIGI_CONFIG_PATH`:
 
 ```cfg
-[DEFAULT]
+[StructMask]
 mabs_mask_nproc: 8
 fusion:
 debug: False
@@ -142,8 +175,6 @@ reg_method: rigid
 slicer_exec:
 mask_qc: False
 
-
-[StructMask]
 csvFile:
 ref_img: *_desc-Xc_T2w.nii.gz
 ref_mask: *_desc-T2wXcMabsQc_mask.nii.gz
@@ -266,7 +297,7 @@ exec/ExecuteTask --task FreeSurfer \
 ```
 
 
-# Run dwi pipeline
+# DWI pipeline
 
 
 ## Create masks
@@ -381,6 +412,16 @@ exec/ExecuteTask --task FslEddyEpi \
 --t2-template sub-$/ses-01/anat/*_AXT2.nii.gz
 ```
 
+A few things to note here:
+* The `--t2-template` is different than what we used for `FreeSurfer` task since we need to use an in-plane T2w image 
+for EPI correction, not the structural one.
+* The parameters for `StructMask` task echoes those explained in [Warped mask](#warped-mask)
+* `dwi_mask_qc: True` tells the program to look for quality checked dwi masks while `mask_qc: False` tells it to look for 
+non quality checked mask. As mentioned before, since a MABS mask was already quality checked, we should not require to 
+quality check it again after warp assuming `antsRegistration`, either `rigid` or `SyN`, did a good job and not introduce 
+any new artifact in the warped mask. 
+* Notice that we used computation intensive `SyN` registration to obtain AXT2 mask compared to `rigid` registration 
+we used for obtaining T2w mask.
 
 ## Run FSL eddy
 
