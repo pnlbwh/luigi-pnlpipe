@@ -200,7 +200,7 @@ exec/ExecuteTask --task StructMask \
 ```
 
 **NOTE** Creating T1w and AXT2 masks separately is not required. They can be generated as part of 
-FreeSurfer and FslEddyEpi tasks respectively.
+`Freesurfer` and `FslEddyEpi` tasks respectively.
 
 ## Run FreeSurfer
 
@@ -209,7 +209,7 @@ FreeSurfer and FslEddyEpi tasks respectively.
 We use T1w and/or T2w images to perform FreeSurfer segmentation. T1w and/or T2w images are multiplied by 
 their respective masks and passed through `N4BiasFieldCorrection`. This intermediate step does not require 
 any user interface and so not described here. On the other hand, since the method for obtaining T1w masks is 
-dependent upon T2w MABS masks, the latter have to be generated separately before running `FreeSurfer`. The `FreeSurfer` 
+dependent upon T2w MABS masks, the latter have to be generated separately before running `Freesurfer`. The `Freesurfer` 
 task will generate T1w masks to fulfill its requirement.
 
 ### With T1w only
@@ -221,7 +221,6 @@ fusion:
 debug: False
 reg_method: rigid
 slicer_exec:
-mask_qc: False
 
 
 [Freesurfer]
@@ -239,12 +238,12 @@ fs_dirname: freesurfer
 ```
 
 Notice the introduction of `t1_` prefix preceding parameters defined for `StructMask` task itself. 
-The purpose of this introduction would be clear in the following section. Run `FreeSurfer` task as follows:
+The purpose of this introduction would be clear in the following section. Run `Freesurfer` task as follows:
 
 ```bash
 export LUIGI_CONFIG_PATH=/path/to/fs_with_t1.cfg
 
-exec/ExecuteTask --task FreeSurfer \
+exec/ExecuteTask --task Freesurfer \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --t1-template sub-$/ses-01/anat/*_T1w.nii.gz
 ```
 
@@ -258,7 +257,6 @@ fusion:
 debug: False
 reg_method: rigid
 slicer_exec:
-mask_qc: False
 
 
 [Freesurfer]
@@ -285,12 +283,12 @@ T2w masks are product of MABS while T1w masks are product of warping. Having sam
 would not allow this differentiation. Moreover, notice `t1_mask_qc: False` but `t2_mask_qc: True`, the latter telling 
 the pipeline to look for T2w masks with `Qc` suffix in `desc` field.
 
-Finally, to tell `FreeSurfer` task to use both T1w and T2w images, we shall provide both templates:
+Finally, to tell `Freesurfer` task to use both T1w and T2w images, we shall provide both templates:
 
 ```bash
 export LUIGI_CONFIG_PATH=/path/to/fs_with_both_t1_t2.cfg
 
-exec/ExecuteTask --task FreeSurfer \
+exec/ExecuteTask --task Freesurfer \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 \
 --t1-template sub-$/ses-01/anat/*_T1w.nii.gz \
 --t2-template sub-$/ses-01/anat/*_T2w.nii.gz
@@ -325,7 +323,7 @@ exec/ExecuteTask --task CnnMask \
 As it was done for saving quality checked structural masks, quality checked dwi masks must be saved 
 with `Qc` suffix in the `desc` field for its integration with later part of the dwi pipeline. Example: 
 
-        Cnn mask   : sub-1001/ses-01/dwi/sub-1001_ses-01_desc-dwiXcCNN_mask.nii.gz
+        Cnn mask    : sub-1001/ses-01/dwi/sub-1001_ses-01_desc-dwiXcCNN_mask.nii.gz
     Quality checked : sub-1001/ses-01/dwi/sub-1001_ses-01_desc-dwiXcCNNQc_mask.nii.gz
 
 
@@ -413,7 +411,7 @@ exec/ExecuteTask --task FslEddyEpi \
 ```
 
 A few things to note here:
-* The `--t2-template` is different than what we used for `FreeSurfer` task since we need to use an in-plane T2w image 
+* The `--t2-template` is different than what we used for `Freesurfer` task since we need to use an in-plane T2w image 
 for EPI correction, not the structural one.
 * The parameters for `StructMask` task echoes those explained in [Warped mask](#warped-mask)
 * `dwi_mask_qc: True` tells the program to look for quality checked dwi masks while `mask_qc: False` tells it to look for 
