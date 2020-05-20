@@ -1,3 +1,40 @@
+![](./pnl-bwh-hms.png)
+
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.3666802.svg)](https://doi.org/10.5281/zenodo.3666802) [![Python](https://img.shields.io/badge/Python-3.6-green.svg)]() [![Platform](https://img.shields.io/badge/Platform-linux--64%20%7C%20osx--64-orange.svg)]()
+
+Developed by Tashrif Billah and Sylvain Bouix, Brigham and Women's Hospital (Harvard Medical School).
+
+
+Table of Contents
+=================
+
+   * [Recap](#recap)
+   * [Providing input](#providing-input)
+   * [Structural pipeline](#structural-pipeline)
+      * [Create masks](#create-masks)
+         * [MABS mask](#mabs-mask)
+         * [Warped mask](#warped-mask)
+      * [Run FreeSurfer](#run-freesurfer)
+         * [With T1w only](#with-t1w-only)
+         * [With both T1w and T2w](#with-both-t1w-and-t2w)
+   * [DWI pipeline](#dwi-pipeline)
+      * [Create masks](#create-masks-1)
+      * [Run FslEddyEpi](#run-fsleddyepi)
+      * [Run FSL eddy](#run-fsl-eddy)
+
+Table of Contents created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+
+
+# Recap
+This tutorial assumes you have made yourself familiar with [how Luigi works](README.md#how-luigi-works). In brief, 
+each Luigi task executes its prerequisite tasks before executing the task itself. If expected output of a task exist, 
+that will not rerun. Progress of the pipelines can be viewed in [http://cmu166.research.partners.org:8082](). 
+
+Another assumption is-- you have [organized your data](#1-organize-data-according-to-bids) according to BIDS convention. 
+In the following, we shall explain how to run pipelines on DIAGNOSE_CTE data.
+
+# Providing input 
+
 The [Luigi workflows](../workflows/) accept input in two ways-- through the command line and through a config file. 
 The motivation for that compartmentalization is to differentiate between high-level (former) and low-level (latter) inputs.
 High-level inputs facilitate launching workflows while low-level inputs specify parameters pertinent to the workflow, 
@@ -9,7 +46,7 @@ usage: ExecuteTask.py [-h] --bids-data-dir BIDS_DATA_DIR -c C
                       [--dwi-template DWI_TEMPLATE]
                       [--t1-template T1_TEMPLATE] [--t2-template T2_TEMPLATE]
                       --task
-                      {StructMask,Freesurfer,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc}
+                      {StructMask,CnnMaskFreesurfer,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc}
                       [--num-workers NUM_WORKERS]
                       [--derivatives-name DERIVATIVES_NAME]
 
@@ -71,7 +108,7 @@ However, you can set `mask_qc: False`, obtain all masks, and then quality check 
 So the content of `LUIGI_CONFIG_PATH` is following:
 
 ```cfg
-[DEFAULT]
+[StructMask]
 mabs_mask_nproc: 8
 fusion:
 debug: False
@@ -79,9 +116,7 @@ reg_method:
 slicer_exec:
 mask_qc: False
 
-
-[StructMask]
-csvFile: /path/to/trainingDataT1Masks.csv
+csvFile: /path/to/trainingDataT2Masks.csv
 ref_img:
 ref_mask:
 ```
@@ -111,12 +146,14 @@ the structural pipeline. Example:
 
 
 A couple of points to note regarding the above examples:
-* For executing task through LSF, you should be using the individual example
+* For executing task through LSF, you should be using the individual example.
 * When using group example, depending on the number of cases and CPUs in your machine, you should provide 
 a suitable `--num-workers` so optimal number of cases are processed parallelly allowing room for other users 
 in a shared cluster environment.
 * Although we provided both individual and group examples in the above, we shall be providing only individual examples 
-in the rest of the tutorial. You can follow the above group example as a model for the rest. 
+in the rest of the tutorial. You can follow the above group example as a model for the rest.
+* Each relevant configuration snippet should be saved in a `.cfg` file and defined in `LUIGI_CONFIG_PATH` environment variable.
+
 
 Tips:
 * `lscpu` command will show you the number of processors available. 
@@ -130,16 +167,14 @@ images. Alternatively, you can create masks for T1w images first and then use th
 for T2w and AXT2 images. Once again, we need a configuration to be provided via `LUIGI_CONFIG_PATH`:
 
 ```cfg
-[DEFAULT]
+[StructMask]
 mabs_mask_nproc: 8
 fusion:
 debug: False
-reg_method: SyN
+reg_method: rigid
 slicer_exec:
 mask_qc: False
 
-
-[StructMask]
 csvFile:
 ref_img: *_desc-Xc_T2w.nii.gz
 ref_mask: *_desc-T2wXcMabsQc_mask.nii.gz
@@ -164,16 +199,31 @@ exec/ExecuteTask --task StructMask \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --t1-template sub-$/ses-01/anat/*_T1w.nii.gz
 ```
 
+**NOTE** Creating T1w and AXT2 masks separately is not required. They can be generated as part of 
+FreeSurfer and FslEddyEpi tasks respectively.
 
 ## Run FreeSurfer
 
-TODO: explain why `mask_qc: False`
+![](./Freesurfer.png)
 
-
+We use T1w and/or T2w images to perform FreeSurfer segmentation. T1w and/or T2w images are multiplied by 
+their respective masks and passed through `N4BiasFieldCorrection`. This intermediate step does not require 
+any user interface and so not described here. On the other hand, since the method for obtaining T1w masks is 
+dependent upon T2w MABS masks, the latter have to be generated separately before running `FreeSurfer`. The `FreeSurfer` 
+task will generate T1w masks to fulfill its requirement.
 
 ### With T1w only
 
 ```cfg
+[StructMask]
+mabs_mask_nproc: 8
+fusion:
+debug: False
+reg_method: rigid
+slicer_exec:
+mask_qc: False
+
+
 [Freesurfer]
 t1_csvFile:
 t1_ref_img: *_desc-Xc_T2w.nii.gz
@@ -188,77 +238,105 @@ subfields: True
 fs_dirname: freesurfer
 ```
 
-Notice the introduction of `t1_` prefix preceding parameters we have for `StructMask` task itself. 
-The role of this introduction would be clear in the following section.
+Notice the introduction of `t1_` prefix preceding parameters defined for `StructMask` task itself. 
+The purpose of this introduction would be clear in the following section. Run `FreeSurfer` task as follows:
 
 ```bash
+export LUIGI_CONFIG_PATH=/path/to/fs_with_t1.cfg
 
-
+exec/ExecuteTask --task FreeSurfer \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --t1-template sub-$/ses-01/anat/*_T1w.nii.gz
 ```
+
 
 ### With both T1w and T2w
 
+```cfg
+[StructMask]
+mabs_mask_nproc: 8
+fusion:
+debug: False
+reg_method: rigid
+slicer_exec:
+mask_qc: False
+
+
+[Freesurfer]
+t1_csvFile:
+t1_ref_img: *_desc-Xc_T2w.nii.gz
+t1_ref_mask: *_desc-T2wXcMabsQc_mask.nii.gz
+t1_mask_qc: False
+
+t2_csvFile: /path/to/trainingDataT2Masks.csv
+t2_ref_img:
+t2_ref_mask:
+t2_mask_qc: True
+
+freesurfer_nproc: 4
+expert_file:
+no_hires: True
+no_skullstrip: True
+subfields: True
+fs_dirname: freesurfer
+```
+
+Now, let's look at the purpose of using `t1_` and `t2_` prefix preceding parameters defined for `StructMask` task itself. 
+T2w masks are product of MABS while T1w masks are product of warping. Having same values for `StructMask` task parameters 
+would not allow this differentiation. Moreover, notice `t1_mask_qc: False` but `t2_mask_qc: True`, the latter telling 
+the pipeline to look for T2w masks with `Qc` suffix in `desc` field.
+
+Finally, to tell `FreeSurfer` task to use both T1w and T2w images, we shall provide both templates:
+
 ```bash
+export LUIGI_CONFIG_PATH=/path/to/fs_with_both_t1_t2.cfg
 
-
+exec/ExecuteTask --task FreeSurfer \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 \
+--t1-template sub-$/ses-01/anat/*_T1w.nii.gz \
+--t2-template sub-$/ses-01/anat/*_T2w.nii.gz
 ```
 
 
+# DWI pipeline
 
-# Run dwi pipeline
 
 ## Create masks
 
+Any automated mask should be quality checked visually. To reiterate, the pipelines are equipped with the capability 
+to wait until an automatically created mask is quality checked and progress from there. Yet, we explain the means of 
+generating all the masks and quality checking them in two discrete steps. 
+
 ```cfg
-[DEFAULT]
-## SelectDwiFiles
-dwi_template:
-
-
-## StructMask, PnlEddy, PnlEddyEpi
-debug: False
-
-
-## StructMask, BseBetmask, CnnMask
-slicer_exec:
-
-
-## BseMask, CnnMask
-dwi_mask_qc: True
-
-
-## CnnMask
-model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
-
-
-## BseExtract
-which_bse:
-b0_threshold: 50
-
-
-## BseMask
-bet_threshold: 0.25
-mask_method: Bet
-
-
-[SelectDwiFiles]
-
-[BseExtract]
-
-[BseMask]
-
 [CnnMask]
-
+slicer_exec:
+dwi_mask_qc: False
+model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
 ```
 
+Run `CnnMask` task as follows:
 
-## Run FSL eddy
+```bash
+export LUIGI_CONFIG_PATH=/path/to/cnn_mask_params.cfg
+
+exec/ExecuteTask --task CnnMask \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --dwi-template sub-$/ses-01/dwi/*_dwi.nii.gz
+```
+
+As it was done for saving quality checked structural masks, quality checked dwi masks must be saved 
+with `Qc` suffix in the `desc` field for its integration with later part of the dwi pipeline. Example: 
+
+        Cnn mask   : sub-1001/ses-01/dwi/sub-1001_ses-01_desc-dwiXcCNN_mask.nii.gz
+    Quality checked : sub-1001/ses-01/dwi/sub-1001_ses-01_desc-dwiXcCNNQc_mask.nii.gz
+
+
+
+## Run FslEddyEpi 
+
+The last task of dwi pipeline is EPI correction that makes use of a different T2w image acquired in the same plane of 
+dwi, identified by `_AXT2.nii.gz` suffix. The configuration file to be used for this top-level task is:
 
 ```cfg
 [DEFAULT]
-## SelectDwiFiles
-dwi_template:
-
 
 ## StructMask
 csvFile:
@@ -291,15 +369,6 @@ which_bse:
 b0_threshold: 50
 
 
-## BseMask
-bet_threshold: 0.25
-mask_method: Bet
-
-
-## PnlEddy
-eddy_nproc: 8
-
-
 # FslEddy, FslEddyEpi
 acqp: /data/pnl/DIAGNOSE_CTE_U01/acqp.txt
 index: /data/pnl/DIAGNOSE_CTE_U01/index.txt
@@ -310,29 +379,80 @@ config: /data/pnl/DIAGNOSE_CTE_U01/eddy_config.txt
 epi_nproc: 8
 
 
-## Ukf
-ukf_params: --seedingThreshold,0.4,--seedsPerVoxel,1
-
-
-[SelectDwiFiles]
-
 [StructMask]
 
 [BseExtract]
 
-[BseMask]
-
 [CnnMask]
-
-[PnlEddy]
-
-[PnlEddyEpi]
 
 [FslEddy]
 
 [FslEddyEpi]
 
-[Ukf]
+```
+
+Notice the use of `[DEFAULT]` section that allows sharing of parameters across various tasks. Refer to the flowchart of 
+`FslEddyEpi`:
+
+![](./FslEddyEpi.png)
+
+`FslEddyEpi` task directly depends upon `FslEddy` and `StructMask` tasks. So the parameters of the latter two also become 
+the parameters of the top-level task. On the other hand, defining task specific parameters under `FslEddy` and `StructMask` 
+in the configuration would not make them visible to the top-level task. Hence, the right thing is to define them under 
+`[DEFAULT]` section so they are visible to any top-level tasks.
+
+Finally, run the big dwi pipeline as follows:
+
+```bash
+export LUIGI_CONFIG_PATH=/path/to/dwi_pipe_params.cfg
+
+exec/ExecuteTask --task FslEddyEpi \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 \
+--dwi-template sub-$/ses-01/dwi/*_dwi.nii.gz \
+--t2-template sub-$/ses-01/anat/*_AXT2.nii.gz
+```
+
+A few things to note here:
+* The `--t2-template` is different than what we used for `FreeSurfer` task since we need to use an in-plane T2w image 
+for EPI correction, not the structural one.
+* The parameters for `StructMask` task echoes those explained in [Warped mask](#warped-mask)
+* `dwi_mask_qc: True` tells the program to look for quality checked dwi masks while `mask_qc: False` tells it to look for 
+non quality checked mask. As mentioned before, since a MABS mask was already quality checked, we should not require to 
+quality check it again after warp assuming `antsRegistration`, either `rigid` or `SyN`, did a good job and not introduce 
+any new artifact in the warped mask. 
+* Notice that we used computation intensive `SyN` registration to obtain AXT2 mask compared to `rigid` registration 
+we used for obtaining T2w mask.
+
+## Run FSL eddy
+
+This section serves as an example about running `FslEddy` separately. When you run `FslEddyEpi`, it will run the former 
+already to fulfill its requirement.
+
+Configuration:
+
+```cfg
+[DEFAULT]
+slicer_exec:
+dwi_mask_qc: False
+model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
+
+[CnnMask]
+
+[FslEddy]
+acqp: /data/pnl/DIAGNOSE_CTE_U01/acqp.txt
+index: /data/pnl/DIAGNOSE_CTE_U01/index.txt
+config: /data/pnl/DIAGNOSE_CTE_U01/eddy_config.txt
 
 ```
 
+Run it:
+
+```bash
+export LUIGI_CONFIG_PATH=/path/to/fsl_eddy_params.cfg
+
+exec/ExecuteTask --task FslEddy \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --dwi-template sub-$/ses-01/dwi/*_dwi.nii.gz
+```
+
+The mask and baseline image provided to `FslEddy` are approximated as eddy corrected mask and baseline image that can 
+be fed into later task FslEddyEpi. 
