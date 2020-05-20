@@ -305,7 +305,7 @@ class Freesurfer(Task):
                           '--nohires' if self.no_hires else '',
                           '--noskullstrip',
                           '--subfields' if self.subfields else '',
-                          '--t2', self.input()[1]['n4corr']])
+                          '--t2 {}'.format(self.input()[1]['n4corr']) if self.t2_template else ''])
 
         p = Popen(cmd, shell=True)
         p.wait()
