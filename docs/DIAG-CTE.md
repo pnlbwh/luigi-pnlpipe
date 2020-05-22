@@ -19,9 +19,10 @@ Table of Contents
          * [With both T1w and T2w](#with-both-t1w-and-t2w)
    * [DWI pipeline](#dwi-pipeline)
       * [Create masks](#create-masks-1)
-      * [Run FslEddyEpi](#run-fsleddyepi)
+      * [Run FSL eddy and PNL epi](#run-fsl-eddy-and-pnl-epi)
       * [Run FSL eddy](#run-fsl-eddy)
-
+      
+      
 Table of Contents created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 
@@ -328,7 +329,7 @@ with `Qc` suffix in the `desc` field for its integration with later part of the 
 
 
 
-## Run FslEddyEpi 
+## Run FSL eddy and PNL epi
 
 The last task of dwi pipeline is EPI correction that makes use of a different T2w image acquired in the same plane of 
 dwi, identified by `_AXT2.nii.gz` suffix. The configuration file to be used for this top-level task is:
@@ -413,7 +414,7 @@ exec/ExecuteTask --task FslEddyEpi \
 A few things to note here:
 * The `--t2-template` is different than what we used for `Freesurfer` task since we need to use an in-plane T2w image 
 for EPI correction, not the structural one.
-* The parameters for `StructMask` task echoes those explained in [Warped mask](#warped-mask)
+* The parameters for `StructMask` task echo those explained in [Warped mask](#warped-mask)
 * `dwi_mask_qc: True` tells the program to look for quality checked dwi masks while `mask_qc: False` tells it to look for 
 non quality checked mask. As mentioned before, since a MABS mask was already quality checked, we should not require to 
 quality check it again after warp assuming `antsRegistration`, either `rigid` or `SyN`, did a good job and not introduce 
@@ -429,12 +430,10 @@ already to fulfill its requirement.
 Configuration:
 
 ```cfg
-[DEFAULT]
+[CnnMask]
 slicer_exec:
 dwi_mask_qc: False
 model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
-
-[CnnMask]
 
 [FslEddy]
 acqp: /data/pnl/DIAGNOSE_CTE_U01/acqp.txt
