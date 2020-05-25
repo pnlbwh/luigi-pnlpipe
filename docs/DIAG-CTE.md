@@ -38,8 +38,8 @@ In the following, we shall explain how to run pipelines on DIAGNOSE_CTE data.
 
 The [Luigi workflows](../workflows/) accept input in two ways-- through the command line and through a config file. 
 The motivation for that compartmentalization is to differentiate between high-level (former) and low-level (latter) inputs.
-High-level inputs facilitate launching workflows while low-level inputs specify parameters pertinent to the workflow, 
-some of which are optional. Workflow specific parameters are provided in a configuration file defined via 
+High-level inputs facilitate launching workflows while low-level inputs specify parameters pertinent to tasks in the workflow, 
+some of which are optional. Task specific parameters are provided in a configuration file defined via 
 environment variable `LUIGI_CONFIG_PATH`.
 
 ```bash
@@ -154,7 +154,9 @@ in a shared cluster environment.
 * Although we provided both individual and group examples in the above, we shall be providing only individual examples 
 in the rest of the tutorial. You can follow the above group example as a model for the rest.
 * Each relevant configuration snippet should be saved in a `.cfg` file and defined in `LUIGI_CONFIG_PATH` environment variable.
-
+* If there is more than one task under a workflow, which is generally the case, a `[DEFAULT]` section should be used 
+in their configuration file to allow parameter sharing with top level-tasks. [Run FSL eddy and PNL epi](#run-fsl-eddy-and-pnl-epi) sections 
+explains this requirement in detail.
 
 Tips:
 * `lscpu` command will show you the number of processors available. 
@@ -216,7 +218,9 @@ task will generate T1w masks to fulfill its requirement.
 ### With T1w only
 
 ```cfg
-[StructMask]
+[DEFAULT]
+
+## [StructMask] ##
 mabs_mask_nproc: 8
 fusion:
 debug: False
@@ -224,7 +228,7 @@ reg_method: rigid
 slicer_exec:
 
 
-[Freesurfer]
+## [Freesurfer] ##
 t1_csvFile:
 t1_ref_img: *_desc-Xc_T2w.nii.gz
 t1_ref_mask: *_desc-T2wXcMabsQc_mask.nii.gz
@@ -236,6 +240,10 @@ no_hires: True
 no_skullstrip: True
 subfields: True
 fs_dirname: freesurfer
+
+[StructMask]
+
+[Freesurfer]
 ```
 
 Notice the introduction of `t1_` prefix preceding parameters defined for `StructMask` task itself. 
@@ -252,7 +260,9 @@ exec/ExecuteTask --task Freesurfer \
 ### With both T1w and T2w
 
 ```cfg
-[StructMask]
+[DEFAULT]
+
+## [StructMask] ##
 mabs_mask_nproc: 8
 fusion:
 debug: False
@@ -260,7 +270,7 @@ reg_method: rigid
 slicer_exec:
 
 
-[Freesurfer]
+## [Freesurfer] ##
 t1_csvFile:
 t1_ref_img: *_desc-Xc_T2w.nii.gz
 t1_ref_mask: *_desc-T2wXcMabsQc_mask.nii.gz
@@ -277,6 +287,10 @@ no_hires: True
 no_skullstrip: True
 subfields: True
 fs_dirname: freesurfer
+
+[StructMask]
+
+[Freesurfer]
 ```
 
 Now, let's look at the purpose of using `t1_` and `t2_` prefix preceding parameters defined for `StructMask` task itself. 
@@ -337,7 +351,7 @@ dwi, identified by `_AXT2.nii.gz` suffix. The configuration file to be used for 
 ```cfg
 [DEFAULT]
 
-## StructMask
+## [StructMask] ##
 csvFile:
 mabs_mask_nproc: 8
 fusion:
@@ -347,34 +361,34 @@ ref_mask: *_desc-T2wXcMabsQc_mask.nii.gz
 reg_method: SyN
 
 
-## StructMask, PnlEddy, PnlEddyEpi
+## [StructMask] [PnlEddy] [PnlEddyEpi] ##
 debug: False
 
 
-## StructMask, BseBetmask, CnnMask
+## [StructMask] [BseBetmask] [CnnMask] ##
 slicer_exec:
 
 
-## BseMask, CnnMask
+## [BseMask] [CnnMask] ##
 dwi_mask_qc: True
 
 
-## CnnMask
+## [CnnMask] ##
 model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
 
 
-## BseExtract
+## [BseExtract] ##
 which_bse:
 b0_threshold: 50
 
 
-# FslEddy, FslEddyEpi
+## [FslEddy] [FslEddyEpi] ##
 acqp: /data/pnl/DIAGNOSE_CTE_U01/acqp.txt
 index: /data/pnl/DIAGNOSE_CTE_U01/index.txt
 config: /data/pnl/DIAGNOSE_CTE_U01/eddy_config.txt
 
 
-## PnlEddyEpi, FslEddyEpi
+## [PnlEddyEpi] [FslEddyEpi] ##
 epi_nproc: 8
 
 
@@ -430,16 +444,21 @@ already to fulfill its requirement.
 Configuration:
 
 ```cfg
-[CnnMask]
+[DEFAULT]
+
+## [CnnMask] ##
 slicer_exec:
 dwi_mask_qc: False
 model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
 
-[FslEddy]
+## [FslEddy] ##
 acqp: /data/pnl/DIAGNOSE_CTE_U01/acqp.txt
 index: /data/pnl/DIAGNOSE_CTE_U01/index.txt
 config: /data/pnl/DIAGNOSE_CTE_U01/eddy_config.txt
 
+[CnnMask]
+
+[FslEddy]
 ```
 
 Run it:
@@ -452,4 +471,6 @@ exec/ExecuteTask --task FslEddy \
 ```
 
 The mask and baseline image provided to `FslEddy` are approximated as eddy corrected mask and baseline image that can 
-be fed into later task FslEddyEpi. 
+be fed into later task FslEddyEpi.
+
+ 
