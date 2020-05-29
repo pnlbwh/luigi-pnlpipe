@@ -4,6 +4,8 @@
 
 Developed by Tashrif Billah and Sylvain Bouix, Brigham and Women's Hospital (Harvard Medical School).
 
+See the [DIAG-CTE.md](./DIAG-CTE.md) tutorial for instruction more specific to DIAGNOSE_CTE data.  
+
 
 Table of Contents
 =================
@@ -26,7 +28,7 @@ Table of Contents
    * [Example commands](#example-commands)
       * [Structural masking](#structural-masking)
       * [Freesurfer segmentation](#freesurfer-segmentation)
-      * [Eddy and correction](#eddy-and-correction)
+      * [Eddy and Epi correction](#eddy-and-epi-correction)
       * [UKFTractography](#ukftractography)
       * [Wmqlqc](#wmqlqc)
    * [Advanced](#advanced)
@@ -204,12 +206,13 @@ moment to familiarize yourself about its functionality.
 > luigi-pnlpipe/exec/ExecuteTask -h
 
 ```bash
-usage: ExecuteTask [-h] --bids-data-dir BIDS_DATA_DIR -c C
-                   [--dwi-template DWI_TEMPLATE] [--t1-template T1_TEMPLATE]
-                   [--t2-template T2_TEMPLATE] --task
-                   {StructMask,Freesurfer,PnlEddy,PnlEddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc}
-                   [--num-workers NUM_WORKERS]
-                   [--derivatives-dir DERIVATIVES_DIR]
+usage: ExecuteTask.py [-h] --bids-data-dir BIDS_DATA_DIR -c C
+                      [--dwi-template DWI_TEMPLATE]
+                      [--t1-template T1_TEMPLATE] [--t2-template T2_TEMPLATE]
+                      --task
+                      {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc}
+                      [--num-workers NUM_WORKERS]
+                      [--derivatives-name DERIVATIVES_NAME]
 
 pnlpipe glued together using Luigi, optional parameters can be set by
 environment variable LUIGI_CONFIG_PATH, see luigi-pnlpipe/scripts/params/*.cfg
@@ -223,21 +226,21 @@ optional arguments:
                         caseid
   --dwi-template DWI_TEMPLATE
                         glob bids-data-dir/t1-template to find input data
-                        (default: sub-id/dwi/*_dwi.nii.gz)
+                        (default: sub-$/dwi/*_dwi.nii.gz)
   --t1-template T1_TEMPLATE
                         glob bids-data-dir/t2-template to find input data
-                        (default: sub-id/anat/*_T1w.nii.gz)
+                        (default: sub-$/anat/*_T1w.nii.gz)
   --t2-template T2_TEMPLATE
                         glob bids-data-dir/t2-template to find input data
                         (default: None)
-  --task {StructMask,Freesurfer,PnlEddy,PnlEddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc}
+  --task {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc}
                         number of Luigi workers (default: None)
   --num-workers NUM_WORKERS
                         number of Luigi workers (default: 1)
-  --derivatives-dir DERIVATIVES_DIR
+  --derivatives-name DERIVATIVES_NAME
                         relative name of bids derivatives directory,
                         translates to bids-data-dir/derivatives/derivatives-
-                        dir (default: luigi-pnlpipe)
+                        name (default: pnlpipe)
 ```
 
 
@@ -381,7 +384,7 @@ exec/ExecuteTask --task Freesurfer
 
 ```
 
-## Eddy and correction
+## Eddy and Epi correction
 
 ```bash
 # pnl_eddy.py requires only DWI image
