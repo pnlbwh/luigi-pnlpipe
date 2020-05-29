@@ -8,7 +8,7 @@
 # source pnlpipe3 environment
 source /data/pnl/soft/pnlpipe3/bashrc3
 
-# copy and edit /data/pnl/soft/pnlpipe3/luigi-pnlpipe/scripts/params/*.cfg
+# copy and edit /data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/*.cfg
 export LUIGI_CONFIG_PATH=/path/to/your/pipe_params.cfg
 
 caselist=/data/pnl/INTRuST_BIDS/caselist.txt
