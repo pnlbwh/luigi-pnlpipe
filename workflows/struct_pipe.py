@@ -80,7 +80,7 @@ class StructMask(Task):
                 cmd = (' ').join(['atlas.py',
                                   '-t', self.input(),
                                   '--train', self.csvFile,
-                                  '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
+                                  '-o', auto_mask.rsplit('_mask.nii.gz')[0],
                                   f'-n {self.mabs_mask_nproc}',
                                   '-d' if self.debug else '',
                                   f'--fusion {self.fusion}' if self.fusion else ''])
@@ -92,7 +92,7 @@ class StructMask(Task):
                 
                 cmd = (' ').join(['makeAlignedMask.py',
                                   '-t', self.input(),
-                                  '-o', self.output()['mask'],
+                                  '-o', auto_mask,
                                   '-i', glob(pjoin(self.input().dirname, self.ref_img))[0],
                                   '-l', glob(pjoin(self.input().dirname, self.ref_mask))[0],
                                   '--reg', self.reg_method])

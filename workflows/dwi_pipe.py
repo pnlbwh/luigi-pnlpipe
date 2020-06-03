@@ -87,7 +87,7 @@ class CnnMask(Task):
                 
                 prefix= basename(self.input()['dwi'].stem)+'_bse'
                 move(prefix+'.nii.gz', self.output()['bse'])
-                move(prefix+'-multi_BrainMask.nii.gz', self.output()['mask'])
+                move(prefix+'-multi_BrainMask.nii.gz', auto_mask)
 
 
 
