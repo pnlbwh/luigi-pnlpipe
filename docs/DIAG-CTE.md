@@ -324,6 +324,7 @@ generating all the masks and quality checking them in two discrete steps.
 slicer_exec:
 dwi_mask_qc: False
 model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
+percentile: 97
 ```
 
 Run `CnnMask` task as follows:
