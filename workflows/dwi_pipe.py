@@ -61,10 +61,11 @@ class CnnMask(Task):
     slicer_exec = Parameter(default='')
     dwi_mask_qc= BoolParameter(default=False)
     model_folder= Parameter(default='')
+    percentile= IntParameter(default=99)
 
     def run(self):
         
-        auto_mask = self.output()['mask'].replace('Qc','')
+        auto_mask = self.output()['mask'].replace('Qc_mask.nii.gz','_mask.nii.gz')
 
         if not isfile(auto_mask):
             
@@ -81,7 +82,8 @@ class CnnMask(Task):
 
                 cmd = (' ').join(['dwi_masking.py',
                                   '-i', dwi_list,
-                                  '-f', self.model_folder])
+                                  '-f', self.model_folder,
+                                  f'-p {self.percentile}'])
                 p = Popen(cmd, shell=True)
                 p.wait()
                 
