@@ -180,7 +180,7 @@ if __name__ == '__main__':
                                        t1_template=args.t1_template))
 
             if args.task=='CnnMask':
-                jobs.append(StructMask(bids_data_dir=args.bids_data_dir,
+                jobs.append(CnnMask(bids_data_dir=args.bids_data_dir,
                                        derivatives_dir=derivatives_dir,
                                        id=id,
                                        dwi_template=args.dwi_template))
