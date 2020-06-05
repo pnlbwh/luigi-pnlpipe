@@ -73,7 +73,7 @@ class StructMask(Task):
 
     def run(self):
 
-        auto_mask = self.output()['mask'].replace('Qc','')
+        auto_mask = self.output()['mask'].replace('Qc_mask.nii.gz','_mask.nii.gz')
 
         if not isfile(auto_mask):
             if self.csvFile:
