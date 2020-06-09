@@ -86,7 +86,9 @@ In addition, define `PYTHONPATH`:
 
     cd ~/luigi-pnlpipe
     export PYTHONPATH=`pwd`/scripts:`pwd`/workflows:$PYTHONPATH
-
+    
+    # in case you have space shortage in /tmp or it is inaccessible to you
+    export PNLPIPE_TMPDIR=~/tmp
 
 # Structural pipeline
 
