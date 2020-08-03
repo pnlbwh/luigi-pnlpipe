@@ -322,7 +322,8 @@ class FslEddy(Task):
     acqp = Parameter()
     index = Parameter()
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
-    
+    useGpu = BoolParameter(default=False)
+     
     def run(self):
         outDir= self.output()['dwi'].dirname.join('fsl_eddy')
         outDir.mkdir()
@@ -338,6 +339,7 @@ class FslEddy(Task):
                                   '--acqp', self.acqp,
                                   '--index', self.index,
                                   '--config', self.config,
+                                  '--eddy-cuda' if self.useGpu else '',
                                   '-o', outPrefix])
                 p = Popen(cmd, shell=True)
                 p.wait()
