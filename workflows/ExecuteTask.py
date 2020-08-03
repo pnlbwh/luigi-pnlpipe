@@ -5,7 +5,7 @@ from conversion import read_cases
 from luigi import build, configuration
 from _define_outputs import IO
 from struct_pipe import StructMask, Freesurfer
-from dwi_pipe import CnnMask, PnlEddy, FslEddy, PnlEddyEpi, FslEddyEpi, Ukf
+from dwi_pipe import CnnMask, PnlEddy, CnnMaskPnlEddy, FslEddy, PnlEddyEpi, FslEddyEpi, Ukf, PnlEddyUkf
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc
 from scripts.util import abspath, isfile, pjoin, LIBDIR
 
@@ -37,9 +37,10 @@ if __name__ == '__main__':
     parser.add_argument('--task', type=str, required=True, help='number of Luigi workers',
                         choices=['StructMask', 'Freesurfer',
                                  'CnnMask',
-                                 'PnlEddy', 'PnlEddyEpi',
+                                 'PnlEddy', 'PnlEddyEpi', 'CnnMaskPnlEddy',
                                  'FslEddy', 'FslEddyEpi',
-                                 'Ukf', 'Fs2Dwi', 'Wmql', 'Wmqlqc'])
+                                 'Ukf', 'PnlEddyUkf',
+                                 'Fs2Dwi', 'Wmql', 'Wmqlqc'])
 
     parser.add_argument('--num-workers', type=int, default=1, help='number of Luigi workers')
 
@@ -185,11 +186,18 @@ if __name__ == '__main__':
                                        id=id,
                                        dwi_template=args.dwi_template))
 
-            elif args.task=='PnlEddy' or args.task=='FslEddy':
+            elif args.task=='PnlEddy' or args.task=='FslEddy' or args.task=='CnnMaskPnlEddy':
                 jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
                                     derivatives_dir=derivatives_dir,
                                     id=id,
                                     dwi_template=args.dwi_template))
+
+
+            elif args.task=='PnlEddyUkf':
+                jobs.append(PnlEddyUkf(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir,
+                                       id=id,
+                                       dwi_template=args.dwi_template))
 
             elif args.task=='Ukf':
                 jobs.append(Ukf(bids_data_dir = args.bids_data_dir,
