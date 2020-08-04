@@ -289,7 +289,7 @@ class CnnMaskPnlEddy(Task):
                                   '-i', self.input()[0]['dwi'],
                                   '--bvals', self.input()[0]['bval'],
                                   '--bvecs', self.input()[0]['bvec'],
-                                  '-o', self.output()[0]['dwi'].rsplit('.nii.gz')[0],
+                                  '-o', self.output()['dwi'].rsplit('.nii.gz')[0],
                                   '-d' if self.debug else '',
                                   f'-n {self.eddy_nproc}' if self.eddy_nproc else ''])
                 p = Popen(cmd, shell=True)
@@ -305,15 +305,7 @@ class CnnMaskPnlEddy(Task):
         bval = dwi.with_suffix('.bval', depth=2)
         bvec = dwi.with_suffix('.bvec', depth=2)
 
-        bse_prefix = dwi._path
-        desc = re.search('_desc-(.+?)_dwi.nii.gz', bse_prefix).group(1)
-        desc = 'dwi' + desc
-        bse = local.path(bse_prefix.split('_desc-')[0] + '_desc-' + desc + '_bse.nii.gz')
-
-        eddy_bse_mask_prefix = local.path(bse.rsplit('_bse.nii.gz')[0] + self.mask_method)
-        mask = _mask_name(eddy_bse_mask_prefix, self.slicer_exec, self.dwi_mask_qc)
-
-        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=self.input()[1]['mask'])
 
 
 @requires(DwiAlign,CnnMask)
@@ -517,6 +509,8 @@ class PnlEddyUkf(Task):
     ukf_params = Parameter(default='')
 
     def run(self):
+        self.output().dirname.mkdir()
+
         cmd = (' ').join(['ukf.py',
                           '-i', self.input()['dwi'],
                           '--bvals', self.input()['bval'],
@@ -528,5 +522,5 @@ class PnlEddyUkf(Task):
         p.wait()
 
     def output(self):
-        return self.input()['dwi'].rsplit('.nii.gz')[0] + '.vtk'
+        return local.path(self.input()['dwi'].replace('dwi','tracts')).with_suffix('.vtk', depth=2)
 
