@@ -31,7 +31,7 @@ with warnings.catch_warnings():
     from nibabel import load as load_nifti, Nifti1Image
 
 
-def save_nifti(fname, data, affine, hdr=None):
+def save_nifti(fname, data, affine, hdr):
     if data.dtype.name=='uint8':
         hdr.set_data_dtype('uint8')
     elif data.dtype.name=='int16':
