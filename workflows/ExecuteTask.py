@@ -26,10 +26,10 @@ if __name__ == '__main__':
                         help='a single caseid or a .txt file where each line is a caseid')
 
     parser.add_argument('--dwi-template', type=str, default='sub-$/dwi/*_dwi.nii.gz',
-                        help='glob bids-data-dir/t1-template to find input data')
+                        help='glob bids-data-dir/dwi-template to find input data')
 
     parser.add_argument('--t1-template', type=str, default='sub-$/anat/*_T1w.nii.gz',
-                        help='glob bids-data-dir/t2-template to find input data')
+                        help='glob bids-data-dir/t1-template to find input data')
 
     parser.add_argument('--t2-template', type=str,
                         help='glob bids-data-dir/t2-template to find input data')
