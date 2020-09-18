@@ -5,7 +5,8 @@ from conversion import read_cases
 from luigi import build, configuration
 from _define_outputs import IO
 from struct_pipe import StructMask, Freesurfer
-from dwi_pipe import CnnMask, PnlEddy, CnnMaskPnlEddy, FslEddy, PnlEddyEpi, FslEddyEpi, Ukf, PnlEddyUkf
+from dwi_pipe import CnnMask, PnlEddy, CnnMaskPnlEddy, FslEddy, PnlEddyEpi, FslEddyEpi, \
+    TopupEddy, Ukf, PnlEddyUkf
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc
 from scripts.util import abspath, isfile, pjoin, LIBDIR
 
@@ -38,7 +39,7 @@ if __name__ == '__main__':
                         choices=['StructMask', 'Freesurfer',
                                  'CnnMask',
                                  'PnlEddy', 'PnlEddyEpi', 'CnnMaskPnlEddy',
-                                 'FslEddy', 'FslEddyEpi',
+                                 'FslEddy', 'FslEddyEpi', 'TopupEddy',
                                  'Ukf', 'PnlEddyUkf',
                                  'Fs2Dwi', 'Wmql', 'Wmqlqc'])
 
@@ -99,24 +100,11 @@ if __name__ == '__main__':
 
             elif args.task=='Fs2Dwi':
                 jobs.append(Fs2Dwi(bids_data_dir=args.bids_data_dir,
-                                   id=id,
-                                   dwi_template=args.dwi_template,
-                                   dwi_align_prefix=inter['dwi_align_prefix'],
-                                   eddy_prefix=inter['eddy_prefix'],
-                                   eddy_epi_prefix=inter['eddy_epi_prefix'],
-                                   eddy_bse_masked_prefix=inter['eddy_bse_masked_prefix'],
-                                   eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
-                                   eddy_epi_bse_masked_prefix=inter['eddy_epi_bse_masked_prefix'],
-                                   eddy_epi_bse_betmask_prefix=inter['eddy_epi_bse_betmask_prefix'],
-                                   t1_template=args.t1_template,
-                                   t1_align_prefix=inter['t1_align_prefix'],
-                                   t1_mask_prefix=inter['t1_mabsmask_prefix'],
-                                   t2_template=args.t2_template,
-                                   t2_align_prefix=inter['t2_align_prefix'],
-                                   t2_mask_prefix=inter['t2_mabsmask_prefix'],
-                                   fs_dir=inter['fs_dir'],
-                                   mode='witht2',
-                                   fs_in_dwi=inter['fs_in_epi']))
+                                            derivatives_dir=derivatives_dir,
+                                            id=id,
+                                            pa_ap_template=args.dwi_template,
+                                            t1_template=args.t1_template,
+                                            t2_template=args.t2_template))
 
             elif args.task=='Wmql':
                 jobs.append(Wmql(bids_data_dir=args.bids_data_dir,
@@ -186,11 +174,12 @@ if __name__ == '__main__':
                                        id=id,
                                        dwi_template=args.dwi_template))
 
-            elif args.task=='PnlEddy' or args.task=='FslEddy' or args.task=='CnnMaskPnlEddy':
+            elif args.task=='PnlEddy' or args.task=='FslEddy' or \
+                args.task=='TopupEddy' or args.task=='CnnMaskPnlEddy':
                 jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
                                     derivatives_dir=derivatives_dir,
                                     id=id,
-                                    dwi_template=args.dwi_template))
+                                    pa_ap_template=args.dwi_template))
 
 
             elif args.task=='PnlEddyUkf':
