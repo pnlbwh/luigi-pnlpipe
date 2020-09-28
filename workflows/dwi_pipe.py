@@ -18,11 +18,14 @@ from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, _mask_nam
 
 class SelectDwiFiles(ExternalTask):
     id = Parameter()
+    ses = Parameter()
     bids_data_dir = Parameter()
     dwi_template = Parameter(default='')
 
     def output(self):
-        dwi= glob(pjoin(abspath(self.bids_data_dir), self.dwi_template.replace('$', self.id)))[0]
+        dwi_template= self.dwi_template.replace('{ses}',self.ses)
+        dwi_template= dwi_template.replace('{id}', self.id)
+        dwi= glob(pjoin(abspath(self.bids_data_dir), dwi_template))[0]
         bval= dwi.split('.nii')[0]+'.bval'
         bvec= dwi.split('.nii')[0]+'.bvec'
 
@@ -55,8 +58,31 @@ class DwiAlign(Task):
         return dict(dwi=dwi, bval=bval, bvec=bvec)
 
 
-
 @requires(DwiAlign)
+class GibbsUn(Task):
+
+    unring_nproc= IntParameter(default=4)
+
+    def run(self):
+        cmd = (' ').join(['unring.py',
+                          self.input()['dwi'],
+                          self.output()['dwi'].rsplit('.nii.gz')[0],
+                          str(self.unring_nproc)])
+        p = Popen(cmd, shell=True)
+        p.wait()
+
+    def output(self):
+
+        dwi = local.path(re.sub('_desc-Xc_', '_desc-XcUn_', self.input()['dwi']))
+        bval = dwi.with_suffix('.bval', depth=2)
+        bvec = dwi.with_suffix('.bvec', depth=2)
+
+        return dict(dwi=dwi, bval=bval, bvec=bvec)
+
+
+
+@requires(GibbsUn)
+# @requires(DwiAlign)
 class CnnMask(Task):
     slicer_exec = Parameter(default='')
     dwi_mask_qc= BoolParameter(default=False)
@@ -468,6 +494,122 @@ class PnlEddyEpi(Task):
         mask = _mask_name(self.eddy_epi_bse_betmask_prefix, self.slicer_exec, self.dwi_mask_qc)
 
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
+
+
+@inherits(GibbsUn,CnnMask)
+# @inherits(DwiAlign, CnnMask)
+class TopupEddy(Task):
+
+    pa_ap_template = Parameter()
+    acqp = Parameter()
+    config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
+
+    useGpu = BoolParameter(default=False)
+    numb0 = Parameter(default=1)
+    whichVol = Parameter(default='1')
+    scale = Parameter(default=2)
+
+
+    def requires(self):
+
+        pa_template, ap_template= self.pa_ap_template.split(',')
+
+        # acq-PA
+        self.dwi_template= pa_template
+        # pa= self.clone(DwiAlign)
+        pa= self.clone(GibbsUn)
+        pa_mask= self.clone(CnnMask)
+
+        # acq-AP
+        self.dwi_template= ap_template
+        # ap= self.clone(DwiAlign)
+        ap= self.clone(GibbsUn)
+        ap_mask= self.clone(CnnMask)
+
+        return (pa, pa_mask, ap, ap_mask)
+
+    def run(self):
+        pass
+
+        outDir = self.output()['dwi'].dirname.join('fsl_topup_eddy')
+
+        for name in ['dwi', 'bval', 'bvec']:
+            if not self.output()[name].exists():
+                cmd = (' ').join(['fsl_topup_epi_eddy.py',
+                                  '--imain', '{},{}'.format(self.input()[0]['dwi'],self.input()[2]['dwi']),
+                                  '--bvals', '{},{}'.format(self.input()[0]['bval'],self.input()[2]['bval']),
+                                  '--bvecs', '{},{}'.format(self.input()[0]['bvec'],self.input()[2]['bvec']),
+                                  '--mask', '{},{}'.format(self.input()[1]['mask'],self.input()[3]['mask']),
+                                  '--acqp', self.acqp,
+                                  '--config', self.config,
+                                  '--eddy-cuda' if self.useGpu else '',
+                                  '--whichVol', self.whichVol,
+                                  '--numb0', self.numb0,
+                                  '--scale', self.scale,
+                                  '--out', outDir])
+                p = Popen(cmd, shell=True)
+                p.wait()
+
+                version_file = outDir.join('fsl_version.txt')
+                check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell=True)
+
+
+                with open(outDir.join('.outPrefix.txt')) as f:
+                    outPrefix= outDir.join(f.read().strip())
+
+                move(outPrefix + '.nii.gz', self.output()['dwi'])
+                move(outPrefix + '.bval', self.output()['bval'])
+                move(outPrefix + '.bvec', self.output()['bvec'])
+
+                move(outPrefix + '_mask.nii.gz', self.output()['mask'])
+                move(outDir / 'B0_PA_AP_corrected_mean.nii.gz', self.output()['bse'])
+
+                break
+
+
+        '''
+        # self.dwi= self.output()['dwi']
+        # yield self.clone(BseExtract)
+        '''
+
+
+    def output(self):
+
+        eddy_epi_prefix= self.input()[0]['dwi'].rsplit('_dwi.nii.gz')[0]
+        eddy_epi_prefix= eddy_epi_prefix.replace('_acq-PA','')
+        eddy_epi_prefix= eddy_epi_prefix.replace('_acq-AP','')
+        eddy_epi_prefix+= 'EdEp'
+
+        # find dir field
+        try:
+            dir = re.search('_dir-(.+?)_', eddy_epi_prefix).group(1)
+            if self.whichVol == '1,2':
+                dir = 2 * int(dir)
+                eddy_epi_prefix= local.path(re.sub('_dir-(.+?)_', f'_dir-{dir}_', eddy_epi_prefix))
+        # dir field may not exist
+        # AttributeError: 'NoneType' object has no attribute 'group'
+        except AttributeError:
+            pass
+
+        dwi = local.path(eddy_epi_prefix+ '_dwi.nii.gz')
+        bval = dwi.with_suffix('.bval', depth=2)
+        bvec = dwi.with_suffix('.bvec', depth=2)
+
+        # adding EdEp suffix to be consistent with dwi
+        mask_prefix = dwi.rsplit('_desc-')[0]
+        desc= re.search('_desc-(.+?)_mask.nii.gz', basename(self.input()[1]['mask'])).group(1)
+        desc= desc+ 'EdEp'
+        mask_prefix= local.path(mask_prefix+ '_desc-'+ desc)
+
+        mask = _mask_name(mask_prefix, self.slicer_exec, False)
+
+        bse_prefix= dwi._path
+        desc= re.search('_desc-(.+?)_dwi.nii.gz', bse_prefix).group(1)
+        desc= 'dwi'+ desc
+        bse= local.path(bse_prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
+
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
+
 
 
 
