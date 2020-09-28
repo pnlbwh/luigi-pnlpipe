@@ -18,11 +18,14 @@ from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, _mask_nam
 
 class SelectDwiFiles(ExternalTask):
     id = Parameter()
+    ses = Parameter()
     bids_data_dir = Parameter()
     dwi_template = Parameter(default='')
 
     def output(self):
-        dwi= glob(pjoin(abspath(self.bids_data_dir), self.dwi_template.replace('$', self.id)))[0]
+        dwi_template= self.dwi_template.replace('{ses}',self.ses)
+        dwi_template= dwi_template.replace('{id}', self.id)
+        dwi= glob(pjoin(abspath(self.bids_data_dir), dwi_template))[0]
         bval= dwi.split('.nii')[0]+'.bval'
         bvec= dwi.split('.nii')[0]+'.bvec'
 
