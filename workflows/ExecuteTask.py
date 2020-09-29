@@ -112,19 +112,27 @@ if __name__ == '__main__':
                                            id=id,
                                            t1_template=args.t1_template))
 
-                if args.task=='CnnMask':
+                elif args.task=='CnnMask':
                     jobs.append(CnnMask(bids_data_dir=args.bids_data_dir,
-                                           derivatives_dir=derivatives_dir,
-                                           id=id,
-                                           ses=ses,
-                                           dwi_template=args.dwi_template))
-
-                elif args.task=='PnlEddy' or args.task=='FslEddy' or \
-                    args.task=='TopupEddy' or args.task=='CnnMaskPnlEddy':
-                    jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
                                         derivatives_dir=derivatives_dir,
                                         id=id,
-                                        pa_ap_template=args.dwi_template))
+                                        ses=ses,
+                                        dwi_template=args.dwi_template))
+
+                elif args.task=='PnlEddy' or args.task=='FslEddy' or args.task=='CnnMaskPnlEddy':
+                    jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
+                                                derivatives_dir=derivatives_dir,
+                                                id=id,
+                                                ses=ses,
+                                                dwi_template=args.dwi_template))
+
+
+                elif args.task=='TopupEddy':
+                    jobs.append(ToupEddy(bids_data_dir=args.bids_data_dir,
+                                         derivatives_dir=derivatives_dir,
+                                         id=id,
+                                         ses=ses,
+                                         pa_ap_template=args.dwi_template))
 
 
                 elif args.task=='PnlEddyUkf':
