@@ -5,7 +5,7 @@ from luigi.util import inherits, requires
 from glob import glob
 from os.path import join as pjoin, abspath, isfile, basename, dirname
 from os import symlink
-from shutil import move
+from shutil import move, rmtree
 
 from plumbum import local
 from subprocess import Popen, check_call
@@ -16,16 +16,17 @@ from struct_pipe import StructMask
 
 from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, _mask_name, LIBDIR, TemporaryDirectory
 
+from _glob import _glob
+
 class SelectDwiFiles(ExternalTask):
     id = Parameter()
-    ses = Parameter()
+    ses = Parameter(default='')
     bids_data_dir = Parameter()
     dwi_template = Parameter(default='')
 
     def output(self):
-        dwi_template= self.dwi_template.replace('{ses}',self.ses)
-        dwi_template= dwi_template.replace('{id}', self.id)
-        dwi= glob(pjoin(abspath(self.bids_data_dir), dwi_template))[0]
+        
+        dwi_template, dwi= _glob(self.bids_data_dir, self.dwi_template, self.id, self.ses)
         bval= dwi.split('.nii')[0]+'.bval'
         bvec= dwi.split('.nii')[0]+'.bvec'
 
@@ -256,8 +257,9 @@ class BseMask(Task):
         return dict(bse= self.input(), mask=mask)
 
 
-
-@requires(DwiAlign)
+# this task is obsolete, see CnnMaskPnlEddy below
+@requires(GibbsUn)
+# @requires(DwiAlign)
 @inherits(BseMask)
 class PnlEddy(Task):
     
@@ -302,7 +304,8 @@ class PnlEddy(Task):
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
 
 
-@requires(DwiAlign,CnnMask)
+@requires(GibbsUn,CnnMask)
+# @requires(DwiAlign,CnnMask)
 class CnnMaskPnlEddy(Task):
     debug = BoolParameter(default=False)
     eddy_nproc = IntParameter(default=int(N_PROC))
@@ -334,7 +337,8 @@ class CnnMaskPnlEddy(Task):
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=self.input()[1]['mask'])
 
 
-@requires(DwiAlign,CnnMask)
+# @requires(DwiAlign,CnnMask)
+@requires(GibbsUn,CnnMask)
 class FslEddy(Task):
     
     acqp = Parameter()
@@ -344,11 +348,12 @@ class FslEddy(Task):
      
     def run(self):
         outDir= self.output()['dwi'].dirname.join('fsl_eddy')
-        outDir.mkdir()
-        outPrefix= outDir.join(self.output()['dwi'].stem)
 
         for name in ['dwi', 'bval', 'bvec']:
             if not self.output()[name].exists():
+                if outDir.exists():
+                    rmtree(outDir)
+
                 cmd = (' ').join(['fsl_eddy.py',
                                   '--dwi', self.input()[0]['dwi'],
                                   '--bvals', self.input()[0]['bval'],
@@ -358,16 +363,18 @@ class FslEddy(Task):
                                   '--index', self.index,
                                   '--config', self.config,
                                   '--eddy-cuda' if self.useGpu else '',
-                                  '-o', outPrefix])
+                                  '--out', outDir])
                 p = Popen(cmd, shell=True)
                 p.wait()
                 
-                version_file= self.output()['dwi'].dirname.join('fsl_version.txt')
+                version_file= outDir.join('fsl_version.txt')
                 check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell= True)
                 
-                move(outPrefix+'.nii.gz',self.output()['dwi'].dirname)
-                move(outPrefix+'.bval',self.output()['dwi'].dirname)
-                move(outPrefix+'.bvec',self.output()['dwi'].dirname)
+                # fsl_eddy.py writes with this outPrefix
+                outPrefix= outDir.join(self.input()[0]['dwi'].stem)+'_Ed'
+                move(outPrefix+'.nii.gz',self.output()['dwi'])
+                move(outPrefix+'.bval',self.output()['bval'])
+                move(outPrefix+'.bvec',self.output()['bvec'])
 
                 break
 
@@ -529,12 +536,13 @@ class TopupEddy(Task):
         return (pa, pa_mask, ap, ap_mask)
 
     def run(self):
-        pass
 
         outDir = self.output()['dwi'].dirname.join('fsl_topup_eddy')
 
         for name in ['dwi', 'bval', 'bvec']:
             if not self.output()[name].exists():
+                if outDir.exists():
+                   rmtree(outDir)
                 cmd = (' ').join(['fsl_topup_epi_eddy.py',
                                   '--imain', '{},{}'.format(self.input()[0]['dwi'],self.input()[2]['dwi']),
                                   '--bvals', '{},{}'.format(self.input()[0]['bval'],self.input()[2]['bval']),
