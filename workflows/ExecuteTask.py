@@ -128,7 +128,7 @@ if __name__ == '__main__':
 
 
                 elif args.task=='TopupEddy':
-                    jobs.append(ToupEddy(bids_data_dir=args.bids_data_dir,
+                    jobs.append(TopupEddy(bids_data_dir=args.bids_data_dir,
                                          derivatives_dir=derivatives_dir,
                                          id=id,
                                          ses=ses,
