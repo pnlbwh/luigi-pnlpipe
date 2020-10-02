@@ -515,7 +515,8 @@ class TopupEddy(Task):
     numb0 = Parameter(default=1)
     whichVol = Parameter(default='1')
     scale = Parameter(default=2)
-
+    
+    TopupOutDir= Parameter(default='fsl_eddy')
 
     def requires(self):
 
@@ -537,7 +538,7 @@ class TopupEddy(Task):
 
     def run(self):
 
-        outDir = self.output()['dwi'].dirname.join('fsl_topup_eddy')
+        outDir = self.output()['dwi'].dirname.join(self.TopupOutDir)
 
         for name in ['dwi', 'bval', 'bvec']:
             if not self.output()[name].exists():
