@@ -12,14 +12,16 @@ from time import sleep
 
 from scripts.util import N_PROC, FILEDIR, QC_POLL, _mask_name
 
+from _glob import _glob
+
 class SelectStructFiles(ExternalTask):
     id = Parameter()
+    ses = Parameter(default='')
     bids_data_dir = Parameter()
     struct_template = Parameter(default='')
 
     def output(self):
-        struct = glob(pjoin(abspath(self.bids_data_dir), self.struct_template.replace('$', self.id)))[0]
-
+        _, struct= _glob(self.bids_data_dir, self.struct_template, self.id, self.ses)
         return local.path(struct)
 
 
@@ -315,4 +317,5 @@ class Freesurfer(Task):
 
     def output(self):
         return local.path(pjoin(self.input()[0]['n4corr'].dirname, self.fs_dirname))
+
 

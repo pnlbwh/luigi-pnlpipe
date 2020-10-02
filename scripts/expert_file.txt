@@ -1,2 +1,1 @@
-mris_inflate -n 30
-
+../../pnlNipype/scripts/expert_file.txt
