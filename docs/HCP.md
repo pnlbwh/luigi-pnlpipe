@@ -65,10 +65,12 @@ optional arguments:
                         a session ID
   --dwi-template DWI_TEMPLATE
                         glob bids-data-dir/dwi-template to find input data
-                        (default: sub-$/dwi/*_dwi.nii.gz)
+                        e.g. sub-*/ses-*/dwi/*_dwi.nii.gz 
+                        (default: sub-*/dwi/*_dwi.nii.gz)
   --t1-template T1_TEMPLATE
                         glob bids-data-dir/t1-template to find input data
-                        (default: sub-$/anat/*_T1w.nii.gz)
+                        e.g. sub-*/ses-*/anat/*_T1w.nii.gz 
+                        (default: sub-*/anat/*_T1w.nii.gz)
   --t2-template T2_TEMPLATE
                         glob bids-data-dir/t2-template to find input data
                         (default: None)
