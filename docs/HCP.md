@@ -213,11 +213,11 @@ exec/ExecuteTask --task StructMask \
 
 ## Run FreeSurfer
 
-![](./Freesurfer.png)
+![](./FreesurferN4Bias.png)
 
 We use T1w and/or T2w images to perform FreeSurfer segmentation. T1w and/or T2w images are multiplied by 
-their respective masks and passed through `N4BiasFieldCorrection`(see modified [workflow](./FreesurferN4Bias.png)). This intermediate step does not require 
-any user interface and so not described here. On the other hand, since the method for obtaining T1w masks is 
+their respective masks and passed through `N4BiasFieldCorrection`. This intermediate step does not require 
+any user intervention. On the other hand, since the method for obtaining T1w masks is 
 dependent upon T2w MABS masks, the latter have to be generated separately before running `Freesurfer`. The `Freesurfer` 
 task will generate T1w masks to fulfill its requirement.
 
