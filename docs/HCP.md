@@ -213,7 +213,7 @@ exec/ExecuteTask --task StructMask \
 
 ## Run FreeSurfer
 
-![](./FreesurferN4Bias.png)
+![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/FreesurferN4Bias.png)
 
 We use T1w and/or T2w images to perform FreeSurfer segmentation. T1w and/or T2w images are multiplied by 
 their respective masks and passed through `N4BiasFieldCorrection`. This intermediate step does not require 
@@ -414,7 +414,7 @@ epi_nproc: 8
 Notice the use of `[DEFAULT]` section that allows sharing of parameters across various tasks. Refer to the flowchart of 
 `FslEddyEpi`:
 
-![](./FslEddyEpi.png)
+![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/FslEddyEpi.png)
 
 `FslEddyEpi` task directly depends upon `FslEddy` and `StructMask` tasks. So the parameters of the latter two also become 
 the parameters of the top-level task. On the other hand, defining task specific parameters under `FslEddy` and `StructMask` 
