@@ -3,7 +3,7 @@
 from luigi import Task, Parameter, BoolParameter, IntParameter
 from luigi.util import inherits, requires
 
-from dwi_pipe import PnlEddy, PnlEddyEpi, Ukf, TopupEddy
+from dwi_pipe import PnlEddy, PnlEddyUkf, TopupEddy
 from struct_pipe import Freesurfer, StructMask
 
 from plumbum import local
@@ -35,7 +35,7 @@ class Fs2Dwi(Task):
         return local.path(self.input()[1]['dwi'].dirname.replace('dwi','fs2dwi'))
 
 
-@inherits(Fs2Dwi,Ukf)
+@inherits(Fs2Dwi,PnlEddyUkf)
 class Wmql(Task):
 
     wmql_out= Parameter()

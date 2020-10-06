@@ -177,7 +177,7 @@ class N4BiasCorrect(Task):
 
 
 @inherits(StructMask)
-class FreesurferUnCorrect(Task):
+class FreesurferAlign(Task):
 
     t1_template= Parameter()
     t1_csvFile = Parameter(default='')
@@ -247,7 +247,8 @@ class FreesurferUnCorrect(Task):
 
     def output(self):
         return local.path(pjoin(self.input()[0]['aligned'].dirname, self.fs_dirname))
-        
+
+
 @inherits(N4BiasCorrect)
 class Freesurfer(Task):
 
