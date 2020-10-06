@@ -12,6 +12,7 @@ source /data/pnl/soft/pnlpipe3/bashrc3
 export LUIGI_CONFIG_PATH=/path/to/your/pipe_params.cfg
 
 caselist=/data/pnl/INTRuST_BIDS/caselist.txt
+sessions=/data/pnl/INTRuST_BIDS/sessions.txt
 
 # replace NUM_CASES, NUM_PARALLEL, big-multi, and NUM_CORES variables as required by your data
 
@@ -26,10 +27,10 @@ caselist=/data/pnl/INTRuST_BIDS/caselist.txt
 # run command
 id=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
 
-/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task Wmql \
+/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task Freesurfer \
 --bids-data-dir ~/Downloads/INTRuST_BIDS -c $id \
---t1-template sub-id/anat/*_T1w.nii.gz \
---t2-template sub-id/anat/*_T2w.nii.gz \
---dwi-template sub-id/dwi/*_dwi.nii.gz
-
+--t1-template sub-*/ses-*/anat/*_T1w.nii.gz \
+--t2-template sub-*/ses-*/anat/*_T2w.nii.gz \
+--dwi-template sub-*/ses-*/dwi/*_dwi.nii.gz
+-s ${sessions}
 
