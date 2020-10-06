@@ -47,7 +47,7 @@ usage: ExecuteTask.py [-h] --bids-data-dir BIDS_DATA_DIR -c C -s S
                       [--dwi-template DWI_TEMPLATE]
                       [--t1-template T1_TEMPLATE] [--t2-template T2_TEMPLATE]
                       --task
-                      {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,CnnMaskPnlEddy,FslEddy,FslEddyEpi,TopupEddy,Ukf,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
+                      {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
                       [--num-workers NUM_WORKERS]
                       [--derivatives-name DERIVATIVES_NAME]
 
@@ -74,7 +74,7 @@ optional arguments:
   --t2-template T2_TEMPLATE
                         glob bids-data-dir/t2-template to find input data
                         (default: None)
-  --task {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,CnnMaskPnlEddy,FslEddy,FslEddyEpi,TopupEddy,Ukf,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
+  --task {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
                         number of Luigi workers (default: None)
   --num-workers NUM_WORKERS
                         number of Luigi workers (default: 1)
