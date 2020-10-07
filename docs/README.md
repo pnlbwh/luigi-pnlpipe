@@ -39,12 +39,9 @@ Table of Contents
    * [Workflows](#workflows)
       * [StructMask](#structmask)
       * [Freesurfer](#freesurfer)
-      * [PnlEddy](#pnleddy)
-      * [PnlEddyEpi](#pnleddyepi)
+      * [FslEddyEpi](#fsleddyepi)
       * [Ukf](#ukf)
       * [Fs2Dwi](#fs2dwi)
-      * [Wmql](#wmql)
-      * [Wmqlqc](#wmqlqc-1)
    * [Parameters](#parameters)
       * [Mandatory](#mandatory)
       * [Optional](#optional)
@@ -525,15 +522,17 @@ You should provide value for each of the arguments or at least the mandatory one
 
 ## Freesurfer
 
-![](Freesurfer.png)
+![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/FreesurferN4Bias.png)
 
-## PnlEddy
+## FslEddyEpi
 
-Left branch of *PnlEddyEpi*
+![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/FslEddyEpi.png)
 
-## PnlEddyEpi
+*FslEddy* and *PnlEddy* tasks are represented by the left branch in the above. Again, when *PnlEddy* is used, the task 
+name becomes *PnlEddyEpi*.
 
-![](PnlEddyEpi.png)
+When two opposing acquisitions--AP and PA are available, eddy+epi correction can be done in a more sophisticated way 
+through [TopupEddy]().
 
 ## Ukf
 
@@ -541,15 +540,9 @@ Left branch of *PnlEddyEpi*
 
 ## Fs2Dwi
 
-![](Fs2Dwi.png)
+![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/Fs2Dwi.png)
 
-## Wmql
 
-See *Wmqlqc*
-
-## Wmqlqc
-
-![](Wmqlqc.png)
 
 
 
