@@ -478,20 +478,20 @@ You should provide value for each of the arguments or at least the mandatory one
 
     luigi --module struct_pipe StructMask
     --id ID
+    --ses SES
     --bids-data-dir BIDS_DATA_DIR
     --struct-template STRUCT_TEMPLATE
-    --struct-align-prefix STRUCT_ALIGN_PREFIX
-    --mabs-mask-prefix MABS_MASK_PREFIX
+    --derivatives-dir DERIVATIVES_DIR
     --csvFile CSVFILE
     --debug
     --fusion FUSION
     --mabs-mask-nproc MABS_MASK_NPROC
-    --model-img MODEL_IMG
-    --model-mask MODEL_MASK
+    --ref-img REF_IMG
+    --ref-mask REF_MASK
     --reg-method REG_METHOD
     --slicer-exec SLICER_EXEC
     --mask-qc
-    
+
 
 ### From Python/IPython
 
@@ -501,20 +501,18 @@ You should provide value for each of the arguments or at least the mandatory one
     from luigi import build
     
     build([StructMask(id= '001',
+                      ses= 'BWH01',
                       bids_data_dir= '/home/tb571/Downloads/INTRUST_BIDS',
                       struct_template= 'sub-*/anat/*_T2w.nii.gz',
-                      struct_align_prefix= '/tmp/aligned',
-                      mabs_mask_prefix= '/tmp/mabs',
                       csvFile= '-t2',
                       debug= False,
                       fusion= 'avg',
                       mabs_mask_nproc= 8,
-                      model_img= '',
-                      model_mask= '',
+                      ref_img= '',
+                      ref_mask= '',
                       reg_method= '',
                       slicer_exec= '',
                       mask_qc= True)])
-
 
 
     
