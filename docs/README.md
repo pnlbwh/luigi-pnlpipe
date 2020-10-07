@@ -253,7 +253,7 @@ optional arguments:
 
 #### a. Launch job
 
-> luigi/scripts/ExecuteTask.py --task Freesurfer --bids-data-dir ~/INTRuST_BIDS -c ~/INTRuST_BIDS/caselist.txt
+> luigi/scripts/ExecuteTask.py --task Freesurfer --bids-data-dir ~/INTRuST_BIDS -c ~/INTRuST_BIDS/caselist.txt -s ~/INTRuST_BIDS/sessions.txt
 
 #### b. Monitor progress
 
@@ -367,8 +367,10 @@ exec/ExecuteTask --task StructMask \
 
 # MABS masking of T2w image for all cases and all sessions
 exec/ExecuteTask --task StructMask \
---bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt \
--s ~/Downloads/INTRuST_BIDS/sessions.txt --t2-template sub-*/anat/*_T2w.nii.gz \
+--bids-data-dir ~/Downloads/INTRuST_BIDS \
+-c ~/Downloads/INTRuST_BIDS/caselist.txt \
+-s ~/Downloads/INTRuST_BIDS/sessions.txt \
+--t2-template sub-*/anat/*_T2w.nii.gz \
 --num-workers 3
 
 ```
@@ -382,8 +384,10 @@ exec/ExecuteTask --task Freesurfer \
 
 
 # Freesurfer segmentation using both T1w and T2w image for all cases
-exec/ExecuteTask --task Freesurfer
---bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt \
+exec/ExecuteTask --task Freesurfer \
+--bids-data-dir ~/Downloads/INTRuST_BIDS \
+-c ~/Downloads/INTRuST_BIDS/caselist.txt \
+-s BWH01 \
 --t2-template sub-*/anat/*_T2w.nii.gz --t2-template sub-*/anat/*_T2w.nii.gz \ 
 --num-workers 3
 
