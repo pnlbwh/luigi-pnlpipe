@@ -214,7 +214,7 @@ exec/ExecuteTask --task StructMask \
 
 ## Run FreeSurfer
 
-![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/FreesurferN4Bias.png)
+![](https://github.com/pnlbwh/pnlNipype/tree/master/docs/FreesurferN4Bias.png)
 
 We use T1w and/or T2w images to perform FreeSurfer segmentation. T1w and/or T2w images are multiplied by 
 their respective masks and passed through `N4BiasFieldCorrection`. This intermediate step does not require 
@@ -415,7 +415,7 @@ epi_nproc: 8
 Notice the use of `[DEFAULT]` section that allows sharing of parameters across various tasks. Refer to the flowchart of 
 `FslEddyEpi`:
 
-![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/FslEddyEpi.png)
+![](https://github.com/pnlbwh/pnlNipype/tree/master/docs/FslEddyEpi.png)
 
 `FslEddyEpi` task directly depends upon `FslEddy` and `StructMask` tasks. So the parameters of the latter two also become 
 the parameters of the top-level task. On the other hand, defining task specific parameters under `FslEddy` and `StructMask` 
@@ -488,7 +488,7 @@ When two opposing acquisitions--AP and PA are available such as in Human Connect
 eddy+epi correction can be done in a more sophisticated way through FSL topup and eddy. 
 In that way, AP and PA acquisitions are processed independently until *TopupEddy*:
 
-![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/TopupEddy.png)
+![](https://github.com/pnlbwh/pnlNipype/tree/master/docs/TopupEddy.png)
 
 
 Configuration:
@@ -545,4 +545,4 @@ whichVol: 1,2
 
 After the completion of structural and diffusion pipelines, tractography pipeline can proceed as follows:
 
-![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/Fs2Dwi.png)
+![](https://github.com/pnlbwh/pnlNipype/tree/master/docs/Fs2Dwi.png)
