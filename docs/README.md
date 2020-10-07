@@ -532,7 +532,7 @@ You should provide value for each of the arguments or at least the mandatory one
 name becomes *PnlEddyEpi*.
 
 When two opposing acquisitions--AP and PA are available, eddy+epi correction can be done in a more sophisticated way 
-through [TopupEddy](README.md#run-topupeddy).
+through [TopupEddy](README.md#run-topup-eddy).
 
 ## Ukf
 
@@ -541,8 +541,6 @@ through [TopupEddy](README.md#run-topupeddy).
 ## Fs2Dwi
 
 ![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/Fs2Dwi.png)
-
-
 
 
 
@@ -578,11 +576,6 @@ Mandatory parameters are provided from command line with `exec/ExecuteTask` scri
 
 
 
-
-
-
-
-
 ## Optional
 
 Each of the `luigi-pnlpipe/scripts/*py` modules have optional parameters. The optional parameters are equipped with 
@@ -611,8 +604,8 @@ you would edit the following parameters in `struct_pipe_params.cfg`:
 
 ```ini
 [StructMask]
-model_img: /path/to/T1w/image
-model_mask: /path/to/T1w/atlas/mask
+ref_img: /path/to/T1w/image
+ref_mask: /path/to/T1w/atlas/mask
 ```
 
 
@@ -648,10 +641,8 @@ Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `PnlEddyEpi`, and `
 See [dwi_pipe_params.cfg](../params/struct_pipe_params.cfg)
 
 Each parameter is preceded by the task names that use the parameter. 
-You may see [Workflows](#workflows) to know which requisite tasks will be run as part of the task you want to run. 
+You may see [Workflows](#workflows) to know which requisite tasks are run as part of the task you want to run. 
 Then, you should edit only the parameters relevant to your task(s). 
-
-
 
 
 ### fs2dwi_pipe_params.cfg
@@ -659,8 +650,6 @@ Then, you should edit only the parameters relevant to your task(s).
 Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `PnlEddyEpi`, `Ukf`, `Fs2Dwi`, `Wmql`, and `Wmqlqc` tasks.
 
 See [fs2dwi_pipe_params.cfg](../params/struct_pipe_params.cfg)
-
-
 
 
 
