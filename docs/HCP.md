@@ -21,7 +21,7 @@ Table of Contents
       * [Create masks](#create-masks-1)
       * [Run FSL eddy and PNL epi](#run-fsl-eddy-and-pnl-epi)
       * [Run FSL eddy](#run-fsl-eddy)
-      * [Run Topup eddy](#run-topupeddy)
+      * [Run Topup eddy](#run-topup-eddy)
       
       
 Table of Contents created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
@@ -543,4 +543,6 @@ whichVol: 1,2
 
 ---
 
-After the completion of structural and diffusion pipelines, tractography pipeline can proceed according to [this](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/Fs2Dwi.png) graph.
+After the completion of structural and diffusion pipelines, tractography pipeline can proceed as follows:
+
+![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/Fs2Dwi.png)
