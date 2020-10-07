@@ -532,7 +532,7 @@ You should provide value for each of the arguments or at least the mandatory one
 name becomes *PnlEddyEpi*.
 
 When two opposing acquisitions--AP and PA are available, eddy+epi correction can be done in a more sophisticated way 
-through [TopupEddy](README.md#run-topup-eddy).
+through [TopupEddy](TUTORIAL.md#run-topup-eddy).
 
 ## Ukf
 
