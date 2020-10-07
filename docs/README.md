@@ -4,7 +4,7 @@
 
 Developed by Tashrif Billah and Sylvain Bouix, Brigham and Women's Hospital (Harvard Medical School).
 
-See the [DIAG-CTE.md](./DIAG-CTE.md) tutorial for instruction more specific to DIAGNOSE_CTE data.  
+See the [TUTORIAL.md](./TUTORIAL.md) for more instruction.  
 
 
 Table of Contents
