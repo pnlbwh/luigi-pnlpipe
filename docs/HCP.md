@@ -21,6 +21,7 @@ Table of Contents
       * [Create masks](#create-masks-1)
       * [Run FSL eddy and PNL epi](#run-fsl-eddy-and-pnl-epi)
       * [Run FSL eddy](#run-fsl-eddy)
+      * [Run Topup eddy](#run-topupeddy)
       
       
 Table of Contents created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
@@ -480,4 +481,66 @@ exec/ExecuteTask --task FslEddy \
 The mask and baseline image provided to `FslEddy` are approximated as eddy corrected mask and baseline image that can 
 be fed into later task FslEddyEpi.
 
- 
+
+## Run Topup eddy
+
+When two opposing acquisitions--AP and PA are available such as in Human Connectom Project (HCP), 
+eddy+epi correction can be done in a more sophisticated way through FSL topup and eddy. 
+In that way, AP and PA acquisitions are processed independently until *TopupEddy*:
+
+![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/TopupEddy.png)
+
+
+Configuration:
+
+```cfg
+[DEFAULT]
+
+## [CnnMask] ##
+slicer_exec:
+dwi_mask_qc: False
+model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
+
+## [TopupEddy] ##
+acqp: /data/pnl/U01_HCP_Psychosis/acqp.txt
+index: /data/pnl/U01_HCP_Psychosis/index.txt
+config: /data/pnl/U01_HCP_Psychosis/eddy_config.txt
+TopupOutDir: topup_eddy_107_dir
+numb0: 1
+whichVol: 1
+scale: 2
+
+
+[CnnMask]
+
+[TopupEddy]
+```
+
+Run it:
+
+```bash
+export LUIGI_CONFIG_PATH=/path/to/fsl_eddy_params.cfg
+
+exec/ExecuteTask --task TopupEddy \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 -s BWH01 \
+--dwi-template sub-*/ses-*/dwi/*_acq-AP_*_dwi.nii.gz,sub-*/ses-*/dwi/*_acq-PA_*_dwi.nii.gz
+```
+
+Notice that `--dwi-template` is followed by two templates, one for AP and the other for PA acquisition. Output prefix 
+for corrected data is determined as follows:
+
+```bash
+# correct only the first volume
+whichVol: 1
+    _acq-AP_*_dir-107_* 
+    
+# correct both volumes
+whichVol: 1,2
+    # omit _acq-*_, double _dir-*_
+    *_dir-214_*
+```
+
+
+---
+
+After the completion of structural and diffusion pipelines, tractography pipeline can proceed according to [this](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/Fs2Dwi.png) graph.
