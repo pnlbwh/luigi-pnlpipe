@@ -543,6 +543,10 @@ through [TopupEddy](README.md#run-topup-eddy).
 ![](https://github.com/pnlbwh/pnlNipype/blob/script-integrate/docs/Fs2Dwi.png)
 
 
+---
+
+Additionally, some more complicated flowcharts can be found [here](https://github.com/pnlbwh/luigi-pnlpipe/blob/hcp/docs/).
+
 
 # Parameters
 
