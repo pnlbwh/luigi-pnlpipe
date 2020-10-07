@@ -21,6 +21,7 @@ Table of Contents
       * [Create masks](#create-masks-1)
       * [Run FSL eddy and PNL epi](#run-fsl-eddy-and-pnl-epi)
       * [Run FSL eddy](#run-fsl-eddy)
+      * [Run Topup eddy](#run-topup-eddy)
       
       
 Table of Contents created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
@@ -43,11 +44,11 @@ some of which are optional. Task specific parameters are provided in a configura
 environment variable `LUIGI_CONFIG_PATH`.
 
 ```bash
-usage: ExecuteTask.py [-h] --bids-data-dir BIDS_DATA_DIR -c C
+usage: ExecuteTask.py [-h] --bids-data-dir BIDS_DATA_DIR -c C -s S
                       [--dwi-template DWI_TEMPLATE]
                       [--t1-template T1_TEMPLATE] [--t2-template T2_TEMPLATE]
                       --task
-                      {StructMask,CnnMaskFreesurfer,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc}
+                      {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
                       [--num-workers NUM_WORKERS]
                       [--derivatives-name DERIVATIVES_NAME]
 
@@ -59,18 +60,22 @@ optional arguments:
   -h, --help            show this help message and exit
   --bids-data-dir BIDS_DATA_DIR
                         /path/to/bids/data/directory
-  -c C                  a single caseid or a .txt file where each line is a
-                        caseid
+  -c C                  a single case ID or a .txt file where each line is a
+                        case ID
+  -s S                  a single session ID or a .txt file where each line is
+                        a session ID
   --dwi-template DWI_TEMPLATE
-                        glob bids-data-dir/t1-template to find input data
-                        (default: sub-$/dwi/*_dwi.nii.gz)
+                        glob bids-data-dir/dwi-template to find input data
+                        e.g. sub-*/ses-*/dwi/*_dwi.nii.gz 
+                        (default: sub-*/dwi/*_dwi.nii.gz)
   --t1-template T1_TEMPLATE
-                        glob bids-data-dir/t2-template to find input data
-                        (default: sub-$/anat/*_T1w.nii.gz)
+                        glob bids-data-dir/t1-template to find input data
+                        e.g. sub-*/ses-*/anat/*_T1w.nii.gz 
+                        (default: sub-*/anat/*_T1w.nii.gz)
   --t2-template T2_TEMPLATE
                         glob bids-data-dir/t2-template to find input data
                         (default: None)
-  --task {StructMask,Freesurfer,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc}
+  --task {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
                         number of Luigi workers (default: None)
   --num-workers NUM_WORKERS
                         number of Luigi workers (default: 1)
@@ -132,12 +137,12 @@ export LUIGI_CONFIG_PATH=/path/to/mabs_mask_params.cfg
 # individual
 # MABS masking of T2w image for case 1001
 exec/ExecuteTask --task StructMask \
---bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --t2-template sub-$/ses-01/anat/*_T2w.nii.gz
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --t2-template sub-*/ses-01/anat/*_T2w.nii.gz
 
 # group
 # MABS masking of T2w image for all cases
 exec/ExecuteTask --task StructMask \
---bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c /path/to/caselist.txt --t2-template sub-id/anat/*_T2w.nii.gz \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c /path/to/caselist.txt --t2-template sub-*/anat/*_T2w.nii.gz \
 --num-workers 8
 ```
 
@@ -201,7 +206,7 @@ Putting them all together:
 export LUIGI_CONFIG_PATH=/path/to/mask_warping_params.cfg
 
 exec/ExecuteTask --task StructMask \
---bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --t1-template sub-$/ses-01/anat/*_T1w.nii.gz
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --t1-template sub-*/ses-01/anat/*_T1w.nii.gz
 ```
 
 **NOTE** Creating T1w and AXT2 masks separately is not required. They can be generated as part of 
@@ -209,11 +214,11 @@ exec/ExecuteTask --task StructMask \
 
 ## Run FreeSurfer
 
-![](./Freesurfer.png)
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/FreesurferN4Bias.png)
 
 We use T1w and/or T2w images to perform FreeSurfer segmentation. T1w and/or T2w images are multiplied by 
-their respective masks and passed through `N4BiasFieldCorrection`(see modified [workflow](./FreesurferN4Bias.png)). This intermediate step does not require 
-any user interface and so not described here. On the other hand, since the method for obtaining T1w masks is 
+their respective masks and passed through `N4BiasFieldCorrection`. This intermediate step does not require 
+any user intervention. On the other hand, since the method for obtaining T1w masks is 
 dependent upon T2w MABS masks, the latter have to be generated separately before running `Freesurfer`. The `Freesurfer` 
 task will generate T1w masks to fulfill its requirement.
 
@@ -255,7 +260,7 @@ The purpose of this introduction would be clear in the following section. Run `F
 export LUIGI_CONFIG_PATH=/path/to/fs_with_t1.cfg
 
 exec/ExecuteTask --task Freesurfer \
---bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --t1-template sub-$/ses-01/anat/*_T1w.nii.gz
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --t1-template sub-*/ses-01/anat/*_T1w.nii.gz
 ```
 
 
@@ -307,8 +312,8 @@ export LUIGI_CONFIG_PATH=/path/to/fs_with_both_t1_t2.cfg
 
 exec/ExecuteTask --task Freesurfer \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 \
---t1-template sub-$/ses-01/anat/*_T1w.nii.gz \
---t2-template sub-$/ses-01/anat/*_T2w.nii.gz
+--t1-template sub-*/ses-01/anat/*_T1w.nii.gz \
+--t2-template sub-*/ses-01/anat/*_T2w.nii.gz
 ```
 
 
@@ -335,7 +340,7 @@ Run `CnnMask` task as follows:
 export LUIGI_CONFIG_PATH=/path/to/cnn_mask_params.cfg
 
 exec/ExecuteTask --task CnnMask \
---bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --dwi-template sub-$/ses-01/dwi/*_dwi.nii.gz
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz
 ```
 
 As it was done for saving quality checked structural masks, quality checked dwi masks must be saved 
@@ -410,7 +415,7 @@ epi_nproc: 8
 Notice the use of `[DEFAULT]` section that allows sharing of parameters across various tasks. Refer to the flowchart of 
 `FslEddyEpi`:
 
-![](./FslEddyEpi.png)
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/FslEddyEpi.png)
 
 `FslEddyEpi` task directly depends upon `FslEddy` and `StructMask` tasks. So the parameters of the latter two also become 
 the parameters of the top-level task. On the other hand, defining task specific parameters under `FslEddy` and `StructMask` 
@@ -424,8 +429,8 @@ export LUIGI_CONFIG_PATH=/path/to/dwi_pipe_params.cfg
 
 exec/ExecuteTask --task FslEddyEpi \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 \
---dwi-template sub-$/ses-01/dwi/*_dwi.nii.gz \
---t2-template sub-$/ses-01/anat/*_AXT2.nii.gz
+--dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz \
+--t2-template sub-*/ses-01/anat/*_AXT2.nii.gz
 ```
 
 A few things to note here:
@@ -470,10 +475,74 @@ Run it:
 export LUIGI_CONFIG_PATH=/path/to/fsl_eddy_params.cfg
 
 exec/ExecuteTask --task FslEddy \
---bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --dwi-template sub-$/ses-01/dwi/*_dwi.nii.gz
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz
 ```
 
 The mask and baseline image provided to `FslEddy` are approximated as eddy corrected mask and baseline image that can 
 be fed into later task FslEddyEpi.
 
- 
+
+## Run Topup eddy
+
+When two opposing acquisitions--AP and PA are available such as in Human Connectom Project (HCP), 
+eddy+epi correction can be done in a more sophisticated way through FSL topup and eddy. 
+In that way, AP and PA acquisitions are processed independently until *TopupEddy*:
+
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/TopupEddy.png)
+
+
+Configuration:
+
+```cfg
+[DEFAULT]
+
+## [CnnMask] ##
+slicer_exec:
+dwi_mask_qc: False
+model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
+
+## [TopupEddy] ##
+acqp: /data/pnl/U01_HCP_Psychosis/acqp.txt
+index: /data/pnl/U01_HCP_Psychosis/index.txt
+config: /data/pnl/U01_HCP_Psychosis/eddy_config.txt
+TopupOutDir: topup_eddy_107_dir
+numb0: 1
+whichVol: 1
+scale: 2
+
+
+[CnnMask]
+
+[TopupEddy]
+```
+
+Run it:
+
+```bash
+export LUIGI_CONFIG_PATH=/path/to/fsl_eddy_params.cfg
+
+exec/ExecuteTask --task TopupEddy \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 -s BWH01 \
+--dwi-template sub-*/ses-*/dwi/*_acq-AP_*_dwi.nii.gz,sub-*/ses-*/dwi/*_acq-PA_*_dwi.nii.gz
+```
+
+Notice that `--dwi-template` is followed by two templates, one for AP and the other for PA acquisition. Output prefix 
+for corrected data is determined as follows:
+
+```bash
+# correct only the first volume
+whichVol: 1
+    _acq-AP_*_dir-107_* 
+    
+# correct both volumes
+whichVol: 1,2
+    # omit _acq-*_, double _dir-*_
+    *_dir-214_*
+```
+
+
+---
+
+After the completion of structural and diffusion pipelines, tractography pipeline can proceed as follows:
+
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/Fs2Dwi.png)

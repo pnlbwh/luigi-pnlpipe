@@ -5,8 +5,8 @@ from conversion import read_cases
 from luigi import build, configuration
 from _define_outputs import IO
 from struct_pipe import StructMask, Freesurfer
-from dwi_pipe import CnnMask, PnlEddy, CnnMaskPnlEddy, FslEddy, PnlEddyEpi, FslEddyEpi, \
-    TopupEddy, Ukf, PnlEddyUkf
+from dwi_pipe import CnnMask, PnlEddy, FslEddy, FslEddyEpi, \
+    TopupEddy, PnlEddyUkf
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc
 from scripts.util import abspath, isfile, pjoin, LIBDIR
 
@@ -24,16 +24,16 @@ if __name__ == '__main__':
                         help='/path/to/bids/data/directory')
 
     parser.add_argument('-c', required= True, type=str, default= argparse.SUPPRESS,
-                        help='a single caseid or a .txt file where each line is a caseid')
+                        help='a single case ID or a .txt file where each line is a case ID')
 
     parser.add_argument('-s', required= True, type=str, default= argparse.SUPPRESS,
-                        help='a single caseid or a .txt file where each line is a caseid')
+                        help='a single session ID or a .txt file where each line is a session ID')
     
-    parser.add_argument('--dwi-template', type=str, default='sub-$/dwi/*_dwi.nii.gz',
-                        help='glob bids-data-dir/dwi-template to find input data')
+    parser.add_argument('--dwi-template', type=str, default='sub-*/dwi/*_dwi.nii.gz',
+                        help='glob bids-data-dir/dwi-template to find input data e.g. sub-*/ses-*/dwi/*_dwi.nii.gz')
 
-    parser.add_argument('--t1-template', type=str, default='sub-$/anat/*_T1w.nii.gz',
-                        help='glob bids-data-dir/t1-template to find input data')
+    parser.add_argument('--t1-template', type=str, default='sub-*/anat/*_T1w.nii.gz',
+                        help='glob bids-data-dir/t1-template to find input data e.g. sub-*/ses-*/anat/*_T1w.nii.gz')
 
     parser.add_argument('--t2-template', type=str,
                         help='glob bids-data-dir/t2-template to find input data')
@@ -41,9 +41,9 @@ if __name__ == '__main__':
     parser.add_argument('--task', type=str, required=True, help='number of Luigi workers',
                         choices=['StructMask', 'Freesurfer',
                                  'CnnMask',
-                                 'PnlEddy', 'PnlEddyEpi', 'CnnMaskPnlEddy',
+                                 'PnlEddy', 'PnlEddyEpi',
                                  'FslEddy', 'FslEddyEpi', 'TopupEddy',
-                                 'Ukf', 'PnlEddyUkf',
+                                 'PnlEddyUkf',
                                  'Fs2Dwi', 'Wmql', 'Wmqlqc'])
 
     parser.add_argument('--num-workers', type=int, default=1, help='number of Luigi workers')
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     jobs = []
     for ses in sessions:
         for id in cases:
-            # inter = IO(id, args.bids_data_dir, args.derivatives_dir)
+
 
             if args.t2_template:
 
@@ -119,7 +119,7 @@ if __name__ == '__main__':
                                         ses=ses,
                                         dwi_template=args.dwi_template))
 
-                elif args.task=='PnlEddy' or args.task=='FslEddy' or args.task=='CnnMaskPnlEddy':
+                elif args.task=='PnlEddy' or args.task=='FslEddy':
                     jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
                                                 derivatives_dir=derivatives_dir,
                                                 id=id,
@@ -142,7 +142,7 @@ if __name__ == '__main__':
                                            dwi_template=args.dwi_template))
 
 
-
+                # FIXME
                 elif args.task=='Wmqlqc':
                     jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
                                        id=id,

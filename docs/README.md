@@ -4,7 +4,7 @@
 
 Developed by Tashrif Billah and Sylvain Bouix, Brigham and Women's Hospital (Harvard Medical School).
 
-See the [DIAG-CTE.md](./DIAG-CTE.md) tutorial for instruction more specific to DIAGNOSE_CTE data.  
+See the [TUTORIAL.md](./TUTORIAL.md) for more instruction.  
 
 
 Table of Contents
@@ -39,12 +39,9 @@ Table of Contents
    * [Workflows](#workflows)
       * [StructMask](#structmask)
       * [Freesurfer](#freesurfer)
-      * [PnlEddy](#pnleddy)
-      * [PnlEddyEpi](#pnleddyepi)
+      * [FslEddyEpi](#fsleddyepi)
       * [Ukf](#ukf)
       * [Fs2Dwi](#fs2dwi)
-      * [Wmql](#wmql)
-      * [Wmqlqc](#wmqlqc-1)
    * [Parameters](#parameters)
       * [Mandatory](#mandatory)
       * [Optional](#optional)
@@ -165,15 +162,15 @@ Once data is organized as above, you can define the following arguments:
     
     --bids-data-dir ~/Downloads/INTRuST_BIDS 
     -c ~/Downloads/INTRuST_BIDS/caselist.txt    
-    --t1-template sub-id/anat/*_T1w.nii.gz
-    --t2-template sub-id/anat/*_T2w.nii.gz
-    --dwi-template sub-id/dwi/*_dwi.nii.gz
+    --t1-template sub-*/anat/*_T1w.nii.gz
+    --t2-template sub-*/anat/*_T2w.nii.gz
+    --dwi-template sub-*/dwi/*_dwi.nii.gz
     
     
-When *luigi-pnlpipe* globs `bids-data-dir/sub-id/anat/*_T1w.nii.gz` with `id` replaced by each line in `caselist.txt`, 
-it will find the input data.
+When *luigi-pnlpipe* globs `bids-data-dir/sub-*/anat/*_T1w.nii.gz` replacing `*` in `sub-*` 
+with each line from `caselist.txt`, it will find the input data.
 
-Finally, output will go to `derivatives/luigi-pnlpipe` directory by default, again following BIDS convention.
+Finally, output will go to `derivatives/pnlpipe` directory by default, again following BIDS convention.
         
 
 ## 2. Source pnlpipe3 environment
@@ -206,11 +203,11 @@ moment to familiarize yourself about its functionality.
 > luigi-pnlpipe/exec/ExecuteTask -h
 
 ```bash
-usage: ExecuteTask.py [-h] --bids-data-dir BIDS_DATA_DIR -c C
+usage: ExecuteTask.py [-h] --bids-data-dir BIDS_DATA_DIR -c C -s S
                       [--dwi-template DWI_TEMPLATE]
                       [--t1-template T1_TEMPLATE] [--t2-template T2_TEMPLATE]
                       --task
-                      {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc}
+                      {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
                       [--num-workers NUM_WORKERS]
                       [--derivatives-name DERIVATIVES_NAME]
 
@@ -222,18 +219,22 @@ optional arguments:
   -h, --help            show this help message and exit
   --bids-data-dir BIDS_DATA_DIR
                         /path/to/bids/data/directory
-  -c C                  a single caseid or a .txt file where each line is a
-                        caseid
+  -c C                  a single case ID or a .txt file where each line is a
+                        case ID
+  -s S                  a single session ID or a .txt file where each line is
+                        a session ID
   --dwi-template DWI_TEMPLATE
-                        glob bids-data-dir/t1-template to find input data
-                        (default: sub-$/dwi/*_dwi.nii.gz)
+                        glob bids-data-dir/dwi-template to find input data
+                        e.g. sub-*/ses-*/dwi/*_dwi.nii.gz (default:
+                        sub-*/dwi/*_dwi.nii.gz)
   --t1-template T1_TEMPLATE
-                        glob bids-data-dir/t2-template to find input data
-                        (default: sub-$/anat/*_T1w.nii.gz)
+                        glob bids-data-dir/t1-template to find input data e.g.
+                        sub-*/ses-*/anat/*_T1w.nii.gz (default:
+                        sub-*/anat/*_T1w.nii.gz)
   --t2-template T2_TEMPLATE
                         glob bids-data-dir/t2-template to find input data
                         (default: None)
-  --task {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc}
+  --task {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
                         number of Luigi workers (default: None)
   --num-workers NUM_WORKERS
                         number of Luigi workers (default: 1)
@@ -249,7 +250,7 @@ optional arguments:
 
 #### a. Launch job
 
-> luigi/scripts/ExecuteTask.py --task Freesurfer --bids-data-dir ~/INTRuST_BIDS -c ~/INTRuST_BIDS/caselist.txt
+> luigi/scripts/ExecuteTask.py --task Freesurfer --bids-data-dir ~/INTRuST_BIDS -c ~/INTRuST_BIDS/caselist.txt -s ~/INTRuST_BIDS/sessions.txt
 
 #### b. Monitor progress
 
@@ -356,14 +357,17 @@ variable to the path of your edited parameter file.
 ## Structural masking
 
 ```bash
-# MABS masking of T1w image for case 003GNX007
+# MABS masking of T1w image for case 003GNX007, session BWH01
 exec/ExecuteTask --task StructMask \
---bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --t1-template sub-id/anat/*_T1w.nii.gz
+--bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 -s BWH01 --t1-template sub-*/anat/*_T1w.nii.gz
 
 
-# MABS masking of T2w image for all cases
+# MABS masking of T2w image for all cases and all sessions
 exec/ExecuteTask --task StructMask \
---bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt --t2-template sub-id/anat/*_T2w.nii.gz \
+--bids-data-dir ~/Downloads/INTRuST_BIDS \
+-c ~/Downloads/INTRuST_BIDS/caselist.txt \
+-s ~/Downloads/INTRuST_BIDS/sessions.txt \
+--t2-template sub-*/anat/*_T2w.nii.gz \
 --num-workers 3
 
 ```
@@ -373,13 +377,15 @@ exec/ExecuteTask --task StructMask \
 ```bash
 # Freesurfer segmentation using only T1w image for case 003GNX007
 exec/ExecuteTask --task Freesurfer \
---bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --t1-template sub-id/anat/*_T1w.nii.gz
+--bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --t1-template sub-*/anat/*_T1w.nii.gz
 
 
 # Freesurfer segmentation using both T1w and T2w image for all cases
-exec/ExecuteTask --task Freesurfer
---bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt \
---t2-template sub-id/anat/*_T2w.nii.gz --t2-template sub-id/anat/*_T2w.nii.gz \ 
+exec/ExecuteTask --task Freesurfer \
+--bids-data-dir ~/Downloads/INTRuST_BIDS \
+-c ~/Downloads/INTRuST_BIDS/caselist.txt \
+-s BWH01 \
+--t2-template sub-*/anat/*_T2w.nii.gz --t2-template sub-*/anat/*_T2w.nii.gz \ 
 --num-workers 3
 
 ```
@@ -389,13 +395,13 @@ exec/ExecuteTask --task Freesurfer
 ```bash
 # pnl_eddy.py requires only DWI image
 exec/ExecuteTask --task PnlEddy \
---bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --dwi-template sub-id/dwi/*_dwi.nii.gz 
+--bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --dwi-template sub-*/dwi/*_dwi.nii.gz 
 
 
 # pnl_epi.py requires a DWI and a T2w image
 exec/ExecuteTask --task PnlEddyEpi
 --bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt \
---t2-template sub-id/anat/*_T2w.nii.gz --dwi-template sub-id/dwi/*_dwi.nii.gz \
+--t2-template sub-*/anat/*_T2w.nii.gz --dwi-template sub-*/dwi/*_dwi.nii.gz \
 --num-workers 3
 
 ```
@@ -406,14 +412,14 @@ exec/ExecuteTask --task PnlEddyEpi
 # UKFTractography based on pnl_eddy.py corrected data, requires only DWI image
 exec/ExecuteTask --task Ukf
 --bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt \
---dwi-template sub-id/dwi/*_dwi.nii.gz \
+--dwi-template sub-*/dwi/*_dwi.nii.gz \
 --num-workers 3
 
 
 # UKFTractography based on pnl_epi.py corrected data, requires a DWI and a T2w image
 exec/ExecuteTask --task Ukf
 --bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt \
---t2-template sub-id/anat/*_T2w.nii.gz --dwi-template sub-id/dwi/*_dwi.nii.gz \
+--t2-template sub-*/anat/*_T2w.nii.gz --dwi-template sub-*/dwi/*_dwi.nii.gz \
 --num-workers 3
 
 ```
@@ -424,13 +430,13 @@ exec/ExecuteTask --task Ukf
 ```bash
 # Wmqlqc based on pnl_eddy.py corrected data, requires only DWI image
 exec/ExecuteTask --task Wmqlqc
---bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --dwi-template sub-id/dwi/*_dwi.nii.gz
+--bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --dwi-template sub-*/dwi/*_dwi.nii.gz
 
 
 # Wmqlqc based on pnl_epi.py corrected data, requires a DWI and a T2w image
 exec/ExecuteTask --task Wmqlqc
 --bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt \
---t2-template sub-id/anat/*_T2w.nii.gz --dwi-template sub-id/dwi/*_dwi.nii.gz \
+--t2-template sub-*/anat/*_T2w.nii.gz --dwi-template sub-*/dwi/*_dwi.nii.gz \
 --num-workers 3
 
 ```
@@ -469,20 +475,20 @@ You should provide value for each of the arguments or at least the mandatory one
 
     luigi --module struct_pipe StructMask
     --id ID
+    --ses SES
     --bids-data-dir BIDS_DATA_DIR
     --struct-template STRUCT_TEMPLATE
-    --struct-align-prefix STRUCT_ALIGN_PREFIX
-    --mabs-mask-prefix MABS_MASK_PREFIX
+    --derivatives-dir DERIVATIVES_DIR
     --csvFile CSVFILE
     --debug
     --fusion FUSION
     --mabs-mask-nproc MABS_MASK_NPROC
-    --model-img MODEL_IMG
-    --model-mask MODEL_MASK
+    --ref-img REF_IMG
+    --ref-mask REF_MASK
     --reg-method REG_METHOD
     --slicer-exec SLICER_EXEC
     --mask-qc
-    
+
 
 ### From Python/IPython
 
@@ -492,20 +498,18 @@ You should provide value for each of the arguments or at least the mandatory one
     from luigi import build
     
     build([StructMask(id= '001',
+                      ses= 'BWH01',
                       bids_data_dir= '/home/tb571/Downloads/INTRUST_BIDS',
-                      struct_template= 'sub-id/anat/*_T2w.nii.gz',
-                      struct_align_prefix= '/tmp/aligned',
-                      mabs_mask_prefix= '/tmp/mabs',
+                      struct_template= 'sub-*/anat/*_T2w.nii.gz',
                       csvFile= '-t2',
                       debug= False,
                       fusion= 'avg',
                       mabs_mask_nproc= 8,
-                      model_img= '',
-                      model_mask= '',
+                      ref_img= '',
+                      ref_mask= '',
                       reg_method= '',
                       slicer_exec= '',
                       mask_qc= True)])
-
 
 
     
@@ -518,15 +522,17 @@ You should provide value for each of the arguments or at least the mandatory one
 
 ## Freesurfer
 
-![](Freesurfer.png)
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/FreesurferN4Bias.png)
 
-## PnlEddy
+## FslEddyEpi
 
-Left branch of *PnlEddyEpi*
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/FslEddyEpi.png)
 
-## PnlEddyEpi
+*FslEddy* and *PnlEddy* tasks are represented by the left branch in the above. Again, when *PnlEddy* is used, the task 
+name becomes *PnlEddyEpi*.
 
-![](PnlEddyEpi.png)
+When two opposing acquisitions--AP and PA are available, eddy+epi correction can be done in a more sophisticated way 
+through [TopupEddy](TUTORIAL.md#run-topup-eddy).
 
 ## Ukf
 
@@ -534,16 +540,12 @@ Left branch of *PnlEddyEpi*
 
 ## Fs2Dwi
 
-![](Fs2Dwi.png)
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/Fs2Dwi.png)
 
-## Wmql
 
-See *Wmqlqc*
+---
 
-## Wmqlqc
-
-![](Wmqlqc.png)
-
+Additionally, some more complicated flowcharts can be found [here](https://github.com/pnlbwh/luigi-pnlpipe/blob/hcp/docs/).
 
 
 # Parameters
@@ -554,23 +556,28 @@ Mandatory parameters are provided from command line with `exec/ExecuteTask` scri
 
 
 ```bash
---bids-data-dir BIDS_DATA_DIR
-                    /path/to/bids/data/directory
--c C                  a single caseid or a .txt file where each line is a
-                    caseid
---dwi-template DWI_TEMPLATE
-                    glob bids-data-dir/t1-template to find input data
-                    (default: sub-id/dwi/*_dwi.nii.gz)
---t1-template T1_TEMPLATE
-                    glob bids-data-dir/t2-template to find input data
-                    (default: sub-id/anat/*_T1w.nii.gz)
---t2-template T2_TEMPLATE
-                    glob bids-data-dir/t2-template to find input data
-                    (default: None)
---task {StructMask,Freesurfer,PnlEddy,PnlEddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc}
-                    number of Luigi workers (default: None)
+  --bids-data-dir BIDS_DATA_DIR
+                        /path/to/bids/data/directory
+  -c C                  a single case ID or a .txt file where each line is a
+                        case ID
+  -s S                  a single session ID or a .txt file where each line is
+                        a session ID
+  --dwi-template DWI_TEMPLATE
+                        glob bids-data-dir/dwi-template to find input data
+                        e.g. sub-*/ses-*/dwi/*_dwi.nii.gz (default:
+                        sub-*/dwi/*_dwi.nii.gz)
+  --t1-template T1_TEMPLATE
+                        glob bids-data-dir/t1-template to find input data e.g.
+                        sub-*/ses-*/anat/*_T1w.nii.gz (default:
+                        sub-*/anat/*_T1w.nii.gz)
+  --t2-template T2_TEMPLATE
+                        glob bids-data-dir/t2-template to find input data
+                        (default: None)
+  --task {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,Ukf,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
+                        number of Luigi workers (default: None)
 
 ```
+
 
 
 ## Optional
@@ -588,39 +595,10 @@ As usual, you can check individual module parameters as `luigi-pnlpipe/scripts/a
 
 ### struct_pipe_params.cfg
 
-Used by `StructMask` and `Freesurfer` tasks.
+Used by `StructMask`, `N4BiasCorrect` and `Freesurfer` tasks.
 
-```ini
-[DEFAULT]
-mabs_mask_nproc: 8
-fusion:
-debug: False
-reg_method: rigid
-slicer_exec:
-mask_qc: False
+See [struct_pipe_params.cfg](../params/struct_pipe_params.cfg)
 
-
-[StructMask]
-csvFile:
-model_img:
-model_mask:
-
-
-[Freesurfer]
-t1_csvFile: t1
-t1_model_img:
-t1_model_mask:
-
-t2_csvFile: t2
-t2_model_img:
-t2_model_mask:
-
-freesurfer_nproc: 1
-expert_file:
-no_hires: False
-no_skullstrip: False
-
-```
 
 
 Let's say you want to create a mask for T2w image of a subject where you have already obtained T1w image from `atlas.py`. 
@@ -630,8 +608,8 @@ you would edit the following parameters in `struct_pipe_params.cfg`:
 
 ```ini
 [StructMask]
-model_img: /path/to/T1w/image
-model_mask: /path/to/T1w/atlas/mask
+ref_img: /path/to/T1w/image
+ref_mask: /path/to/T1w/atlas/mask
 ```
 
 
@@ -664,146 +642,18 @@ the mask using your favorite visualizer and save it like shown above.
 
 Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `PnlEddyEpi`, and `Ukf` tasks.
 
+See [dwi_pipe_params.cfg](../params/struct_pipe_params.cfg)
+
 Each parameter is preceded by the task names that use the parameter. 
-You may see [Workflows](#workflows) to know which requisite tasks will be run as part of the task you want to run. 
+You may see [Workflows](#workflows) to know which requisite tasks are run as part of the task you want to run. 
 Then, you should edit only the parameters relevant to your task(s). 
-
-
-```ini
-[DEFAULT]
-## SelectDwiFiles, PnlEddy, PnlEddyEpi, Ukf
-dwi_template: sub-id/dwi/*_dwi.nii.gz
-
-## StructMask, PnlEddyEpi, Ukf
-csvFile: t2
-mabs_mask_nproc: 8
-fusion:
-model_img:
-model_mask:
-reg_method: rigid
-
-## StructMask, PnlEddy, PnlEddyEpi
-debug: False
-
-## StructMask, BseBetmask, PnlEddy, PnlEddyEpi, Ukf
-slicer_exec:
-mask_qc: False
-
-## BseExtract, BseBetMask, PnlEddy, PnlEddyEpi, Ukf
-which_bse:
-b0_threshold: 50
-
-## BseBetMask, PnlEddy, PnlEddyEpi, Ukf
-bet_threshold: 0.25
-
-## PnlEddy, PnlEddyEpi, Ukf
-eddy_nproc: 4
-
-## PnlEddyEpi, Ukf
-epi_nproc: 4
-
-## Ukf
-ukf_params: --seedingThreshold,0.4,--seedsPerVoxel,1
-
-[SelectDwiFiles]
-
-[StructMask]
-
-[BseExtract]
-
-[BseBetMask]
-
-[PnlEddy]
-
-[PnlEddyEpi]
-
-[Ukf]
-
-```
-
 
 
 ### fs2dwi_pipe_params.cfg
 
 Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `PnlEddyEpi`, `Ukf`, `Fs2Dwi`, `Wmql`, and `Wmqlqc` tasks.
 
-
-```ini
-[DEFAULT]
-## SelectDwiFiles, PnlEddy, PnlEddyEpi, Ukf, Fs2Dwi, Wmql, Wmqlqc
-dwi_template: sub-id/dwi/*_dwi.nii.gz
-
-## StructMask, PnlEddyEpi, Ukf, Fs2Dwi, Wmql, Wmqlqc
-mabs_mask_nproc: 8
-fusion:
-reg_method: rigid
-
-## StructMask, PnlEddy, PnlEddyEpi, Fs2Dwi
-debug: False
-
-## StructMask, BseBetmask, PnlEddy, PnlEddyEpi, Ukf, Fs2Dwi, Wmql, Wmqlqc
-slicer_exec:
-mask_qc: True
-
-## BseExtract, PnlEddy, PnlEddyEpi, Ukf, Fs2Dwi, Wmql, Wmqlqc
-which_bse:
-b0_threshold: 50
-
-## BseBetMask, BseExtract, PnlEddy, PnlEddyEpi, Ukf, Fs2Dwi, Wmql, Wmqlqc
-bet_threshold: 0.25
-
-## PnlEddy, PnlEddyEpi, Ukf, Fs2Dwi, Wmql, Wmqlqc
-eddy_nproc: 8
-
-## PnlEddyEpi, Ukf, Fs2Dwi, Wmql, Wmqlqc
-epi_nproc: 8
-
-## Ukf, Wmql, Wmqlqc
-ukf_params: --seedingThreshold,0.4,--seedsPerVoxel,1
-
-## Freesurfer, Fs2Dwi, Wmql, Wmqlqc
-t1_csvFile: t1
-t1_model_img:
-t1_model_mask:
-t2_csvFile: t2
-t2_model_img:
-t2_model_mask:
-freesurfer_nproc: 1
-expert_file:
-no_hires: False
-no_skullstrip: False
-
-## Fs2Dwi, Wmql, Wmqlqc
-mode: direct
-
-## Wmql, Wmqlqc
-query:
-wmql_nproc: 8
-
-
-[SelectDwiFiles]
-
-[StructMask]
-
-[Freesurfer]
-
-[BseExtract]
-
-[BseBetMask]
-
-[PnlEddy]
-
-[PnlEddyEpi]
-
-[Fs2Dwi]
-
-[Ukf]
-
-[Wmql]
-
-[Wmqlqc]
-
-```
+See [fs2dwi_pipe_params.cfg](../params/struct_pipe_params.cfg)
 
 
 

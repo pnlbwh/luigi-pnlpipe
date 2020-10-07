@@ -83,7 +83,6 @@ class GibbsUn(Task):
 
 
 @requires(GibbsUn)
-# @requires(DwiAlign)
 class CnnMask(Task):
     slicer_exec = Parameter(default='')
     dwi_mask_qc= BoolParameter(default=False)
@@ -257,56 +256,9 @@ class BseMask(Task):
         return dict(bse= self.input(), mask=mask)
 
 
-# this task is obsolete, see CnnMaskPnlEddy below
-@requires(GibbsUn)
-# @requires(DwiAlign)
-@inherits(BseMask)
-class PnlEddy(Task):
-    
-    debug = BoolParameter(default=False)
-    eddy_nproc = IntParameter(default=int(N_PROC))
-
-    def run(self):
-    
-        for name in ['dwi', 'bval', 'bvec']:
-            if not self.output()[name].exists():
-                cmd = (' ').join(['pnl_eddy.py',
-                                  '-i', self.input()['dwi'],
-                                  '--bvals', self.input()['bval'],
-                                  '--bvecs', self.input()['bvec'],
-                                  '-o', self.output()['dwi'].rsplit('.nii.gz')[0],
-                                  '-d' if self.debug else '',
-                                  f'-n {self.eddy_nproc}' if self.eddy_nproc else ''])
-                p = Popen(cmd, shell=True)
-                p.wait()
-                
-                break
-
-        self.dwi= self.output()['dwi']
-        yield self.clone(BseMask)
-
-
-    def output(self):
-    
-        eddy_prefix= self.input()['dwi'].rsplit('_dwi.nii.gz')[0]+ 'Ed'                
-        dwi = local.path(eddy_prefix+ '_dwi.nii.gz')
-        bval = dwi.with_suffix('.bval', depth= 2)
-        bvec = dwi.with_suffix('.bvec', depth= 2)
-        
-        bse_prefix= dwi._path
-        desc= re.search('_desc-(.+?)_dwi.nii.gz', bse_prefix).group(1)
-        desc= 'dwi'+ desc        
-        bse= local.path(bse_prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
-        
-        eddy_bse_mask_prefix= local.path(bse.rsplit('_bse.nii.gz')[0]+ self.mask_method)
-        mask = _mask_name(eddy_bse_mask_prefix, self.slicer_exec, self.dwi_mask_qc)
-        
-        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
-
 
 @requires(GibbsUn,CnnMask)
-# @requires(DwiAlign,CnnMask)
-class CnnMaskPnlEddy(Task):
+class PnlEddy(Task):
     debug = BoolParameter(default=False)
     eddy_nproc = IntParameter(default=int(N_PROC))
 
@@ -337,7 +289,7 @@ class CnnMaskPnlEddy(Task):
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=self.input()[1]['mask'])
 
 
-# @requires(DwiAlign,CnnMask)
+
 @requires(GibbsUn,CnnMask)
 class FslEddy(Task):
     
@@ -454,57 +406,10 @@ class FslEddyEpi(Task):
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
         
 
-# ENH required, follow FslEddyEpi like eddy_epi_prefix determination in output()
-@inherits(PnlEddy,BseMask,StructMask)
-class PnlEddyEpi(Task):
-    eddy_epi_prefix = Parameter(default='')
-    eddy_epi_bse_masked_prefix = Parameter(default='')
-    eddy_epi_bse_betmask_prefix = Parameter(default='')
-    debug= BoolParameter(default=False)
-    epi_nproc= IntParameter(default=N_PROC)
-
-
-    def requires(self):
-        return dict(eddy= self.clone(PnlEddy), t2= self.clone(StructMask))
-
-    def run(self):
-    
-        for name in ['dwi', 'bval', 'bvec']:
-            if not self.output()[name].exists():        
-                cmd = (' ').join(['pnl_epi.py',
-                                  '--dwi', self.input()['eddy']['dwi'],
-                                  '--bvals', self.input()['eddy']['bval'],
-                                  '--bvecs', self.input()['eddy']['bvec'],
-                                  '--dwimask', self.input()['eddy']['mask'],
-                                  '--bse', self.input()['eddy']['bse'],
-                                  '--t2', self.input()['t2']['aligned'],
-                                  '--t2mask', self.input()['t2']['mask'],
-                                  '-o', self.eddy_epi_prefix,
-                                  '-d' if self.debug else '',
-                                  f'-n {self.epi_nproc}' if self.epi_nproc else ''])
-                p = Popen(cmd, shell=True)
-                p.wait()
-            
-                break
-
-        self.dwi= self.output()['dwi']
-        self.bse_prefix= self.eddy_epi_bse_masked_prefix
-        self.bse_betmask_prefix= self.eddy_epi_bse_betmask_prefix
-        yield self.clone(BseBetMask)
-
-    def output(self):
-        dwi = self.eddy_epi_prefix.with_suffix('.nii.gz')
-        bval = self.eddy_epi_prefix.with_suffix('.bval')
-        bvec = self.eddy_epi_prefix.with_suffix('.bvec')
-        bse = self.eddy_epi_bse_masked_prefix.with_suffix('.nii.gz')
-        
-        mask = _mask_name(self.eddy_epi_bse_betmask_prefix, self.slicer_exec, self.dwi_mask_qc)
-
-        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
+# ENH PnlEddyEpi
 
 
 @inherits(GibbsUn,CnnMask)
-# @inherits(DwiAlign, CnnMask)
 class TopupEddy(Task):
 
     pa_ap_template = Parameter()
@@ -576,10 +481,6 @@ class TopupEddy(Task):
                 break
 
 
-        '''
-        # self.dwi= self.output()['dwi']
-        # yield self.clone(BseExtract)
-        '''
 
 
     def output(self):
@@ -622,39 +523,7 @@ class TopupEddy(Task):
 
 
 
-# ENH required, should support PnlEddy, PnlEddyEpi, FslEddy FslEddyEpi
-@inherits(PnlEddy,PnlEddyEpi)
-class Ukf(Task):
-
-    tract_prefix = Parameter()
-    ukf_params = Parameter(default='')
-
-    def requires(self):
-        self.tract_prefix.dirname.mkdir()
-
-        if self.struct_template:
-            return self.clone(PnlEddyEpi)
-        else:
-            return self.clone(PnlEddy)
-
-        #TODO can be extended to include FslEddy task
-
-    def run(self):            
-        cmd = (' ').join(['ukf.py',
-                          '-i', self.input()['dwi'],
-                          '--bvals', self.input()['dwi'].with_suffix('.bval', depth=2),
-                          '--bvecs', self.input()['dwi'].with_suffix('.bvec', depth=2),
-                          '-m', self.input()['mask'],
-                          '-o', self.output(),
-                          '--params', self.ukf_params])
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-    def output(self):
-        return self.tract_prefix.with_suffix('.vtk')
-
-
-@requires(CnnMaskPnlEddy)
+@requires(PnlEddy)
 class PnlEddyUkf(Task):
 
     ukf_params = Parameter(default='')
@@ -673,5 +542,8 @@ class PnlEddyUkf(Task):
         p.wait()
 
     def output(self):
-        return local.path(self.input()['dwi'].replace('dwi','tracts')).with_suffix('.vtk', depth=2)
+        return local.path(self.input()['dwi'].replace('/dwi/', '/tracts/').replace('_dwi.nii.gz', '.vtk'))
+
+
+# ENH FslEddyUkf, PnlEddyEpiUkf, FslEddyEpiUkf, TopupEddyUkf
 
