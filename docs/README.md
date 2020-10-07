@@ -522,11 +522,11 @@ You should provide value for each of the arguments or at least the mandatory one
 
 ## Freesurfer
 
-![](https://github.com/pnlbwh/pnlNipype/tree/master/docs/FreesurferN4Bias.png)
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/FreesurferN4Bias.png)
 
 ## FslEddyEpi
 
-![](https://github.com/pnlbwh/pnlNipype/tree/master/docs/FslEddyEpi.png)
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/FslEddyEpi.png)
 
 *FslEddy* and *PnlEddy* tasks are represented by the left branch in the above. Again, when *PnlEddy* is used, the task 
 name becomes *PnlEddyEpi*.
@@ -540,7 +540,7 @@ through [TopupEddy](README.md#run-topup-eddy).
 
 ## Fs2Dwi
 
-![](https://github.com/pnlbwh/pnlNipype/tree/master/docs/Fs2Dwi.png)
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/Fs2Dwi.png)
 
 
 ---
