@@ -71,12 +71,14 @@ if __name__ == '__main__':
                     jobs.append(StructMask(bids_data_dir=args.bids_data_dir,
                                            derivatives_dir=derivatives_dir,
                                            id=id,
+                                           ses=ses,
                                            struct_template=args.t2_template))
 
                 elif args.task=='Freesurfer':
                     jobs.append(Freesurfer(bids_data_dir=args.bids_data_dir,
                                            derivatives_dir=derivatives_dir, 
                                            id=id,
+                                           ses=ses,
                                            t1_template=args.t1_template,
                                            t2_template=args.t2_template))
 
@@ -84,17 +86,19 @@ if __name__ == '__main__':
                     jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
                                                 derivatives_dir=derivatives_dir,
                                                 id=id,
+                                                ses=ses,
                                                 dwi_template=args.dwi_template,
                                                 struct_template=args.t2_template))
 
 
                 elif args.task=='Fs2Dwi':
                     jobs.append(Fs2Dwi(bids_data_dir=args.bids_data_dir,
-                                                derivatives_dir=derivatives_dir,
-                                                id=id,
-                                                pa_ap_template=args.dwi_template,
-                                                t1_template=args.t1_template,
-                                                t2_template=args.t2_template))
+                                       derivatives_dir=derivatives_dir,
+                                       id=id,
+                                       ses=ses,
+                                       pa_ap_template=args.dwi_template,
+                                       t1_template=args.t1_template,
+                                       t2_template=args.t2_template))
 
 
 
@@ -104,12 +108,14 @@ if __name__ == '__main__':
                     jobs.append(StructMask(bids_data_dir=args.bids_data_dir,
                                            derivatives_dir=derivatives_dir,
                                            id=id,
+                                           ses=ses,
                                            struct_template=args.t1_template))
 
                 elif args.task=='Freesurfer':
                     jobs.append(Freesurfer(bids_data_dir=args.bids_data_dir,
                                            derivatives_dir=derivatives_dir,
                                            id=id,
+                                           ses=ses,
                                            t1_template=args.t1_template))
 
                 elif args.task=='CnnMask':
@@ -129,16 +135,17 @@ if __name__ == '__main__':
 
                 elif args.task=='TopupEddy':
                     jobs.append(TopupEddy(bids_data_dir=args.bids_data_dir,
-                                         derivatives_dir=derivatives_dir,
-                                         id=id,
-                                         ses=ses,
-                                         pa_ap_template=args.dwi_template))
+                                          derivatives_dir=derivatives_dir,
+                                          id=id,
+                                          ses=ses,
+                                          pa_ap_template=args.dwi_template))
 
 
                 elif args.task=='PnlEddyUkf':
                     jobs.append(PnlEddyUkf(bids_data_dir=args.bids_data_dir,
                                            derivatives_dir=derivatives_dir,
                                            id=id,
+                                           ses=ses,
                                            dwi_template=args.dwi_template))
 
 
@@ -146,6 +153,7 @@ if __name__ == '__main__':
                 elif args.task=='Wmqlqc':
                     jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
                                        id=id,
+                                       ses=ses,
                                        dwi_template=args.dwi_template,
                                        dwi_align_prefix=inter['dwi_align_prefix'],
                                        eddy_prefix=inter['eddy_prefix'],
