@@ -642,7 +642,7 @@ the mask using your favorite visualizer and save it like shown above.
 
 Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `PnlEddyEpi`, and `Ukf` tasks.
 
-See [dwi_pipe_params.cfg](../params/struct_pipe_params.cfg)
+See [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg)
 
 Each parameter is preceded by the task names that use the parameter. 
 You may see [Workflows](#workflows) to know which requisite tasks are run as part of the task you want to run. 
@@ -653,7 +653,7 @@ Then, you should edit only the parameters relevant to your task(s).
 
 Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `PnlEddyEpi`, `Ukf`, `Fs2Dwi`, `Wmql`, and `Wmqlqc` tasks.
 
-See [fs2dwi_pipe_params.cfg](../params/struct_pipe_params.cfg)
+See [fs2dwi_pipe_params.cfg](../params/fs2dwi_pipe_params.cfg)
 
 
 
