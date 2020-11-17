@@ -13,6 +13,7 @@ from time import sleep
 from scripts.util import N_PROC, FILEDIR, QC_POLL, _mask_name
 
 from _glob import _glob
+from _provenance import write_provenance
 
 class SelectStructFiles(ExternalTask):
     id = Parameter()
@@ -38,6 +39,9 @@ class StructAlign(Task):
                           '-o', self.output().rsplit('.nii.gz')[0]])
         p = Popen(cmd, shell=True)
         p.wait()
+
+        write_provenance(self)
+
 
     def output(self):
 
@@ -128,6 +132,8 @@ class StructMask(Task):
                     break
 
 
+        write_provenance(self, self.output()['mask'])
+
 
     def output(self):
 
@@ -163,6 +169,8 @@ class N4BiasCorrect(Task):
         cmd = (' ').join(['N4BiasFieldCorrection', '-d', '3', '-i', self.output()['masked'], '-o', self.output()['n4corr']])
         check_call(cmd, shell=True)
        
+        write_provenance(self, self.output()['n4corr'])
+
 
     def output(self):
         prefix= self.input()['aligned'].basename
@@ -244,6 +252,8 @@ class FreesurferAlign(Task):
 
         check_call(f'recon-all --version > {self.output()}/version.txt', shell=True)
 
+        write_provenance(self)
+
 
     def output(self):
         return local.path(pjoin(self.input()[0]['aligned'].dirname, self.fs_dirname))
@@ -299,6 +309,7 @@ class Freesurfer(Task):
             return (t1_attr,)
 
 
+
     def run(self):
         cmd = (' ').join(['fs.py',
                           '-i', self.input()[0]['n4corr'],
@@ -314,6 +325,8 @@ class Freesurfer(Task):
         p.wait()
         
         check_call(f'recon-all --version > {self.output()}/version.txt', shell=True)
+
+        write_provenance(self)
         
 
     def output(self):
