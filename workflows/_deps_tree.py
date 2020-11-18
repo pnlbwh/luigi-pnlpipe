@@ -67,19 +67,16 @@ def print_tree(task, indent='', last=True):
 
 def get_record_id(task_id):
     import sqlite3
-    import sys
-    from os.path import abspath
 
     conn= sqlite3.connect(config['task_history']['db_connection'].split('sqlite:///')[1])
 
     cur = conn.cursor()
-    cur.execute("SELECT * FROM tasks")
-    rows= cur.fetchall()
-
-    # iterate from the end, break out on first match
-    for i in range(rows[-1][0]-1,-1,-1):
-        if task_id==rows[i][1]:
-            return rows[i][0]
+    cur.execute(f"SELECT id FROM tasks WHERE task_id='{task_id}'")
+    record_id = cur.fetchone()[0]
+    
+    conn.close()
+    
+    return record_id
 
 
 def _indent(result, indent, last):
