@@ -9,9 +9,10 @@ from dwi_pipe import CnnMask, PnlEddy, FslEddy, FslEddyEpi, \
     TopupEddy, PnlEddyUkf
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc
 from scripts.util import abspath, isfile, pjoin, LIBDIR
+from os import getenv, stat
 
 if __name__ == '__main__':
-
+    
     config = configuration.get_config()
     config.read(pjoin(LIBDIR, 'luigi.cfg'))
 
@@ -52,7 +53,18 @@ if __name__ == '__main__':
                         help='''relative name of bids derivatives directory, 
                             translates to bids-data-dir/derivatives/derivatives-name''')
 
+
     args = parser.parse_args()
+
+
+    try:
+        cfg=getenv('LUIGI_CONFIG_PATH')
+        stat(cfg)
+    except (TypeError,FileNotFoundError):
+        print('\nERROR')
+        print('Define a valid configuration file: export LUIGI_CONFIG_PATH=/path/to/your_params.cfg\n')
+        exit(1)
+
     
     cases = read_cases(abspath(args.c)) if isfile(abspath(args.c)) else [args.c]
     sessions = read_cases(abspath(args.s)) if isfile(abspath(args.s)) else [args.s]
