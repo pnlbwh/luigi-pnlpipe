@@ -4,6 +4,7 @@ from luigi import Task, ExternalTask, Parameter, BoolParameter, IntParameter
 from luigi.util import inherits, requires
 from glob import glob
 from os.path import join as pjoin, abspath, isfile, basename, dirname
+from os import getenv
 import re
 
 from plumbum import local
@@ -143,7 +144,38 @@ class StructMask(Task):
             desc= 'T1wXcMabs' if '_T1w' in prefix else 'T2wXcMabs'
         
         elif self.ref_img:
-            ref_desc= glob(pjoin(self.input().dirname, self.ref_mask))[0]
+            ref_mask_pattern= pjoin(self.input().dirname, self.ref_mask)
+            try:
+                ref_desc= glob(ref_mask_pattern)[0]
+            except IndexError:
+                print(f'''\n\nERROR
+You provided *ref_img* and *ref_mask* values in:
+{getenv("LUIGI_CONFIG_PATH")}
+But no mask was found with the pattern:
+{ref_mask_pattern}
+If you are indeed trying to create a mask for {prefix} by warping
+previously created mask of {self.ref_img}, make sure *ref_img* and *ref_mask*
+contain valid suffix for existing files in:
+{self.input().dirname}
+Remember--you should have run StructMask task separately beforehand
+with the following configuration:
+```
+[StructMask]
+csvFile: /path/to/training/data.csv
+ref_img:
+ref_mask:
+```
+Once the mask is created, define *ref_img* and *ref_mask* correctly
+and re-attempt your task. If you are trying to create a T1w mask,
+*ref_img* and *ref_mask* attributes should correspond to T2w and vice-versa.\n''')
+
+                if 'Qc_mask.nii.gz' in self.ref_mask:
+                    print(f'''By the way, did you forget to quality check the previously created mask
+or save it after quality checking with {self.ref_mask} suffix?\n\n''')
+            
+                exit(1)
+
+
             desc= re.search('_desc-(.+?)_mask.nii.gz', ref_desc).group(1)
             if '_T1w' in prefix:
                 desc+= 'ToT1wXc'
