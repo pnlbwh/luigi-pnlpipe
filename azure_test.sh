@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 cd /home/pnlbwh
-git clone --single-branch --branch azure https://github.com/pnlbwh/luigi-pnlpipe.git
+git clone --single-branch --branch $BRANCH https://github.com/pnlbwh/luigi-pnlpipe.git
 
 
 # download test data
@@ -20,10 +20,7 @@ popd
 
 
 # hack recon-all
-mkdir bin
-export PATH=$HOME/bin:$PATH
-echo "mv $HOME/rawdata/freesurfer $HOME/derivatives/pnlpipe/sub-1004/ses-01/anat/" > ~/bin/recon-all
-chmod +x bin/recon-all
+sed -i "356s+cmd+'mv $HOME/rawdata/freesurfer $HOME/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" struct_pipe.py
 
 
 # provide *_pipe_params
@@ -39,5 +36,7 @@ export PYTHONPATH=`pwd`:$PYTHONPATH
 
 # run pipeline
 workflows/ExecuteTask.py --task StructMask --bids-data-dir $HOME/rawdata -c 1004 -s 01 --t1-template sub-*/ses-01/anat/*_T1w.nii.gz
+
+workflows/ExecuteTask.py --task Freesurfer --bids-data-dir $HOME/rawdata -c 1004 -s 01 --t1-template sub-*/ses-01/anat/*_T1w.nii.gz --t2-template sub-*/ses-01/anat/*_T2w.nii.gz
 
 
