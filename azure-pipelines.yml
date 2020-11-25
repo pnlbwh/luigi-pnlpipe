@@ -36,7 +36,6 @@ jobs:
 
 
   - script: |
-        sed -i 's/RUN source/# RUN source/g' Dockerfile.centos7
         docker rum --rm $(imageName):latest "`cat $(testConfigFile)"
     displayName: 'Run luigi-pnlpipe test'
     failOnStderr: true
