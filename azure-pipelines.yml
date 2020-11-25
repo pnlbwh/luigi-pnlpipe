@@ -36,7 +36,7 @@ jobs:
 
 
   - script: |
-        docker rum --rm $(imageName):latest "`cat $(testConfigFile)`"
+        docker run --rm $(imageName):latest "`cat $(testConfigFile)`"
     displayName: 'Run luigi-pnlpipe test'
     failOnStderr: true
 
