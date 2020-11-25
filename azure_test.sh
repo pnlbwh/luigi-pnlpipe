@@ -35,7 +35,7 @@ export PYTHONPATH=`pwd`:$PYTHONPATH
 
 
 # run pipeline
-workflows/ExecuteTask.py --task StructMask --bids-data-dir $HOME/rawdata -c 1004 -s 01 --t1-template sub-*/ses-01/anat/*_T1w.nii.gz
+workflows/ExecuteTask.py --task StructMask --bids-data-dir $HOME/rawdata -c 1004 -s 01 --t2-template sub-*/ses-01/anat/*_T2w.nii.gz
 
 workflows/ExecuteTask.py --task Freesurfer --bids-data-dir $HOME/rawdata -c 1004 -s 01 --t1-template sub-*/ses-01/anat/*_T1w.nii.gz --t2-template sub-*/ses-01/anat/*_T2w.nii.gz
 
