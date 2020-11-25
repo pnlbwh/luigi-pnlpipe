@@ -36,7 +36,8 @@ jobs:
 
 
   - script: |
-        docker run --rm $(imageName):latest "`cat $(testConfigFile)`"
+        df -h
+        # docker run --rm $(imageName):latest "`cat $(testConfigFile)`"
     displayName: 'Run luigi-pnlpipe test'
     failOnStderr: true
 
