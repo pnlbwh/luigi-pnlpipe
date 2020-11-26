@@ -5,6 +5,7 @@ export LANG=en_US.UTF-8
 
 cd luigi-pnlpipe
 git checkout $BRANCH
+git pull origin $BRANCH
 
 
 # download test data
@@ -34,6 +35,7 @@ export LUIGI_CONFIG_PATH=`pwd`/params/struct_pipe_params.cfg
 
 # define PATH and PYTHONPATH
 export PATH=`pwd`/scripts/:$HOME/CNN-Diffusion-MRIBrain-Segmentation/pipeline/:$PATH
+export FILTER_METHOD=PYTHON
 export PYTHONPATH=`pwd`:$PYTHONPATH
 
 
