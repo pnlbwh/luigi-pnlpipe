@@ -3,10 +3,12 @@
 cd /home/pnlbwh
 export LANG=en_US.UTF-8
 
+pushd .
 cd luigi-pnlpipe
 git checkout $BRANCH
 git pull origin $BRANCH
-cd $HOME
+popd
+
 
 # download test data
 wget https://www.dropbox.com/s/wqt4gdbuhuqbg6u/for_azure_test.tar.gz
