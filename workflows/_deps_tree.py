@@ -102,7 +102,7 @@ def print_history_tree(task, indent='', last=True):
     name = task.__class__.__name__
     params = task.to_str_params(only_significant=True)
 
-    link= '{}/history/by_id/{}'.format(config['core']['default-scheduler-url'], get_record_id(task.task_id))
+    link= '{}/history/by_task_id/{}'.format(config['core']['default-scheduler-url'], task.task_id)
     link= link.replace('//history','/history')
     
     result = '\n' + indent
