@@ -14,18 +14,19 @@ popd
 if [ ! -f for_azure_test.tar.gz ]
 then
     wget https://www.dropbox.com/s/wqt4gdbuhuqbg6u/for_azure_test.tar.gz
+
+    tar -xzvf for_azure_test.tar.gz
+    mv for_azure_test rawdata/
+
+
+    # shorten T2w test data
+    git clone https://github.com/pnlbwh/trainingDataT2Masks.git
+    pushd .
+    cd trainingDataT2Masks
+    ./mktrainingcsv.sh .
+    head -n 5 trainingDataT2Masks-hdr.csv > trainingDataT2Masks-curt.csv
+    popd
 fi
-tar -xzvf for_azure_test.tar.gz
-mv for_azure_test rawdata/
-
-
-# shorten T2w test data
-git clone https://github.com/pnlbwh/trainingDataT2Masks.git
-pushd .
-cd trainingDataT2Masks
-./mktrainingcsv.sh .
-head -n 5 trainingDataT2Masks-hdr.csv > trainingDataT2Masks-curt.csv
-popd
 
 
 # hack recon-all
