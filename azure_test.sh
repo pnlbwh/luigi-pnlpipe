@@ -11,7 +11,8 @@ popd
 
 
 # download test data
-if [ ! -f for_azure_test.tar.gz ] then
+if [ ! -f for_azure_test.tar.gz ]
+then
     wget https://www.dropbox.com/s/wqt4gdbuhuqbg6u/for_azure_test.tar.gz
 fi
 tar -xzvf for_azure_test.tar.gz
