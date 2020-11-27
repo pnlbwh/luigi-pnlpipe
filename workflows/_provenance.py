@@ -7,7 +7,7 @@ def write_provenance(obj, output=None):
         output= obj.output()
 
     tree= print_tree(obj)
-    # history_tree= print_history_tree(obj)
+    history_tree= print_history_tree(obj)
     json_provenance(obj, output)
       
     with open(pjoin(dirname(__file__), 'provenance.html')) as f:
@@ -17,7 +17,7 @@ def write_provenance(obj, output=None):
     with open(logfile,'w') as f:
         template= template.replace('{{output}}',output.basename)
         template= template.replace('{{textHistory}}',tree)
-        # template= template.replace('{{htmlHistory}}',history_tree)
+        template= template.replace('{{htmlHistory}}',history_tree)
         f.write(template)
 
 
