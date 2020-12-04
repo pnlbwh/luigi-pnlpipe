@@ -332,6 +332,7 @@ slicer_exec:
 dwi_mask_qc: False
 model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
 percentile: 97
+filter:
 ```
 
 Run `CnnMask` task as follows:
@@ -349,6 +350,8 @@ with `Qc` suffix in the `desc` field for its integration with later part of the 
         Cnn mask    : sub-1001/ses-01/dwi/sub-1001_ses-01_desc-dwiXcCNN_mask.nii.gz
     Quality checked : sub-1001/ses-01/dwi/sub-1001_ses-01_desc-dwiXcCNNQc_mask.nii.gz
 
+
+**NOTE** To clean up the CNN generated mask, assign `scipy` or `mrtrix` to `filter` field. See [here](https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation#3-clean-up) for details.
 
 
 ## Run FSL eddy and PNL epi
@@ -458,6 +461,7 @@ Configuration:
 slicer_exec:
 dwi_mask_qc: False
 model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
+filter:
 
 ## [FslEddy] ##
 acqp: /data/pnl/DIAGNOSE_CTE_U01/acqp.txt
