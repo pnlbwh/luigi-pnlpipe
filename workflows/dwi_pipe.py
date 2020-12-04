@@ -4,7 +4,7 @@ from luigi import Task, ExternalTask, Parameter, BoolParameter, IntParameter, Fl
 from luigi.util import inherits, requires
 from glob import glob
 from os.path import join as pjoin, abspath, isfile, basename, dirname
-from os import symlink
+from os import symlink, getenv
 from shutil import move, rmtree
 
 from plumbum import local
@@ -17,6 +17,7 @@ from struct_pipe import StructMask
 from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, _mask_name, LIBDIR, TemporaryDirectory
 
 from _glob import _glob
+# from _provenance import write_provenance
 
 class SelectDwiFiles(ExternalTask):
     id = Parameter()
@@ -29,6 +30,8 @@ class SelectDwiFiles(ExternalTask):
         dwi_template, dwi= _glob(self.bids_data_dir, self.dwi_template, self.id, self.ses)
         bval= dwi.split('.nii')[0]+'.bval'
         bvec= dwi.split('.nii')[0]+'.bvec'
+        
+        # write_provenance(self)
 
         return dict(dwi=local.path(dwi), bval=local.path(bval), bvec=local.path(bvec))
 
@@ -48,6 +51,8 @@ class DwiAlign(Task):
                           '-o', self.output()['dwi'].rsplit('.nii.gz')[0]])
         p = Popen(cmd, shell=True)
         p.wait()
+
+        # write_provenance(self)
 
     def output(self):
     
@@ -71,6 +76,8 @@ class GibbsUn(Task):
                           str(self.unring_nproc)])
         p = Popen(cmd, shell=True)
         p.wait()
+        
+        # write_provenance(self)
 
     def output(self):
 
@@ -147,6 +154,9 @@ class CnnMask(Task):
                     break
 
 
+        # write_provenance(self)
+
+
     def output(self):
 
         prefix= self.input()['dwi']._path
@@ -176,6 +186,9 @@ class BseExtract(Task):
                           self.which_bse if self.which_bse else ''])
         p = Popen(cmd, shell=True)
         p.wait()
+        
+        # write_provenance(self)
+
 
     def output(self):
         
@@ -279,6 +292,9 @@ class PnlEddy(Task):
                 break
 
 
+        # write_provenance(self)
+
+
     def output(self):
 
         eddy_prefix = self.input()[0]['dwi'].rsplit('_dwi.nii.gz')[0] + 'Ed'
@@ -330,6 +346,10 @@ class FslEddy(Task):
 
                 break
 
+
+        # write_provenance(self)
+
+
         # self.dwi= self.output()['dwi']
         # yield self.clone(BseExtract)
 
@@ -377,6 +397,10 @@ class FslEddyEpi(Task):
                 move(eddy_epi_prefix+'_mask.nii.gz', self.output()['mask'])
 
                 break
+
+        
+        # write_provenance(self)
+
                 
         self.dwi= self.output()['dwi']
         yield self.clone(BseExtract)
@@ -406,13 +430,81 @@ class FslEddyEpi(Task):
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
         
 
-# ENH PnlEddyEpi
+
+@inherits(FslEddy, PnlEddy, StructMask, BseExtract)
+class EddyEpi(Task):
+    debug = BoolParameter(default=False)
+    epi_nproc = IntParameter(default=N_PROC)
+    eddy_task = Parameter()
+
+    def requires(self):
+        self.eddy_task= self.eddy_task.lower()
+
+        if self.eddy_task=='pnleddy':
+            return dict(eddy=self.clone(PnlEddy), t2=self.clone(StructMask))
+        elif self.eddy_task=='fsleddy':
+            return dict(eddy=self.clone(FslEddy), t2=self.clone(StructMask))
+        else:
+            raise ValueError('Supported eddy tasks are {PnlEddy,FslEddy}. '
+                f'Correct the value of eddy_task in {getenv("LUIGI_CONFIG_PATH")}')
+
+    def run(self):
+
+        eddy_epi_prefix = self.output()['dwi'].rsplit('.nii.gz')[0]
+
+        for name in ['dwi', 'bval', 'bvec']:
+            if not self.output()[name].exists():
+                cmd = (' ').join(['pnl_epi.py',
+                                  '--dwi', self.input()['eddy']['dwi'],
+                                  '--bvals', self.input()['eddy']['bval'],
+                                  '--bvecs', self.input()['eddy']['bvec'],
+                                  '--dwimask', self.input()['eddy']['mask'],
+                                  '--bse', self.input()['eddy']['bse'],
+                                  '--t2', self.input()['t2']['aligned'],
+                                  '--t2mask', self.input()['t2']['mask'],
+                                  '-o', eddy_epi_prefix,
+                                  '-d' if self.debug else '',
+                                  f'-n {self.epi_nproc}' if self.epi_nproc else ''])
+                p = Popen(cmd, shell=True)
+                p.wait()
+
+                move(eddy_epi_prefix + '_mask.nii.gz', self.output()['mask'])
+
+                break
+
+        # write_provenance(self)
+
+        self.dwi = self.output()['dwi']
+        yield self.clone(BseExtract)
+
+    def output(self):
+
+        eddy_epi_prefix = self.input()['eddy']['dwi'].rsplit('_dwi.nii.gz')[0] + 'Ep'
+        dwi = local.path(eddy_epi_prefix + '_dwi.nii.gz')
+        bval = dwi.with_suffix('.bval', depth=2)
+        bvec = dwi.with_suffix('.bvec', depth=2)
+
+        # adding EdEp suffix to be consistent with dwi
+        mask_prefix = local.path(self.input()['eddy']['mask'].rsplit('_mask.nii.gz')[0] + 'EdEp')
+
+        # ENH
+        # two things could be done:
+        # * introduce `epi_mask_qc` param, separate from `dwi_mask_qc` param
+        # * do not qc at all: the mask is generated at the beginning of the pipeline, hence no qc after warping
+        # following the latter, the third argument is set to False
+        mask = _mask_name(mask_prefix, self.slicer_exec, False)
+
+        # adding EdEp suffix to be consistent with dwi
+        bse_prefix = self.input()['eddy']['bse'].rsplit('_bse.nii.gz')[0] + 'EdEp'
+        bse = local.path(bse_prefix + '_bse.nii.gz')
+
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
 
 
 @inherits(GibbsUn,CnnMask)
 class TopupEddy(Task):
 
-    pa_ap_template = Parameter()
+    pa_ap_template = Parameter(default='')
     acqp = Parameter()
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
 
@@ -480,7 +572,8 @@ class TopupEddy(Task):
 
                 break
 
-
+        
+        # write_provenance(self)
 
 
     def output(self):
@@ -541,9 +634,54 @@ class PnlEddyUkf(Task):
         p = Popen(cmd, shell=True)
         p.wait()
 
+        # write_provenance(self)
+
+
     def output(self):
         return local.path(self.input()['dwi'].replace('/dwi/', '/tracts/').replace('_dwi.nii.gz', '.vtk'))
 
 
-# ENH FslEddyUkf, PnlEddyEpiUkf, FslEddyEpiUkf, TopupEddyUkf
+
+@inherits(PnlEddy, FslEddy, FslEddyEpi, EddyEpi, TopupEddy)
+class Ukf(Task):
+
+    ukf_params = Parameter(default='')
+    eddy_epi_task = Parameter()
+
+    def requires(self):
+        self.eddy_epi_task=self.eddy_epi_task.lower()
+
+        if self.eddy_epi_task=='pnleddy':
+            return self.clone(PnlEddy)
+        elif self.eddy_epi_task=='fsleddy':
+            return self.clone(FslEddy)
+        elif self.eddy_epi_task=='fsleddyepi':
+            return self.clone(FslEddyEpi)
+        if self.eddy_epi_task=='eddyepi':
+            return self.clone(EddyEpi)
+        elif self.eddy_epi_task=='topupeddy':
+            return self.clone(TopupEddy)
+        else:
+            raise ValueError('Supported epi tasks are {EddyEpi,TopupEddy}. '
+                f'Correct the value of eddy_epi_task in {getenv("LUIGI_CONFIG_PATH")}')
+
+
+    def run(self):
+        self.output().dirname.mkdir()
+
+        cmd = (' ').join(['ukf.py',
+                          '-i', self.input()['dwi'],
+                          '--bvals', self.input()['bval'],
+                          '--bvecs', self.input()['bvec'],
+                          '-m', self.input()['mask'],
+                          '-o', self.output(),
+                          f'--params {self.ukf_params}' if self.ukf_params else ''])
+        p = Popen(cmd, shell=True)
+        p.wait()
+
+        # write_provenance(self)
+
+
+    def output(self):
+        return local.path(self.input()['dwi'].replace('/dwi/', '/tracts/').replace('_dwi.nii.gz', '.vtk'))
 
