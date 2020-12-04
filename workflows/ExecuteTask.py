@@ -5,8 +5,9 @@ from conversion import read_cases
 from luigi import build, configuration
 from _define_outputs import IO
 from struct_pipe import StructMask, Freesurfer
+# TODO remove FslEddyEpi
 from dwi_pipe import CnnMask, PnlEddy, FslEddy, FslEddyEpi, \
-    TopupEddy, PnlEddyUkf
+    TopupEddy, EddyEpi, Ukf
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc
 from scripts.util import abspath, isfile, pjoin, LIBDIR
 from os import getenv, stat
@@ -42,9 +43,9 @@ if __name__ == '__main__':
     parser.add_argument('--task', type=str, required=True, help='number of Luigi workers',
                         choices=['StructMask', 'Freesurfer',
                                  'CnnMask',
-                                 'PnlEddy', 'PnlEddyEpi',
-                                 'FslEddy', 'FslEddyEpi', 'TopupEddy',
-                                 'PnlEddyUkf',
+                                 'PnlEddy', 'FslEddy', 'TopupEddy',
+                                 'FslEddyEpi', 'EddyEpi',
+                                 'Ukf',
                                  'Fs2Dwi', 'Wmql', 'Wmqlqc'])
 
     parser.add_argument('--num-workers', type=int, default=1, help='number of Luigi workers')
@@ -76,7 +77,6 @@ if __name__ == '__main__':
     for ses in sessions:
         for id in cases:
 
-
             if args.t2_template:
 
                 if args.task=='StructMask':
@@ -94,7 +94,8 @@ if __name__ == '__main__':
                                            t1_template=args.t1_template,
                                            t2_template=args.t2_template))
 
-                elif args.task=='PnlEddyEpi' or args.task=='FslEddyEpi':
+                # TODO keep EddyEpi only
+                elif args.task=='PnlEddyEpi' or args.task=='FslEddyEpi' or args.task=='EddyEpi':
                     jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
                                                 derivatives_dir=derivatives_dir,
                                                 id=id,
@@ -110,8 +111,17 @@ if __name__ == '__main__':
                                        ses=ses,
                                        pa_ap_template=args.dwi_template,
                                        t1_template=args.t1_template,
-                                       t2_template=args.t2_template))
+                                       t2_template=args.t2_template,
+                                       ))
 
+                
+                elif args.task=='Ukf':
+                    jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
+                                           derivatives_dir=derivatives_dir,
+                                           id=id,
+                                           ses=ses,
+                                           dwi_template=args.dwi_template,
+                                           struct_template=args.t2_template))
 
 
             # just t1_template
@@ -153,12 +163,12 @@ if __name__ == '__main__':
                                           pa_ap_template=args.dwi_template))
 
 
-                elif args.task=='PnlEddyUkf':
-                    jobs.append(PnlEddyUkf(bids_data_dir=args.bids_data_dir,
-                                           derivatives_dir=derivatives_dir,
-                                           id=id,
-                                           ses=ses,
-                                           dwi_template=args.dwi_template))
+                elif args.task=='Ukf':
+                    jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
+                                    derivatives_dir=derivatives_dir,
+                                    id=id,
+                                    ses=ses,
+                                    dwi_template=args.dwi_template))
 
 
                 # FIXME
