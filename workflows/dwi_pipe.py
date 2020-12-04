@@ -364,7 +364,7 @@ class FslEddy(Task):
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=self.input()[1]['mask'])
 
 
-
+# TODO delete this task
 @inherits(FslEddy,StructMask,BseExtract)
 class FslEddyEpi(Task):
     
@@ -615,7 +615,7 @@ class TopupEddy(Task):
 
 
 
-
+# TODO delete this task
 @requires(PnlEddy)
 class PnlEddyUkf(Task):
 
@@ -642,7 +642,7 @@ class PnlEddyUkf(Task):
 
 
 
-@inherits(PnlEddy, FslEddy, FslEddyEpi, EddyEpi, TopupEddy)
+@inherits(PnlEddy, FslEddy, EddyEpi, TopupEddy)
 class Ukf(Task):
 
     ukf_params = Parameter(default='')
@@ -655,9 +655,7 @@ class Ukf(Task):
             return self.clone(PnlEddy)
         elif self.eddy_epi_task=='fsleddy':
             return self.clone(FslEddy)
-        elif self.eddy_epi_task=='fsleddyepi':
-            return self.clone(FslEddyEpi)
-        if self.eddy_epi_task=='eddyepi':
+        elif self.eddy_epi_task=='eddyepi':
             return self.clone(EddyEpi)
         elif self.eddy_epi_task=='topupeddy':
             return self.clone(TopupEddy)
