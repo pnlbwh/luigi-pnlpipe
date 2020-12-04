@@ -95,6 +95,7 @@ class CnnMask(Task):
     dwi_mask_qc= BoolParameter(default=False)
     model_folder= Parameter(default='')
     percentile= IntParameter(default=99)
+    filter= Parameter(default='')
 
     def run(self):
         
@@ -116,7 +117,8 @@ class CnnMask(Task):
                 cmd = (' ').join(['dwi_masking.py',
                                   '-i', dwi_list,
                                   '-f', self.model_folder,
-                                  f'-p {self.percentile}'])
+                                  f'-p {self.percentile}',
+                                  f'-filter {self.filter}' if self.filter else ''])
                 p = Popen(cmd, shell=True)
                 p.wait()
                 
