@@ -15,6 +15,7 @@ import re
 from struct_pipe import StructMask
 
 from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, _mask_name, LIBDIR, TemporaryDirectory
+N_PROC= int(N_PROC)
 
 from _glob import _glob
 # from _provenance import write_provenance
@@ -27,7 +28,7 @@ class SelectDwiFiles(ExternalTask):
 
     def output(self):
         
-        dwi_template, dwi= _glob(self.bids_data_dir, self.dwi_template, self.id, self.ses)
+        _, dwi= _glob(self.bids_data_dir, self.dwi_template, self.id, self.ses)
         bval= dwi.split('.nii')[0]+'.bval'
         bvec= dwi.split('.nii')[0]+'.bvec'
         
@@ -67,7 +68,7 @@ class DwiAlign(Task):
 @requires(DwiAlign)
 class GibbsUn(Task):
 
-    unring_nproc= IntParameter(default=4)
+    unring_nproc= IntParameter(default=N_PROC)
 
     def run(self):
         cmd = (' ').join(['unring.py',
@@ -275,7 +276,7 @@ class BseMask(Task):
 @requires(GibbsUn,CnnMask)
 class PnlEddy(Task):
     debug = BoolParameter(default=False)
-    eddy_nproc = IntParameter(default=int(N_PROC))
+    eddy_nproc = IntParameter(default=N_PROC)
 
     def run(self):
 
@@ -648,6 +649,7 @@ class PnlEddyUkf(Task):
 class Ukf(Task):
 
     ukf_params = Parameter(default='')
+    bhigh = IntParameter(default=-1)
     eddy_epi_task = Parameter()
 
     def requires(self):
@@ -675,6 +677,7 @@ class Ukf(Task):
                           '--bvecs', self.input()['bvec'],
                           '-m', self.input()['mask'],
                           '-o', self.output(),
+                          f'--bhigh {self.bhigh}' if self.bhigh>0 else '',
                           f'--params {self.ukf_params}' if self.ukf_params else ''])
         p = Popen(cmd, shell=True)
         p.wait()
