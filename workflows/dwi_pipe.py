@@ -688,3 +688,32 @@ class Ukf(Task):
     def output(self):
         return local.path(self.input()['dwi'].replace('/dwi/', '/tracts/').replace('_dwi.nii.gz', '.vtk'))
 
+
+
+@requires(Ukf)
+class Wma800(Task):
+
+    slicer_exec= Parameter()
+    FiberTractMeasurements= Parameter()
+    atlas= Parameter()
+    wma_nproc= IntParameter(default=N_PROC)
+    xvfb= IntParameter(default=1)
+
+    def run(self):
+
+        cmd = (' ').join(['wm_apply_ORG_atlas_to_subject.sh',
+                          '-i', self.input(),
+                          '-a', self.atlas,
+                          f'-s "{self.slicer_exec}"',
+                          f'-m "{self.FiberTractMeasurements}"',
+                          f'-x {self.xvfb}',
+                          f'-n {self.wma_nproc}',
+                          '-c 2',
+                          '-d 1',
+                          '-o', self.output()])
+        p = Popen(cmd, shell=True)
+        p.wait()
+
+    def output(self):
+        return self.input().dirname.join('wma800')
+
