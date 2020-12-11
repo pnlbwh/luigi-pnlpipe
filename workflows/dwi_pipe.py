@@ -18,7 +18,9 @@ from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, _mask_nam
 N_PROC= int(N_PROC)
 
 from _glob import _glob
-# from _provenance import write_provenance
+from _provenance import write_provenance
+
+from warnings import warn
 
 class SelectDwiFiles(ExternalTask):
     id = Parameter()
@@ -27,12 +29,10 @@ class SelectDwiFiles(ExternalTask):
     dwi_template = Parameter(default='')
 
     def output(self):
-        
+
         _, dwi= _glob(self.bids_data_dir, self.dwi_template, self.id, self.ses)
         bval= dwi.split('.nii')[0]+'.bval'
         bvec= dwi.split('.nii')[0]+'.bvec'
-        
-        # write_provenance(self)
 
         return dict(dwi=local.path(dwi), bval=local.path(bval), bvec=local.path(bvec))
 
@@ -53,7 +53,7 @@ class DwiAlign(Task):
         p = Popen(cmd, shell=True)
         p.wait()
 
-        # write_provenance(self)
+        write_provenance(self, self.output()['dwi'])
 
     def output(self):
     
@@ -78,7 +78,7 @@ class GibbsUn(Task):
         p = Popen(cmd, shell=True)
         p.wait()
         
-        # write_provenance(self)
+        write_provenance(self, self.output()['dwi'])
 
     def output(self):
 
@@ -135,29 +135,32 @@ class CnnMask(Task):
         p.wait()
 
 
-        if self.slicer_exec or self.dwi_mask_qc:
+        if self.dwi_mask_qc:
             print('\n\n** Check quality of created mask {} . Once you are done, save the (edited) mask as {} **\n\n'
                   .format(auto_mask,self.output()['mask']))
 
 
-        if self.slicer_exec:
-            cmd = (' ').join([self.slicer_exec, '--python-code',
-                              '\"slicer.util.loadVolume(\'{}\'); '
-                              'slicer.util.loadLabelVolume(\'{}\')\"'
-                             .format(self.input(), auto_mask)])
+            if self.slicer_exec:
 
-            p = Popen(cmd, shell=True)
-            p.wait()
+                if not getenv('DISPLAY'):
+                    warn('DISPLAY is undefined, cannot open Slicer')
 
+                else:
+                    cmd = (' ').join([self.slicer_exec, '--python-code',
+                                      '\"slicer.util.loadVolume(\'{}\'); '
+                                      'slicer.util.loadLabelVolume(\'{}\')\"'
+                                     .format(self.input(), auto_mask)])
 
-        elif self.dwi_mask_qc:
+                    p = Popen(cmd, shell=True)
+                    p.wait()
+
             while 1:
                 sleep(QC_POLL)
                 if isfile(self.output()['mask']):
                     break
 
 
-        # write_provenance(self)
+        write_provenance(self, self.output()['mask'])
 
 
     def output(self):
@@ -168,7 +171,7 @@ class CnnMask(Task):
         outPrefix= prefix.split('_desc-')[0]+ '_desc-'+ desc
         
         bse= local.path(outPrefix+ '_bse.nii.gz')
-        mask= _mask_name(local.path(outPrefix+ 'CNN'), self.slicer_exec, self.dwi_mask_qc)
+        mask= _mask_name(local.path(outPrefix+ 'CNN'), self.dwi_mask_qc)
         
         return dict(bse= bse, mask=mask)
 
@@ -189,8 +192,6 @@ class BseExtract(Task):
                           self.which_bse if self.which_bse else ''])
         p = Popen(cmd, shell=True)
         p.wait()
-        
-        # write_provenance(self)
 
 
     def output(self):
@@ -267,7 +268,7 @@ class BseMask(Task):
     def output(self):
     
         prefix= local.path(self.input().rsplit('_bse.nii.gz')[0]+ self.mask_method)
-        mask= _mask_name(prefix, self.slicer_exec, self.dwi_mask_qc)
+        mask= _mask_name(prefix, self.dwi_mask_qc)
         
         return dict(bse= self.input(), mask=mask)
 
@@ -295,7 +296,7 @@ class PnlEddy(Task):
                 break
 
 
-        # write_provenance(self)
+        write_provenance(self, self.output()['dwi'])
 
 
     def output(self):
@@ -350,7 +351,7 @@ class FslEddy(Task):
                 break
 
 
-        # write_provenance(self)
+        write_provenance(self, self.output()['dwi'])
 
 
         # self.dwi= self.output()['dwi']
@@ -422,8 +423,8 @@ class FslEddyEpi(Task):
         # two things could be done:
         # * introduce `epi_mask_qc` param, separate from `dwi_mask_qc` param
         # * do not qc at all: the mask is generated at the beginning of the pipeline, hence no qc after warping
-        # following the latter, the third argument is set to False
-        mask = _mask_name(mask_prefix, self.slicer_exec, False)
+        # following the latter, the second argument is set to False
+        mask = _mask_name(mask_prefix, False)
 
         
         # adding EdEp suffix to be consistent with dwi
@@ -475,7 +476,9 @@ class EddyEpi(Task):
 
                 break
 
-        # write_provenance(self)
+
+        write_provenance(self, self.output()['dwi'])
+
 
         self.dwi = self.output()['dwi']
         yield self.clone(BseExtract)
@@ -494,8 +497,8 @@ class EddyEpi(Task):
         # two things could be done:
         # * introduce `epi_mask_qc` param, separate from `dwi_mask_qc` param
         # * do not qc at all: the mask is generated at the beginning of the pipeline, hence no qc after warping
-        # following the latter, the third argument is set to False
-        mask = _mask_name(mask_prefix, self.slicer_exec, False)
+        # following the latter, the second argument is set to False
+        mask = _mask_name(mask_prefix, False)
 
         # adding EdEp suffix to be consistent with dwi
         bse_prefix = self.input()['eddy']['bse'].rsplit('_bse.nii.gz')[0] + 'EdEp'
@@ -574,9 +577,8 @@ class TopupEddy(Task):
                 move(outDir / 'B0_PA_AP_corrected_mean.nii.gz', self.output()['bse'])
 
                 break
-
         
-        # write_provenance(self)
+        write_provenance(self, self.output()['dwi'])
 
 
     def output(self):
@@ -607,7 +609,7 @@ class TopupEddy(Task):
         desc= desc+ 'EdEp'
         mask_prefix= local.path(mask_prefix+ '_desc-'+ desc)
 
-        mask = _mask_name(mask_prefix, self.slicer_exec, False)
+        mask = _mask_name(mask_prefix, False)
 
         bse_prefix= dwi._path
         desc= re.search('_desc-(.+?)_dwi.nii.gz', bse_prefix).group(1)
@@ -636,8 +638,6 @@ class PnlEddyUkf(Task):
                           '--params', self.ukf_params])
         p = Popen(cmd, shell=True)
         p.wait()
-
-        # write_provenance(self)
 
 
     def output(self):
@@ -682,7 +682,7 @@ class Ukf(Task):
         p = Popen(cmd, shell=True)
         p.wait()
 
-        # write_provenance(self)
+        write_provenance(self)
 
 
     def output(self):
@@ -713,6 +713,8 @@ class Wma800(Task):
                           '-o', self.output()])
         p = Popen(cmd, shell=True)
         p.wait()
+
+        write_provenance(self)
 
     def output(self):
         return self.input().dirname.join('wma800')
