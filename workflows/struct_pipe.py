@@ -16,6 +16,8 @@ from scripts.util import N_PROC, FILEDIR, QC_POLL, _mask_name
 from _glob import _glob
 from _provenance import write_provenance
 
+from warnings import warn
+
 class SelectStructFiles(ExternalTask):
     id = Parameter()
     ses = Parameter(default='')
@@ -111,22 +113,25 @@ class StructMask(Task):
                 return
 
 
-        if self.slicer_exec or self.mask_qc:
+        if self.mask_qc:
             print('\n\n** Check quality of created mask {} . Once you are done, save the (edited) mask as {} **\n\n'
                   .format(auto_mask,self.output()['mask']))
 
 
-        if self.slicer_exec:
-            cmd= (' ').join([self.slicer_exec, '--python-code',
-                            '\"slicer.util.loadVolume(\'{}\'); '
-                            'slicer.util.loadLabelVolume(\'{}\')\"'
-                            .format(self.input()['aligned'],auto_mask)])
+            if self.slicer_exec:
 
-            p = Popen(cmd, shell= True)
-            p.wait()
+                if not getenv('DISPLAY'):
+                    warn('DISPLAY is undefined, cannot open Slicer')
 
+                else:
+                    cmd= (' ').join([self.slicer_exec, '--python-code',
+                                    '\"slicer.util.loadVolume(\'{}\'); '
+                                    'slicer.util.loadLabelVolume(\'{}\')\"'
+                                    .format(self.input()['aligned'],auto_mask)])
 
-        elif self.mask_qc:
+                    p = Popen(cmd, shell= True)
+                    p.wait()
+
             while 1:
                 sleep(QC_POLL)
                 if isfile(self.output()['mask']):
@@ -186,7 +191,7 @@ or save it after quality checking with {self.ref_mask} suffix?\n\n''')
         
         
         mask_prefix= local.path(pjoin(self.input().dirname, prefix.split('_desc-')[0])+ '_desc-'+ desc)
-        mask = _mask_name(mask_prefix, self.slicer_exec, self.mask_qc)
+        mask = _mask_name(mask_prefix, self.mask_qc)
         
         return dict(aligned= self.input(), mask=mask)
 
