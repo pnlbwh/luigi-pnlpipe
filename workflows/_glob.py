@@ -13,17 +13,18 @@ def _glob(bids_data_dir, template, id, ses):
     template= template.replace('sub-*', f'sub-{id}')
     template= pjoin(abspath(bids_data_dir), template)
 
-    try:
-        filename= glob(template)
-        if len(filename)>1:
-            raise AttributeError(f'Multiple files exist with the template {template}\n'
-                'Please provide a unique representative template')
 
-    except IndexError:
+    filename= glob(template)
+    if len(filename)>1:
+        raise AttributeError(f'Multiple files exist with the template {template}\n'
+            'Please provide a unique representative template')
+
+    elif not filename:
         raise FileNotFoundError(f'No file found using the template {template}\n'
-            'Correct the --bids-data-dir and/or --*-template and try again\n')
+            'Correct the bids-data-dir and/or template and try again\n')
 
-    return (template, filename[0])
+    else:
+        return (template, filename[0])
 
 
 if __name__=='__main__':
@@ -32,21 +33,21 @@ if __name__=='__main__':
     id= '1001'
     ses= '01'
 
-    # success cases
+    print('\n# Success cases #\n')
     template= 'sub-*/ses-*/dwi/*_dwi.nii.gz'
     print(_glob(bids_data_dir, template, id, ses))
     
     ses=None
     template= 'sub-*/ses-*/dwi/*_dwi.nii.gz'
     print(_glob(bids_data_dir, template, id, ses))
-    
+
+    print('\n# Fail cases #\n')
     template= 'sub-/ses-01/dwi/*_dwi.nii.gz'
     try:
         _glob(bids_data_dir, template, id, ses)
     except ValueError as e:
         print(e)
 
-    # fail cases
     template= 'sub-*/ses-01/dwi/hello*_dwi.nii.gz'
     _glob(bids_data_dir, template, id, ses)
 
