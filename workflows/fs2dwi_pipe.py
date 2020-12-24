@@ -37,7 +37,7 @@ class SelectFsDwiFiles(ExternalTask):
 
 
         # look for Qc'ed mask first
-        # if not present, return the automatic mask
+        # if not present, return the automated mask
         bse_mask_dict= {
             'XcUnEdEp_dwi': ['XcUnCNNQcEdEp_mask', 'XcUnCNNEdEp_mask', 'XcUnEdEp_bse'],
             'XcUnEd_dwi': ['XcUnCNNQc_mask', 'XcUnCNN_mask', 'XcUn_bse'],
