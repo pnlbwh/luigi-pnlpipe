@@ -104,25 +104,42 @@ if __name__ == '__main__':
                                                 struct_template=args.t2_template))
 
 
+
+                # the following three tasks do not have pa_ap_template because
+                # when axt2 is available, pa_ap acquisition should be unavailable
+                # in other words, PnlEpi and TopupEddy are mutually exclusive
+                elif args.task=='Ukf':
+                    jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
+                                    derivatives_dir=derivatives_dir,
+                                    id=id,
+                                    ses=ses,
+                                    dwi_template=args.dwi_template,
+                                    struct_template=args.t2_template))
+
+
+                # clash b/w Freesurfer and PnlEpi
+                # either Freesurfer have to be run separately before with t1+t2 or
+                # as part of Fs2Dwi with just t1
                 elif args.task=='Fs2Dwi':
                     jobs.append(Fs2Dwi(bids_data_dir=args.bids_data_dir,
                                        derivatives_dir=derivatives_dir,
                                        id=id,
                                        ses=ses,
-                                       pa_ap_template=args.dwi_template,
+                                       dwi_template=args.dwi_template,
                                        t1_template=args.t1_template,
-                                       t2_template=args.t2_template,
-                                       ))
+                                       struct_template=args.t2_template))
 
-                
-                elif args.task=='Ukf':
-                    jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
-                                           derivatives_dir=derivatives_dir,
-                                           id=id,
-                                           ses=ses,
-                                           dwi_template=args.dwi_template,
-                                           struct_template=args.t2_template))
 
+                # clash b/w Freesurfer and PnlEpi
+                # either Freesurfer have to be run separately before with t1+t2 or
+                # as part of Fs2Dwi with just t1
+                elif args.task=='Wmqlqc':
+                    jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
+                                       id=id,
+                                       ses=ses,
+                                       dwi_template=args.dwi_template,
+                                       t1_template=args.t1_template,
+                                       struct_template=args.t2_template))
 
             # just t1_template
             else:
@@ -147,7 +164,8 @@ if __name__ == '__main__':
                                         ses=ses,
                                         dwi_template=args.dwi_template))
 
-                elif args.task=='PnlEddy' or args.task=='FslEddy':
+                # TODO keep EddyEpi only
+                elif args.task=='PnlEddy' or args.task=='FslEddy' or args.task=='EddyEpi':
                     jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
                                                 derivatives_dir=derivatives_dir,
                                                 id=id,
@@ -163,32 +181,34 @@ if __name__ == '__main__':
                                           pa_ap_template=args.dwi_template))
 
 
+                # the following three tasks have both dwi_template and pa_ap_template
+                # because a user may want to run {PnlEddy,FslEddy} or TopupEddy
                 elif args.task=='Ukf':
                     jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
                                     derivatives_dir=derivatives_dir,
                                     id=id,
                                     ses=ses,
-                                    dwi_template=args.dwi_template))
+                                    dwi_template=args.dwi_template,
+                                    pa_ap_template=args.dwi_template))
 
 
-                # FIXME
+                elif args.task=='Fs2Dwi':
+                    jobs.append(Fs2Dwi(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir,
+                                       id=id,
+                                       ses=ses,
+                                       dwi_template=args.dwi_template,
+                                       pa_ap_template=args.dwi_template,
+                                       t1_template=args.t1_template))
+
+
                 elif args.task=='Wmqlqc':
                     jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
                                        id=id,
                                        ses=ses,
                                        dwi_template=args.dwi_template,
-                                       dwi_align_prefix=inter['dwi_align_prefix'],
-                                       eddy_prefix=inter['eddy_prefix'],
-                                       eddy_bse_masked_prefix=inter['eddy_bse_masked_prefix'],
-                                       eddy_bse_betmask_prefix=inter['eddy_bse_betmask_prefix'],
-                                       t1_template=args.t1_template,
-                                       t1_align_prefix=inter['t1_align_prefix'],
-                                       t1_mask_prefix=inter['t1_mabsmask_prefix'],
-                                       fs_dir=inter['fs_dir'],
-                                       fs_in_dwi=inter['fs_in_eddy'],
-                                       tract_prefix=inter['eddy_tract_prefix'],
-                                       wmql_out=inter['eddy_wmql_dir'],
-                                       wmqlqc_out= inter['eddy_wmqlqc_dir']))
+                                       pa_ap_template=args.dwi_template,
+                                       t1_template=args.t1_template))
 
 
 
