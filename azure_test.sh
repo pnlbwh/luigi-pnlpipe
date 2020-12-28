@@ -34,15 +34,12 @@ sed -i "356s+cmd+'mv $HOME/rawdata/freesurfer $HOME/derivatives/pnlpipe/sub-1004
 
 
 # provide *_pipe_params
-pip install luigi sqlalchemy
 cd luigi-pnlpipe
 export LUIGI_CONFIG_PATH=`pwd`/params/struct_pipe_params.cfg
 
 
 # define PATH and PYTHONPATH
-export PATH=`pwd`/scripts/:$HOME/CNN-Diffusion-MRIBrain-Segmentation/pipeline/:$PATH
 export FILTER_METHOD=PYTHON
-export PYTHONPATH=`pwd`:$PYTHONPATH
 
 
 # run pipeline
