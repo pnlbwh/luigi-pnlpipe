@@ -13,11 +13,12 @@ popd
 
 
 # download test data
-if [ ! -f for_azure_test.tar.gz ]
+test_data=luigi-pnlpipe-test-data.tar.gz
+if [ ! -f $test_data ]
 then
-    wget https://www.dropbox.com/s/pzloevkr8h3kyac/luigi-pnlpipe-test-data.tar.gz
+    wget https://www.dropbox.com/s/pzloevkr8h3kyac/$test_data
 
-    tar -xzvf luigi-pnlpipe-test-data.tar.gz
+    tar -xzvf $test_data
 
     # shorten T2w test data
     git clone https://github.com/pnlbwh/trainingDataT2Masks.git
@@ -73,7 +74,7 @@ rm CTE/derivatives/pnlpipe/sub-*/ses-*/anat/*_T2w*
 workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/dwi/*_T2w.nii.gz
 
-exit
+
 
 ### HCP ###
 
