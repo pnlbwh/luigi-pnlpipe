@@ -126,7 +126,13 @@ if __name__ == '__main__':
                                        id=id,
                                        ses=ses,
                                        dwi_template=args.dwi_template,
-                                       t1_template=args.t1_template,
+                                       struct_template=args.t2_template))
+
+                elif args.task=='Wmql':
+                    jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
+                                       id=id,
+                                       ses=ses,
+                                       dwi_template=args.dwi_template,
                                        struct_template=args.t2_template))
 
 
@@ -138,8 +144,8 @@ if __name__ == '__main__':
                                        id=id,
                                        ses=ses,
                                        dwi_template=args.dwi_template,
-                                       t1_template=args.t1_template,
                                        struct_template=args.t2_template))
+
 
             # just t1_template
             else:
@@ -197,19 +203,21 @@ if __name__ == '__main__':
                                        derivatives_dir=derivatives_dir,
                                        id=id,
                                        ses=ses,
-                                       dwi_template=args.dwi_template,
-                                       pa_ap_template=args.dwi_template,
-                                       t1_template=args.t1_template))
+                                       dwi_template=args.dwi_template))
+
+
+                elif args.task == 'Wmql':
+                    jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
+                                       id=id,
+                                       ses=ses,
+                                       dwi_template=args.dwi_template))
 
 
                 elif args.task=='Wmqlqc':
                     jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
                                        id=id,
                                        ses=ses,
-                                       dwi_template=args.dwi_template,
-                                       pa_ap_template=args.dwi_template,
-                                       t1_template=args.t1_template))
-
+                                       dwi_template=args.dwi_template))
 
 
     build(jobs, workers=args.num_workers)
