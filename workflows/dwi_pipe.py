@@ -698,6 +698,7 @@ class Wma800(Task):
     atlas= Parameter()
     wma_nproc= IntParameter(default=N_PROC)
     xvfb= IntParameter(default=1)
+    wma_cleanup= IntParameter(default=0)
 
     def run(self):
 
@@ -708,7 +709,7 @@ class Wma800(Task):
                           f'-m "{self.FiberTractMeasurements}"',
                           f'-x {self.xvfb}',
                           f'-n {self.wma_nproc}',
-                          '-c 2',
+                          f'-c {self.wma_cleanup}',
                           '-d 1',
                           '-o', self.output()])
         p = Popen(cmd, shell=True)
