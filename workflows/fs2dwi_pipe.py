@@ -15,6 +15,8 @@ from os.path import dirname, join as pjoin
 from _glob import _glob
 from glob import glob
 
+from _provenance import write_provenance
+
 class SelectFsDwiFiles(ExternalTask):
     id = Parameter()
     ses = Parameter(default='')
@@ -88,6 +90,8 @@ class Fs2Dwi(Task):
         p = Popen(cmd, shell=True)
         p.wait()
 
+        write_provenance(self, self.output()[0])
+
     def output(self):
 
         wmparc= local.path(self.input()[0]['dwi'].dirname.join('wmparcInDwi.nii.gz').replace('dwi', 'fs2dwi'))
@@ -113,6 +117,7 @@ class Wmql(Task):
         p = Popen(cmd, shell=True)
         p.wait()
 
+        write_provenance(self)
 
     def output(self):
 
@@ -133,7 +138,8 @@ class Wmqlqc(Task):
         p = Popen(cmd, shell=True)
         p.wait()
 
+        write_provenance(self)
+
     def output(self):
 
         return local.path(self.input().replace('wmql','wmqlqc'))
-
