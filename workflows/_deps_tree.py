@@ -55,8 +55,15 @@ def _indent(result, indent, last):
 def get_record_id(task_id):
     import sqlite3
 
+    # this approach would only work locally i.e. server and db file are in the same machine
     conn = sqlite3.connect(config['task_history']['db_connection'].split('sqlite:///')[1])
 
+    # useful debug commands
+    # full path necessary after .open
+    # sqlite3
+    #   sqlite> .open /home/tb571/luigi-task-hist.db
+    #   sqlite> SELECT * FROM tasks;
+    #   sqlite> .quit
     cur = conn.cursor()
     cur.execute(f"SELECT id FROM tasks WHERE task_id='{task_id}'")
     record_id = cur.fetchone()[0]
