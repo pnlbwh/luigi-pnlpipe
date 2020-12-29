@@ -21,16 +21,16 @@ class SelectFsDwiFiles(ExternalTask):
     ses = Parameter(default='')
     bids_data_dir = Parameter()
     derivatives_dir = Parameter()
-    fs_template = Parameter()
+    fs_dirname = Parameter(default='freesurfer')
     dwi_template = Parameter()
 
     def output(self):
 
         derivatives_dir= self.bids_data_dir.replace('rawdata', self.derivatives_dir)
 
-        _, fsdir = _glob(derivatives_dir, self.fs_template, self.id, self.ses)
-
         _, dwi = _glob(derivatives_dir, self.dwi_template, self.id, self.ses)
+
+        fs_dirname= pjoin(dirname(dwi).replace('/dwi','/anat'), self.fs_dirname)
 
         for suffix in ['XcUnEdEp_dwi', 'XcUnEd_dwi', 'XcUn_dwi', 'Xc_dwi']:
             if suffix in dwi:
@@ -61,7 +61,7 @@ class SelectFsDwiFiles(ExternalTask):
 
         bse= glob(pjoin(dwidir, '*'+ bse_mask_dict[suffix][2]+'.nii.gz'))[0]
 
-        return dict(fsdir=local.path(fsdir), dwi=local.path(dwi), bse=local.path(bse), mask=local.path(mask))
+        return dict(fsdir=local.path(fs_dirname), dwi=local.path(dwi), bse=local.path(bse), mask=local.path(mask))
 
 
 @inherits(SelectFsDwiFiles,StructMask)
