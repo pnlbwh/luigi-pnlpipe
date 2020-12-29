@@ -97,23 +97,12 @@ def print_tree(task, indent='', last=True):
 
 def print_history_tree(task, indent='', last=True):
     '''
-    Return a string representation of the tasks, their statuses/parameters in a dependency tree format
+    Return a tree of history of tasks
     '''
-    # dont bother printing out warnings about tasks with no output
-    with warnings.catch_warnings():
-        warnings.filterwarnings(action='ignore', message='Task .* without outputs has no custom complete\\(\\) method')
-        is_task_complete = task.complete()
-    is_complete = (bcolors.OKGREEN + 'COMPLETE' if is_task_complete else bcolors.OKBLUE + 'PENDING') + bcolors.ENDC
+
     name = task.__class__.__name__
-    params = task.to_str_params(only_significant=True)
 
-    # handle the case when a task_id does not exist in the database
-    try:
-        record_id= get_record_id(task.task_id)
-    except:
-        record_id= -1
-
-    link = '{}/history/by_id/{}'.format(config['core']['default-scheduler-url'], record_id)
+    link = '{}/history/by_task_id/{}'.format(config['core']['default-scheduler-url'], task.task_id)
 
     # when default-scheduler-url has an ending slash
     link = link.replace('//history', '/history')
