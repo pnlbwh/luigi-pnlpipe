@@ -3,7 +3,6 @@
 from luigi import Task, ExternalTask, Parameter, BoolParameter, IntParameter
 from luigi.util import inherits, requires
 
-from dwi_pipe import PnlEddy, FslEddy, EddyEpi, TopupEddy, PnlEddyUkf, Ukf
 from struct_pipe import Freesurfer, StructMask
 
 from plumbum import local
