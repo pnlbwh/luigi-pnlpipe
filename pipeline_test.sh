@@ -15,11 +15,9 @@ popd
 # download test data
 if [ ! -f for_azure_test.tar.gz ]
 then
-    wget https://www.dropbox.com/s/wqt4gdbuhuqbg6u/for_azure_test.tar.gz
+    wget https://www.dropbox.com/s/pzloevkr8h3kyac/luigi-pnlpipe-test-data.tar.gz
 
-    tar -xzvf for_azure_test.tar.gz
-    mv for_azure_test rawdata/
-
+    tar -xzvf luigi-pnlpipe-test-data.tar.gz
 
     # shorten T2w test data
     git clone https://github.com/pnlbwh/trainingDataT2Masks.git
@@ -32,7 +30,7 @@ fi
 
 
 # hack recon-all
-sed -i "356s+cmd+'mv $HOME/rawdata/freesurfer $HOME/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" luigi-pnlpipe/workflows/struct_pipe.py
+sed -i "361s+cmd+'mv $HOME/rawdata/freesurfer $HOME/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" luigi-pnlpipe/workflows/struct_pipe.py
 
 
 
