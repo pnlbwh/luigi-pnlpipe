@@ -130,7 +130,7 @@ if __name__ == '__main__':
                                        struct_template=args.t2_template))
 
                 elif args.task=='Wmql':
-                    jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
+                    jobs.append(Wmql(bids_data_dir=args.bids_data_dir,
                                        derivatives_dir=derivatives_dir,
                                        id=id,
                                        ses=ses,
@@ -210,7 +210,7 @@ if __name__ == '__main__':
 
 
                 elif args.task == 'Wmql':
-                    jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
+                    jobs.append(Wmql(bids_data_dir=args.bids_data_dir,
                                        derivatives_dir=derivatives_dir,
                                        id=id,
                                        ses=ses,
