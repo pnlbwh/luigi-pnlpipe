@@ -3,10 +3,10 @@
 set -eo pipefail
 
 cd /home/pnlbwh
-export LANG=en_US.UTF-8
 
 # pushd .
 # cd luigi-pnlpipe
+# git reset --hard
 # git checkout $BRANCH
 # git pull origin $BRANCH
 # popd
@@ -20,19 +20,23 @@ then
 
     tar -xzvf $test_data
 
-    # shorten T2w test data
-    git clone https://github.com/pnlbwh/trainingDataT2Masks.git
-    pushd .
-    cd trainingDataT2Masks
-    ./mktrainingcsv.sh .
-    head -n 5 trainingDataT2Masks-hdr.csv > trainingDataT2Masks-curt.csv
-    popd
+
+    # download and shorten T2w test data
+    if [ ! -d trainingDataT2Masks ]
+    then
+        git clone https://github.com/pnlbwh/trainingDataT2Masks.git
+        pushd .
+        cd trainingDataT2Masks
+        ./mktrainingcsv.sh .
+
+        head -n 5 trainingDataT2Masks-hdr.csv > trainingDataT2Masks-curt.csv
+        popd
+    fi
 fi
 
 
 # hack recon-all
 sed -i "361s+cmd+'mv $HOME/CTE/rawdata/freesurfer $HOME/CTE/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" luigi-pnlpipe/workflows/struct_pipe.py
-
 
 
 cd luigi-pnlpipe
@@ -43,11 +47,16 @@ cd luigi-pnlpipe
 ## structural pipeline ##
 export LUIGI_CONFIG_PATH=`pwd`/test_params/struct_pipe_params.cfg
 
+# test of StructMask
 workflows/ExecuteTask.py --task StructMask --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --t2-template sub-*/ses-01/anat/*_T2w.nii.gz
 
+
+# test of Freesurfer
 workflows/ExecuteTask.py --task Freesurfer --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --t1-template sub-*/ses-01/anat/*_T1w.nii.gz --t2-template sub-*/ses-01/anat/*_T2w.nii.gz
+
+
 
 ## dwi pipeline ##
 export LUIGI_CONFIG_PATH=`pwd`/test_params/dwi_pipe_params.cfg
@@ -55,6 +64,7 @@ export LUIGI_CONFIG_PATH=`pwd`/test_params/dwi_pipe_params.cfg
 # test of EddyEpi (FslEddy+PnlEpi) and Ukf
 workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz
+
 
 # test of EddyEpi (PnlEddy)
 # replace eddy_task in dwi_pipe_params
@@ -64,6 +74,8 @@ rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/dwi/*Ed_dwi.nii.gz
 
 workflows/ExecuteTask.py --task EddyEpi --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz
+
+
 
 ## fs2dwi pipeline ##
 export LUIGI_CONFIG_PATH=`pwd`/test_params/fs2dwi_pipe_params.cfg
