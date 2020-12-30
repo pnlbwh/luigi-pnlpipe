@@ -131,6 +131,7 @@ if __name__ == '__main__':
 
                 elif args.task=='Wmql':
                     jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir,
                                        id=id,
                                        ses=ses,
                                        dwi_template=args.dwi_template,
@@ -142,6 +143,7 @@ if __name__ == '__main__':
                 # as part of Fs2Dwi with just t1
                 elif args.task=='Wmqlqc':
                     jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir,
                                        id=id,
                                        ses=ses,
                                        dwi_template=args.dwi_template,
@@ -209,6 +211,7 @@ if __name__ == '__main__':
 
                 elif args.task == 'Wmql':
                     jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir,
                                        id=id,
                                        ses=ses,
                                        dwi_template=args.dwi_template))
@@ -216,6 +219,7 @@ if __name__ == '__main__':
 
                 elif args.task=='Wmqlqc':
                     jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir,
                                        id=id,
                                        ses=ses,
                                        dwi_template=args.dwi_template))
