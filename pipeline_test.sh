@@ -5,11 +5,11 @@ set -eo pipefail
 cd /home/pnlbwh
 export LANG=en_US.UTF-8
 
-pushd .
-cd luigi-pnlpipe
-git checkout $BRANCH
-git pull origin $BRANCH
-popd
+# pushd .
+# cd luigi-pnlpipe
+# git checkout $BRANCH
+# git pull origin $BRANCH
+# popd
 
 
 # download test data
@@ -72,7 +72,7 @@ export LUIGI_CONFIG_PATH=`pwd`/test_params/fs2dwi_pipe_params.cfg
 # delete *_T2w*nii.gz
 rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/anat/*_T2w*
 workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
---dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/dwi/*_T2w.nii.gz
+--dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/anat/*_T2w.nii.gz
 
 
 
