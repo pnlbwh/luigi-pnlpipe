@@ -54,7 +54,8 @@ workflows/ExecuteTask.py --task StructMask --bids-data-dir $HOME/CTE/rawdata -c 
 
 # test of Freesurfer
 workflows/ExecuteTask.py --task Freesurfer --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
---t1-template sub-*/ses-01/anat/*_T1w.nii.gz --t2-template sub-*/ses-01/anat/*_T2w.nii.gz
+--t1-template sub-*/ses-01/anat/*_T1w.nii.gz --t2-template sub-*/ses-01/anat/*_T2w.nii.gz \
+--num-workers 2
 
 
 
@@ -100,5 +101,6 @@ sed -i "s/acqp.txt/acqp_ap_pa.txt/g" test_params/dwi_pipe_params.cfg
 sed -i "s+/home/pnlbwh/luigi-pnlpipe/test_params/index.txt++g" test_params/dwi_pipe_params.cfg
 
 workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/HCP/rawdata -c 1042 -s 1 \
---dwi-template sub-*/ses-*/dwi/*acq-PA_dwi.nii.gz,sub-*/ses-*/dwi/*acq-AP_dwi.nii.gz
+--dwi-template sub-*/ses-*/dwi/*acq-PA*_dwi.nii.gz,sub-*/ses-*/dwi/*acq-AP*_dwi.nii.gz \
+--num-workers 2
 
