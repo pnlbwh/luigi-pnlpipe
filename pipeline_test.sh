@@ -95,9 +95,9 @@ export LUIGI_CONFIG_PATH=`pwd`/test_params/dwi_pipe_params.cfg
 
 # test of EddyEpi (TopupEddy) and Ukf
 # replace eddy_epi_task, acqp, index in dwi_pipe_params
-sed -i "s/eddy_epi_task:\ PnlEddy/eddy_task:\ topupeddy/g" test_params/dwi_pipe_params.cfg
+sed -i "s/eddy_epi_task:\ EddyEpi/eddy_task:\ topupeddy/g" test_params/dwi_pipe_params.cfg
 sed -i "s/acqp.txt/acqp_ap_pa.txt/g" test_params/dwi_pipe_params.cfg
-sed -i "s/index.txt//g" test_params/dwi_pipe_params.cfg
+sed -i "s+/home/pnlbwh/luigi-pnlpipe/test_params/index.txt++g" test_params/dwi_pipe_params.cfg
 
 workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/HCP/rawdata -c 1042 -s 1 \
 --dwi-template sub-*/ses-*/dwi/*acq-PA_dwi.nii.gz,sub-*/ses-*/dwi/*acq-AP_dwi.nii.gz
