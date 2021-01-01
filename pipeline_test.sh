@@ -4,12 +4,26 @@ set -eo pipefail
 
 cd /home/pnlbwh
 
-# pushd .
-# cd luigi-pnlpipe
-# git reset --hard
-# git checkout $BRANCH
-# git pull origin $BRANCH
-# popd
+
+# do not clone again
+if [[ ! $@ =~ noclone ]]
+    pushd .
+    cd luigi-pnlpipe
+    git reset --hard
+    git checkout $BRANCH
+    git pull origin $BRANCH
+    popd
+fi
+read
+
+
+# do not remove any previous output
+remove=1
+if [[ $@ =~ noremove ]]
+then
+    echo Not removing any previous output
+    remove=0
+fi
 
 
 # download test data
@@ -71,7 +85,7 @@ workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/CTE/rawdata -c 1004 -s
 # replace eddy_task in dwi_pipe_params
 sed -i "s/eddy_task:\ FslEddy/eddy_task:\ PnlEddy/g" test_params/dwi_pipe_params.cfg
 # delete *Ed_dwi.nii.gz
-rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/dwi/*Ed_dwi.nii.gz
+(( remove==1 )) && rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/dwi/*Ed_dwi.nii.gz
 
 workflows/ExecuteTask.py --task EddyEpi --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz
@@ -83,7 +97,7 @@ export LUIGI_CONFIG_PATH=`pwd`/test_params/fs2dwi_pipe_params.cfg
 
 # test of Wmql
 # delete *_T2w*nii.gz
-rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/anat/*_T2w*
+(( remove==1 )) && rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/anat/*_T2w*
 workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/anat/*_T2w.nii.gz
 
