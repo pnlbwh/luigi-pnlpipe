@@ -25,16 +25,16 @@ while getopts "hb:" OPTION; do
 done
 
 
-
 cd /home/pnlbwh
+
 
 
 # do not clone again
 if [[ ! $@ =~ noclone ]]
+then
     pushd .
     cd luigi-pnlpipe
     git reset --hard
-    git checkout $BRANCH
     git pull origin $BRANCH
     popd
 fi
