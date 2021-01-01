@@ -26,7 +26,7 @@
 
 
 #########################
-$ topup: --verbose --config=b02b0.cnf
+$ topup: --verbose --config=b02b0.cnf --miter=2
 #########################
 
 
@@ -90,6 +90,6 @@ $ applytopup: --verbose --method=jac
 '''
 
 #########################
-$ eddy_openmp: --verbose --data_is_shelled
+$ eddy_openmp: --verbose --data_is_shelled --niter=1
 #########################
 
