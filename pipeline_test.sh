@@ -2,6 +2,30 @@
 
 set -eo pipefail
 
+
+usage (){
+echo -e "
+Convenient script for testing luigi-pnlpipe, pnlNipype, 
+CNN-Diffusion-MRIBrain-Segmentation, and pnlpipe_software
+
+Usage:
+./pipeline_test.sh [noclone] [noremove] [-b branch]
+
+The default branch is the one at https://github.com/pnlbwh/luigi-pnlpipe
+"
+
+exit 0
+}
+
+while getopts "hb:" OPTION; do
+    case $OPTION in
+        h) usage;;
+        b) BRANCH=$OPTARG;;
+    esac
+done
+
+
+
 cd /home/pnlbwh
 
 
@@ -14,7 +38,7 @@ if [[ ! $@ =~ noclone ]]
     git pull origin $BRANCH
     popd
 fi
-read
+
 
 
 # do not remove any previous output
@@ -24,6 +48,7 @@ then
     echo Not removing any previous output
     remove=0
 fi
+
 
 
 # download test data
