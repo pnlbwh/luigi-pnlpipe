@@ -27,7 +27,13 @@ def params(request):
     gt_img = load(filename.replace(outroot, REF_DIR))
     out_img = load(filename)
 
-    print('Testing', splitext(basename(filename))[0])
+    print('Testing', basename(filename).split('.nii.gz')[0])
 
-    return (gt_img, out_img)
+    params = {}
+    params['gt_img']= gt_img
+    params['out_img']= out_img
 
+    params['gt_prefix']= filename.replace(outroot, REF_DIR).split('.nii.gz')[0]
+    params['out_prefix']= filename.split('.nii.gz')[0]
+
+    return params
