@@ -1,20 +1,18 @@
 import pytest
-from os.path import splitext, abspath, basename, dirname, join as pjoin
-from nibabel import load
+from os.path import abspath, basename, dirname, join as pjoin
 
 REF_DIR = pjoin(abspath(dirname(__file__)), 'Reference')
-
 
 def pytest_addoption(parser):
 
     parser.addoption(
         "--filename",
-        help="image filename",
+        help="reference filename",
     )
 
     parser.addoption(
         "--outroot",
-        help="root directory container CTE/ and HCP/ folders",
+        help="root directory containing CTE/ and HCP/ folders",
     )
 
 
@@ -24,16 +22,11 @@ def params(request):
     filename= abspath(request.config.getoption('filename'))
     outroot = abspath(request.config.getoption('outroot'))
 
-    gt_img = load(filename.replace(outroot, REF_DIR))
-    out_img = load(filename)
-
-    print('Testing', basename(filename).split('.nii.gz')[0])
+    print('Testing', basename(filename))
 
     params = {}
-    params['gt_img']= gt_img
-    params['out_img']= out_img
+    params['gt_name']= filename
+    params['out_name']= filename.replace(REF_DIR, outroot)
 
-    params['gt_prefix']= filename.replace(outroot, REF_DIR).split('.nii.gz')[0]
-    params['out_prefix']= filename.split('.nii.gz')[0]
 
     return params

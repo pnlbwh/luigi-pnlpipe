@@ -1,50 +1,99 @@
 import numpy as np
-from os.path import isfile
-import pytest
+
 from conversion import read_bvals, read_bvecs
+from nibabel import load
+import json
+import vtk
+from vtk.util.numpy_support import vtk_to_numpy
 
 REL_DIFF_THRESH = 10
 
 def test_header(params):
 
-    np.testing.assert_almost_equal(params['gt_img'].affine, params['out_img'].affine)
+    gt_data= load(params['gt_name'])
+    out_data= load(params['out_name'])
+
+    np.testing.assert_almost_equal(gt_data.affine, out_data.affine)
 
 
 def test_data(params):
 
-    gt_data= params['gt_img'].get_fdata()
-    out_data= params['out_img'].get_fdata()
+    gt_data= load(params['gt_name']).get_fdata()
+    out_data= load(params['out_name']).get_fdata()
 
     # relative percentage difference
     rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
     np.testing.assert_array_less(rel_diff, REL_DIFF_THRESH)
 
 
+def test_bvals(params):
 
-def test_vectors(params):
+    gt_data= read_bvals(params['gt_name'].replace('.nii.gz', '.bval'))
+    out_data= read_bvals(params['out_name'].replace('.nii.gz', '.bval'))
 
-    bval_file= params['out_prefix']+ '.bval'
-    bvec_file= params['out_prefix']+ '.bvec'
-
-    if isfile(bval_file):
-        # bvals
-        out_data = np.array(read_bvals(bval_file))
-        gt_data= np.array(read_bvals(params['gt_prefix']+ '.bval'))
-
-        # relative percentage difference
-        rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
-        np.testing.assert_array_less(rel_diff, REL_DIFF_THRESH)
+    # relative percentage difference
+    rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
+    np.testing.assert_array_less(rel_diff, REL_DIFF_THRESH)
 
 
-        # bvecs
-        out_data = np.array(read_bvecs(bvec_file))
-        gt_data= np.array(read_bvecs(params['gt_prefix']+ '.bvec'))
+def test_bvecs(params):
 
-        # relative percentage difference
-        rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
-        np.testing.assert_array_less(rel_diff, REL_DIFF_THRESH)
+    gt_data = read_bvecs(params['gt_name'].replace('.nii.gz', '.bvec'))
+    out_data = read_bvecs(params['out_name'].replace('.nii.gz', '.bvec'))
 
+    # relative percentage difference
+    rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
+    np.testing.assert_array_less(rel_diff, REL_DIFF_THRESH)
+
+
+def test_json(params):
+
+    with open(params['gt_name']) as f:
+        gt_data = json.load(f)
+
+    with open(params['out_name']) as f:
+        out_data = json.load(f)
+
+    np.testing.assert_equal(gt_data, out_data)
+
+
+def test_html(params):
+
+    with open(params['gt_name']) as f:
+        gt_data = f.read()
+
+    with open(params['out_name']) as f:
+        out_data = f.read()
+
+    np.testing.assert_equal(gt_data, out_data)
+
+
+
+def read_tensor(filename, tenname):
+
+    # Read vtk
+    pdr = vtk.vtkPolyDataReader()
+    pdr.SetFileName(filename)
+    pdr.Update()
+    out = pdr.GetOutput()
+    pd = out.GetPointData()
+
+    tensors = pd.GetArray(tenname)
+
+    if tensors is not None:
+        return vtk_to_numpy(tensors)
     else:
-        pytest.skip()
+        return -1
 
+
+def test_tracts(params):
+
+    for t in ['tensor1', 'tensor2']:
+        gt_data= read_tensor(params['gt_name'], t)
+        out_data= read_tensor(params['out_name'], t)
+
+
+        # relative percentage difference
+        rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
+        np.testing.assert_array_less(rel_diff, REL_DIFF_THRESH)
 
