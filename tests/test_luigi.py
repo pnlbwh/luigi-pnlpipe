@@ -28,8 +28,8 @@ def test_data(params):
 
 def test_bvals(params):
 
-    gt_data= read_bvals(params['gt_name'].replace('.nii.gz', '.bval'))
-    out_data= read_bvals(params['out_name'].replace('.nii.gz', '.bval'))
+    gt_data= np.array(read_bvals(params['gt_name'].replace('.nii.gz', '.bval')))
+    out_data= np.array(read_bvals(params['out_name'].replace('.nii.gz', '.bval')))
 
     # relative percentage difference
     rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
@@ -38,8 +38,8 @@ def test_bvals(params):
 
 def test_bvecs(params):
 
-    gt_data = read_bvecs(params['gt_name'].replace('.nii.gz', '.bvec'))
-    out_data = read_bvecs(params['out_name'].replace('.nii.gz', '.bvec'))
+    gt_data = np.array(read_bvecs(params['gt_name'].replace('.nii.gz', '.bvec')))
+    out_data = np.array(read_bvecs(params['out_name'].replace('.nii.gz', '.bvec')))
 
     # relative percentage difference
     rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
