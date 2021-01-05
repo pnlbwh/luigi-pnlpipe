@@ -147,6 +147,7 @@ workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/HCP/rawdata -c 1042 -s
 
 
 ### equivalence tests ###
+cd tests
 
 # nifti
 for i in `find . -name *.nii.gz`; do pytest -s test_luigi.py -k "test_header or test_data" --filename $i --outroot ~; done
