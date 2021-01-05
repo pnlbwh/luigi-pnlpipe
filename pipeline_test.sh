@@ -143,3 +143,24 @@ workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/HCP/rawdata -c 1042 -s
 --dwi-template sub-*/ses-*/dwi/*acq-PA*_dwi.nii.gz,sub-*/ses-*/dwi/*acq-AP*_dwi.nii.gz \
 --num-workers 2
 
+
+
+
+### equivalence tests ###
+
+# nifti
+for i in `find . -name *.nii.gz`; do pytest -s test_luigi.py -k "test_header or test_data" --filename $i --outroot ~; done
+
+# bvals and bvecs
+for i in `find . -name *.bval`; do pytest -s test_luigi.py -k test_bvals --filename $i --outroot ~; done
+for i in `find . -name *.bvec`; do pytest -s test_luigi.py -k test_bvecs --filename $i --outroot ~; done
+
+# tracts
+for i in `find . -name *.vtk`; do pytest -s test_luigi.py -k "test_tracts" --filename $i --outroot ~; done
+
+# json
+for i in `find . -name *.json`; do pytest -s test_luigi.py -k "test_html" --filename $i --outroot ~; done
+
+# html
+for i in `find . -name *.html`; do pytest -s test_luigi.py -k "test_html" --filename $i --outroot ~; done
+
