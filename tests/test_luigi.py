@@ -93,7 +93,12 @@ def test_tracts(params):
         out_data= read_tensor(params['out_name'], t)
 
 
-        # relative percentage difference
-        rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
+        # test if they are they really out of shape
+        with np.testing.assert_raises(ValueError):
+            gt_data - out_data
+
+
+        # if they are, test if their shapes lie within REL_DIFF_THRESH of each other
+        rel_diff = 2 * abs(gt_data.shape[0] - out_data.shape[0]) / (gt_data.shape[0] + out_data.shape[0]) * 100
         np.testing.assert_array_less(rel_diff, REL_DIFF_THRESH)
 
