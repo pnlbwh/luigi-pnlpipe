@@ -121,8 +121,8 @@ workflows/ExecuteTask.py --task EddyEpi --bids-data-dir $HOME/CTE/rawdata -c 100
 export LUIGI_CONFIG_PATH=`pwd`/test_params/fs2dwi_pipe_params.cfg
 
 # test of Wmql
-# delete *_T2w*nii.gz
-(( remove==1 )) && rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/anat/*_T2w*
+# delete *Xc_T2w.nii.gz
+(( remove==1 )) && rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/anat/*Xc_T2w.nii.gz
 workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/anat/*_T2w.nii.gz
 
