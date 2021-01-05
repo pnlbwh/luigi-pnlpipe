@@ -80,52 +80,8 @@ sed -i "361s+cmd+'mv $HOME/CTE/rawdata/freesurfer $HOME/CTE/derivatives/pnlpipe/
 
 cd luigi-pnlpipe
 
-### CTE ###
-
-
-## structural pipeline ##
-export LUIGI_CONFIG_PATH=`pwd`/test_params/struct_pipe_params.cfg
-
-# test of StructMask
-workflows/ExecuteTask.py --task StructMask --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
---t2-template sub-*/ses-01/anat/*_T2w.nii.gz
-
-
-# test of Freesurfer
-workflows/ExecuteTask.py --task Freesurfer --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
---t1-template sub-*/ses-01/anat/*_T1w.nii.gz --t2-template sub-*/ses-01/anat/*_T2w.nii.gz \
---num-workers 2
-
-
-
-## dwi pipeline ##
-export LUIGI_CONFIG_PATH=`pwd`/test_params/dwi_pipe_params.cfg
-
-# test of EddyEpi (FslEddy+PnlEpi) and Ukf
-workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
---dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz
-
-
-# test of EddyEpi (PnlEddy)
-# replace eddy_task in dwi_pipe_params
-sed -i "s/eddy_task:\ FslEddy/eddy_task:\ PnlEddy/g" test_params/dwi_pipe_params.cfg
-# delete *Ed_dwi.nii.gz and *EdEp_dwi.nii.gz
-(( remove==1 )) && rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/dwi/*Ed*_dwi.nii.gz
-
-workflows/ExecuteTask.py --task EddyEpi --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
---dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz
-
-
-
-## fs2dwi pipeline ##
-export LUIGI_CONFIG_PATH=`pwd`/test_params/fs2dwi_pipe_params.cfg
-
-# test of Wmql
-# delete *Xc_T2w.nii.gz
-(( remove==1 )) && rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/anat/*Xc_T2w.nii.gz
-workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
---dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/anat/*_T2w.nii.gz
-
+# create test log directory
+mkdir -p log
 
 
 ### HCP ###
@@ -141,7 +97,61 @@ sed -i "s+/home/pnlbwh/luigi-pnlpipe/test_params/index.txt++g" test_params/dwi_p
 
 workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/HCP/rawdata -c 1042 -s 1 \
 --dwi-template sub-*/ses-*/dwi/*acq-PA*_dwi.nii.gz,sub-*/ses-*/dwi/*acq-AP*_dwi.nii.gz \
---num-workers 2
+--num-workers 2 \
+> log/Ukf.txt 2>&1 &
+
+
+
+### CTE ###
+
+## structural pipeline ##
+export LUIGI_CONFIG_PATH=`pwd`/test_params/struct_pipe_params.cfg
+
+# test of StructMask
+workflows/ExecuteTask.py --task StructMask --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
+--t2-template sub-*/ses-01/anat/*_T2w.nii.gz \
+> log/StructMask.txt 2>&1
+
+
+# test of Freesurfer
+workflows/ExecuteTask.py --task Freesurfer --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
+--t1-template sub-*/ses-01/anat/*_T1w.nii.gz --t2-template sub-*/ses-01/anat/*_T2w.nii.gz \
+--num-workers 2 \
+> log/Freesurfer.txt 2>&1
+
+
+
+## dwi pipeline ##
+git checkout -- test_params/dwi_pipe_params.cfg
+export LUIGI_CONFIG_PATH=`pwd`/test_params/dwi_pipe_params.cfg
+
+# test of EddyEpi (FslEddy+PnlEpi) and Ukf
+workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
+--dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz \
+> log/EddyEpiUkf.txt 2>&1
+
+
+# test of EddyEpi (PnlEddy)
+# replace eddy_task in dwi_pipe_params
+sed -i "s/eddy_task:\ FslEddy/eddy_task:\ PnlEddy/g" test_params/dwi_pipe_params.cfg
+# delete *Ed_dwi.nii.gz and *EdEp_dwi.nii.gz
+(( remove==1 )) && rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/dwi/*Ed*_dwi.nii.gz
+
+workflows/ExecuteTask.py --task EddyEpi --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
+--dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz \
+> log/PnlEddy.txt 2>&1
+
+
+
+## fs2dwi pipeline ##
+export LUIGI_CONFIG_PATH=`pwd`/test_params/fs2dwi_pipe_params.cfg
+
+# test of Wmql
+# delete *Xc_T2w.nii.gz
+(( remove==1 )) && rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/anat/*Xc_T2w.nii.gz
+workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
+--dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/anat/*_T2w.nii.gz \
+> log/Wmql.txt 2>&1
 
 
 
