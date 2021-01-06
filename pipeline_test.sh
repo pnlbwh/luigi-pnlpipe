@@ -164,6 +164,11 @@ fi
 
 
 ### equivalence tests ###
+
+equality_tests 1> log/success.txt 2> log/error.txt
+
+function equality_tests() {
+
 cd tests
 
 # nifti
@@ -182,3 +187,4 @@ for i in `find . -name *.json`; do pytest -s test_luigi.py -k "test_json" --file
 # html
 for i in `find . -name *.html`; do pytest -s test_luigi.py -k "test_html" --filename $i --outroot ~; done
 
+}
