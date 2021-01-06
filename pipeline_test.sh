@@ -9,7 +9,7 @@ Convenient script for testing luigi-pnlpipe, pnlNipype,
 CNN-Diffusion-MRIBrain-Segmentation, and pnlpipe_software
 
 Usage:
-./pipeline_test.sh [noclone] [noremove] [-b branch]
+./pipeline_test.sh [noclone] [noremove] [hackfs] [pytest-only] [-b branch]
 
 The default branch is the one at https://github.com/pnlbwh/luigi-pnlpipe
 "
@@ -75,10 +75,21 @@ fi
 
 
 # hack recon-all
-sed -i "361s+cmd+'mv $HOME/CTE/rawdata/freesurfer $HOME/CTE/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" luigi-pnlpipe/workflows/struct_pipe.py
+if [[ $@ =~ hackfs ]]
+then
+    sed -i "361s+cmd+'mv $HOME/CTE/rawdata/freesurfer $HOME/CTE/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" \
+    luigi-pnlpipe/workflows/struct_pipe.py
+else
+    git checkout -- luigi-pnlpipe/workflows/struct_pipe.py
+fi
+
 
 
 cd luigi-pnlpipe
+
+
+if [[ ! $@ =~ pytest-only ]]
+then
 
 # create test log directory
 mkdir -p log
@@ -153,7 +164,7 @@ workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -
 --dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/anat/*_T2w.nii.gz \
 > log/Wmql.txt 2>&1
 
-
+fi
 
 
 ### equivalence tests ###
