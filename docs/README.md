@@ -76,8 +76,11 @@ The pipeline depends on [external software](https://github.com/pnlbwh/pnlNipype#
 instruction to install those software. Then, you can install *luigi-pnlpipe* as follows:
 
     git clone https://github.com/pnlbwh/luigi-pnlpipe.git
-    cd luigi-pnlpipe
-    pip install -r requirements.txt
+    git clone https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation.git
+
+
+**NOTE** `luigi-pnlpipe` and `pnlNipype` must be cloned in the same directory. It is essential because 
+the former leverages upon soft-linked (`ln -s`) scripts from the latter.
 
 
 The pipeline is built upon https://github.com/pnlbwh/pnlNipype individual modules.
