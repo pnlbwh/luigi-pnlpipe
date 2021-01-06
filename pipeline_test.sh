@@ -170,7 +170,7 @@ for i in `find . -name *.bvec`; do pytest -s test_luigi.py -k test_bvecs --filen
 for i in `find . -name *.vtk`; do pytest -s test_luigi.py -k "test_tracts" --filename $i --outroot ~; done
 
 # json
-for i in `find . -name *.json`; do pytest -s test_luigi.py -k "test_html" --filename $i --outroot ~; done
+for i in `find . -name *.json`; do pytest -s test_luigi.py -k "test_json" --filename $i --outroot ~; done
 
 # html
 for i in `find . -name *.html`; do pytest -s test_luigi.py -k "test_html" --filename $i --outroot ~; done
