@@ -1,7 +1,5 @@
 #!/usr/bin/bash
 
-set -eo pipefail
-
 
 usage (){
 echo -e "
