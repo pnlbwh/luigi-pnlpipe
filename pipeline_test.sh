@@ -83,14 +83,15 @@ fi
 
 cd luigi-pnlpipe
 
-
-if [[ ! $@ =~ pytest-only ]]
-then
-
 # create test log directory
 datestamp=$(date +"%Y-%m-%d")
 log=logs-$datestamp
 mkdir -p $log
+
+
+
+if [[ ! $@ =~ pytest-only ]]
+then
 
 
 ### HCP ###
@@ -201,3 +202,7 @@ fi
 
 
 # email only pytest log
+
+
+
+
