@@ -8,17 +8,21 @@ CNN-Diffusion-MRIBrain-Segmentation, and pnlpipe_software
 
 Usage:
 ./pipeline_test.sh [noclone] [noremove] [hackfs] [pytest-only] [console-print] [-b branch]
+                   [-r recipients] 
 
 The default branch is the one at https://github.com/pnlbwh/luigi-pnlpipe
+Specify email recipients of the domain @bwh.harvard.edu within double quotes e.g.
+-r \"sbouix tbillah kcho\"
 "
 
 exit 0
 }
 
-while getopts "hb:" OPTION; do
+while getopts "hb:r:" OPTION; do
     case $OPTION in
         h) usage;;
         b) BRANCH=$OPTARG;;
+        r) TO=$OPTARG;;
     esac
 done
 
@@ -194,15 +198,19 @@ if [[ $@ =~ console-print ]]
 then
     equality_tests
 else
+    pytest_log=../$log/pytest-${datestamp}.txt
+    
     {
     equality_tests
-    } > ../$log/pytest-${datestamp}.txt 2>&1
+    } > $pytest_log 2>&1
+    
+    # email only pytest log
+    for u in $TO
+    do
+        cat $pytest_log | mailx -s "luigi-pnlpipe test results" \
+        -a $pytest_log -- $u@bwh.harvard.edu
+    done
+    
 fi
-
-
-
-# email only pytest log
-
-
 
 
