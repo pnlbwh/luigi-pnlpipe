@@ -7,7 +7,7 @@ Convenient script for testing luigi-pnlpipe, pnlNipype,
 CNN-Diffusion-MRIBrain-Segmentation, and pnlpipe_software
 
 Usage:
-./pipeline_test.sh [noclone] [noremove] [hackfs] [pytest-only] [-b branch]
+./pipeline_test.sh [noclone] [noremove] [hackfs] [pytest-only] [console-print] [-b branch]
 
 The default branch is the one at https://github.com/pnlbwh/luigi-pnlpipe
 "
@@ -165,8 +165,15 @@ fi
 
 ### equivalence tests ###
 cd tests
+if [[ $@ =~ console-print ]]
+then
+    equality_tests
+else
+    equality_tests > ../log/pytest.txt 2>&1
+fi
 
-{
+
+function equality_tests() {
 
 # nifti
 for i in `find . -name *.nii.gz`; do pytest -s test_luigi.py -k "test_header or test_data" --filename $i --outroot ~; done
@@ -185,5 +192,5 @@ for i in `find . -name *.json`; do pytest -s test_luigi.py -k test_json --filena
 # html
 for i in `find . -name *.html`; do pytest -s test_luigi.py -k test_html --filename $i --outroot ~; done
 
-} > ../log/pytest.txt 2>&1
+}
 
