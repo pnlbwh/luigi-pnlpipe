@@ -191,6 +191,8 @@ if [[ $@ =~ console-print ]]
 then
     equality_tests
 else
-    { equality_tests } > ../log/pytest.txt 2>&1
+    {
+    equality_tests
+    } > ../log/pytest.txt 2>&1
 fi
 
