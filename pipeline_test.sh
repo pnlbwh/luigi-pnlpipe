@@ -195,7 +195,7 @@ then
 else
     {
     equality_tests
-    } > ../log/pytest-$datestamp.txt 2>&1
+    } > ../$log/pytest-${datestamp}.txt 2>&1
 fi
 
 
