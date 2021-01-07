@@ -1,7 +1,6 @@
 #!/usr/bin/bash
 
-
-usage (){
+usage () {
 echo -e "
 Convenient script for testing luigi-pnlpipe, pnlNipype, 
 CNN-Diffusion-MRIBrain-Segmentation, and pnlpipe_software
@@ -22,6 +21,7 @@ exit 0
 OPTS=`getopt -l help,no-clone,no-remove,hack-fs,pytest-only,console-print,branch:,to: \
 -o h,c,r,f,o,p,b:,t: -- "$@"`
 eval set -- "$OPTS"
+
 
 while true
 do
@@ -47,8 +47,11 @@ do
         --to)
             to=$2;
             shift 2;;
-        *) usage;;
-        --) break;;
+        --) 
+            shift;
+            break;;
+        *) 
+            usage;;
     esac
 done
 
@@ -56,22 +59,20 @@ done
 cd /home/pnlbwh
 
 
-
 # do not clone again
-if [[ ! $@ =~ noclone ]]
+if [[ -z $noclone ]]
 then
     pushd .
     cd luigi-pnlpipe
     git reset --hard
-    git pull origin $BRANCH
+    git pull origin $branch
     popd
 fi
 
 
-
 # do not remove any previous output
 remove=1
-if [[ $@ =~ noremove ]]
+if [[ ! -z $noremove ]]
 then
     echo Not removing any previous output
     remove=0
@@ -103,7 +104,7 @@ fi
 
 
 # hack recon-all
-if [[ $@ =~ hackfs ]]
+if [[ ! -z $hackfs ]]
 then
     sed -i "361s+cmd+'mv $HOME/CTE/rawdata/freesurfer $HOME/CTE/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" \
     luigi-pnlpipe/workflows/struct_pipe.py
@@ -120,7 +121,7 @@ mkdir -p $log
 
 
 
-if [[ ! $@ =~ pytest-only ]]
+if [[ -z $pytest_only ]]
 then
 
 
@@ -219,8 +220,9 @@ for i in `find . -name *.html`; do pytest -s test_luigi.py -k test_html --filena
 
 }
 
+
 cd tests
-if [[ $@ =~ console-print ]]
+if [[ ! -z $console_print ]]
 then
     equality_tests
 else
