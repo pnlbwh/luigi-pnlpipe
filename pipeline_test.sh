@@ -88,7 +88,7 @@ if [[ ! $@ =~ pytest-only ]]
 then
 
 # create test log directory
-datestamp=$(date + "%Y-%m-%d")
+datestamp=$(date +"%Y-%m-%d")
 log=logs-$datestamp
 mkdir -p $log
 
