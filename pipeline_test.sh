@@ -18,11 +18,37 @@ Specify email recipients of the domain @bwh.harvard.edu within double quotes e.g
 exit 0
 }
 
-while getopts "hb:r:" OPTION; do
-    case $OPTION in
-        h) usage;;
-        b) BRANCH=$OPTARG;;
-        r) TO=$OPTARG;;
+
+OPTS=`getopt -l help,no-clone,no-remove,hack-fs,pytest-only,console-print,branch:,to: \
+-o h,c,r,f,o,p,b:,t: -- "$@"`
+eval set -- "$OPTS"
+
+while true
+do
+    case "$1" in
+        --no-clone)
+            noclone=1;
+            shift 1;;
+        --no-remove)
+            noremove=1;
+            shift 1;;
+        --hack-fs)
+            hackfs=1;
+            shift 1;;
+        --pytest-only)
+            pytest_only=1;
+            shift 1;;
+        --console-print)
+            console_print=1;
+            shift 1;;
+        --branch)
+            branch=$2;
+            shift 2;;
+        --to)
+            to=$2;
+            shift 2;;
+        *) usage;;
+        --) break;;
     esac
 done
 
