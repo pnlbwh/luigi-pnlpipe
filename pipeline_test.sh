@@ -164,14 +164,6 @@ fi
 
 
 ### equivalence tests ###
-cd tests
-if [[ $@ =~ console-print ]]
-then
-    equality_tests
-else
-    equality_tests > ../log/pytest.txt 2>&1
-fi
-
 
 function equality_tests() {
 
@@ -194,3 +186,10 @@ for i in `find . -name *.html`; do pytest -s test_luigi.py -k test_html --filena
 
 }
 
+cd tests
+if [[ $@ =~ console-print ]]
+then
+    equality_tests
+else
+    { equality_tests } > ../log/pytest.txt 2>&1
+fi
