@@ -88,7 +88,9 @@ if [[ ! $@ =~ pytest-only ]]
 then
 
 # create test log directory
-mkdir -p log
+datestamp=$(date + "%Y-%m-%d")
+log=logs-$datestamp
+mkdir -p $log
 
 
 ### HCP ###
@@ -105,7 +107,7 @@ sed -i "s+/home/pnlbwh/luigi-pnlpipe/test_params/index.txt++g" test_params/dwi_p
 workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/HCP/rawdata -c 1042 -s 1 \
 --dwi-template sub-*/ses-*/dwi/*acq-PA*_dwi.nii.gz,sub-*/ses-*/dwi/*acq-AP*_dwi.nii.gz \
 --num-workers 2 \
-> log/Ukf.txt 2>&1 &
+> $log/Ukf.txt 2>&1 &
 
 
 
@@ -117,14 +119,14 @@ export LUIGI_CONFIG_PATH=`pwd`/test_params/struct_pipe_params.cfg
 # test of StructMask
 workflows/ExecuteTask.py --task StructMask --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --t2-template sub-*/ses-01/anat/*_T2w.nii.gz \
-> log/StructMask.txt 2>&1
+> $log/StructMask.txt 2>&1
 
 
 # test of Freesurfer
 workflows/ExecuteTask.py --task Freesurfer --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --t1-template sub-*/ses-01/anat/*_T1w.nii.gz --t2-template sub-*/ses-01/anat/*_T2w.nii.gz \
 --num-workers 2 \
-> log/Freesurfer.txt 2>&1
+> $log/Freesurfer.txt 2>&1
 
 
 
@@ -135,7 +137,7 @@ export LUIGI_CONFIG_PATH=`pwd`/test_params/dwi_pipe_params.cfg
 # test of EddyEpi (FslEddy+PnlEpi) and Ukf
 workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz \
-> log/EddyEpiUkf.txt 2>&1
+> $log/EddyEpiUkf.txt 2>&1
 
 
 # test of EddyEpi (PnlEddy)
@@ -146,7 +148,7 @@ sed -i "s/eddy_task:\ FslEddy/eddy_task:\ PnlEddy/g" test_params/dwi_pipe_params
 
 workflows/ExecuteTask.py --task EddyEpi --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz \
-> log/PnlEddy.txt 2>&1
+> $log/PnlEddy.txt 2>&1
 
 
 
@@ -158,7 +160,7 @@ export LUIGI_CONFIG_PATH=`pwd`/test_params/fs2dwi_pipe_params.cfg
 (( remove==1 )) && rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/anat/*Xc_T2w.nii.gz
 workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/anat/*_T2w.nii.gz \
-> log/Wmql.txt 2>&1
+> $log/Wmql.txt 2>&1
 
 fi
 
@@ -193,6 +195,9 @@ then
 else
     {
     equality_tests
-    } > ../log/pytest.txt 2>&1
+    } > ../log/pytest-$datestamp.txt 2>&1
 fi
 
+
+
+# email only pytest log
