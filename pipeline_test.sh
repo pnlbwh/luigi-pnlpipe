@@ -6,12 +6,12 @@ Convenient script for testing luigi-pnlpipe, pnlNipype,
 CNN-Diffusion-MRIBrain-Segmentation, and pnlpipe_software
 
 Usage:
-./pipeline_test.sh [noclone] [noremove] [hackfs] [pytest-only] [console-print] [-b branch]
-                   [-r recipients] 
+./pipeline_test.sh [--no-clone] [--no-remove] [--hack-fs] [--pytest-only]
+                   [--console-print] [--branch NAME] [--to RECIPIENTS]
 
 The default branch is the one at https://github.com/pnlbwh/luigi-pnlpipe
 Specify email recipients of the domain @bwh.harvard.edu within double quotes e.g.
--r \"sbouix tbillah kcho\"
+--to \"sbouix tbillah kcho\"
 "
 
 exit 0
@@ -233,7 +233,7 @@ else
     } > $pytest_log 2>&1
     
     # email only pytest log
-    for u in $TO
+    for u in $to
     do
         cat $pytest_log | mailx -s "luigi-pnlpipe test results" \
         -a $pytest_log -- $u@bwh.harvard.edu
