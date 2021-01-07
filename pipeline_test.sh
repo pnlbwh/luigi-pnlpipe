@@ -193,3 +193,4 @@ then
 else
     { equality_tests } > ../log/pytest.txt 2>&1
 fi
+
