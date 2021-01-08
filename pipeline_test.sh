@@ -26,6 +26,8 @@ eval set -- "$OPTS"
 while true
 do
     case "$1" in
+        -h|--help)
+            usage;;
         --no-clone)
             noclone=1;
             shift 1;;
@@ -50,8 +52,10 @@ do
         --) 
             shift;
             break;;
-        *) 
-            usage;;
+        *)  
+            echo One or more of the args could not be recognized
+            echo See ./pipeline_test.sh --help
+            exit 1
     esac
 done
 
