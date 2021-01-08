@@ -206,7 +206,13 @@ fi
 function equality_tests() {
 
 # nifti
-for i in `find . -name *.nii.gz`; do pytest -s test_luigi.py -k "test_header or test_data" --filename $i --outroot ~; done
+for i in `find . -name fs2dwi -prune -false -o -name *.nii.gz`
+do
+    pytest -s test_luigi.py -k "test_header or test_data" --filename $i --outroot ~
+done
+
+# wmparc
+for i in `find . -name wmparc*`; do pytest -s test_luigi.py -k test_wmparc --filename $i --outroot ~; done
 
 # bvals and bvecs
 for i in `find . -name *.bval`; do pytest -s test_luigi.py -k test_bvals --filename $i --outroot ~; done
