@@ -7,6 +7,7 @@ import vtk
 from vtk.util.numpy_support import vtk_to_numpy
 
 REL_DIFF_THRESH = 10
+DICE_COEFF_THRES = 0.7
 
 def test_header(params):
 
@@ -67,6 +68,30 @@ def test_html(params):
 
     np.testing.assert_equal(gt_data, out_data)
 
+
+def test_wmparc(params):
+
+    gt_data= load(params['gt_name'])
+    out_data= load(params['out_name'])
+
+    ref_labels = gt_data.get_fdata()
+    out_labels = out_data.get_fdata()
+
+    labels= np.unique(ref_labels)
+
+    dice_coeff = labels.copy()
+    for i, l in enumerate(labels):
+        temp_ref = (ref_labels == l) * 1
+        temp_out = (out_labels == l) * 1
+
+        intersection = (temp_ref * temp_out).sum()
+        dice = 2 * intersection / (temp_ref.sum() + temp_out.sum())
+
+        dice_coeff[i]= dice
+
+    outliers= dice_coeff[dice_coeff<DICE_COEFF_THRES]
+
+    np.testing.assert_array_less(len(outliers)/len(labels), REL_DIFF_THRESH)
 
 
 def read_tensor(filename, tenname):
