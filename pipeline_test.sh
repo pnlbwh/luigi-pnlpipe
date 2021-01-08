@@ -70,6 +70,7 @@ then
     cd luigi-pnlpipe
     git reset --hard
     git pull origin $branch
+    cat pipeline_test.sh
     popd
 fi
 
