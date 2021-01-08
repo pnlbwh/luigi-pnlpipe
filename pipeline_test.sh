@@ -6,10 +6,11 @@ Convenient script for testing luigi-pnlpipe, pnlNipype,
 CNN-Diffusion-MRIBrain-Segmentation, and pnlpipe_software
 
 Usage:
-./pipeline_test.sh [--no-clone] [--no-remove] [--hack-fs] [--pytest-only]
-                   [--console-print] [--branch NAME] [--to RECIPIENTS]
+./pipeline_test.sh [--no-clone] [--no-remove] [--hack-fs] [--pytest-only] [--console-print]
+                   [--luigi-pnlpipe BRANCH_NAME] [--pnlNipype BRANCH_NAME] [--to RECIPIENTS]
 
-The default branch is the one at https://github.com/pnlbwh/luigi-pnlpipe
+The default branches are the ones at https://github.com/pnlbwh/luigi-pnlpipe
+and https://github.com/pnlbwh/pnlNipype.
 Specify email recipients of the domain @bwh.harvard.edu within double quotes e.g.
 --to \"sbouix tbillah kcho\"
 "
@@ -43,8 +44,11 @@ do
         --console-print)
             console_print=1;
             shift 1;;
-        --branch)
-            branch=$2;
+        --luigi-pnlpipe)
+            luigi_branch=$2;
+            shift 2;;
+        --pnlNipype)
+            nipype_branch=$2;
             shift 2;;
         --to)
             to=$2;
@@ -66,12 +70,14 @@ cd /home/pnlbwh
 # do not clone again
 if [[ -z $noclone ]]
 then
-    pushd .
     cd luigi-pnlpipe
     git reset --hard
-    git pull origin $branch
-    cat pipeline_test.sh
-    popd
+    git pull origin $luigi_branch
+
+    cd ../pnlNipype
+    git pull origin $nipype_branch
+
+    cd ..
 fi
 
 
