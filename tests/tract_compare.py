@@ -38,7 +38,7 @@ def convert_cluster_to_volume(inpd, volume):
     return new_voxel_data
 
 
-def calc_dice(voxel_data_l, voxel_data_2):
+def calc_dice(voxel_data_1, voxel_data_2):
 
     voxel_data_1[numpy.isnan(voxel_data_1)] = 0
     voxel_data_2[numpy.isnan(voxel_data_2)] = 0
@@ -68,7 +68,7 @@ def calc_dice(voxel_data_l, voxel_data_2):
 
 def tract2vol(tract_name, volume_name):
     inpd= read_polydata(tract_name)
-    volume = nibabel.load(bse_name)
+    volume = nibabel.load(volume_name)
     voxel_data= convert_cluster_to_volume(inpd, volume)
 
     return voxel_data
