@@ -500,6 +500,8 @@ In addition, as of now, UKFTractography is performed on b-shells<=2000. This def
 
     bhigh: 2000
 
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/Ukf_TopupEddy.PNG)
+
 Run it:
 
 ```bash
