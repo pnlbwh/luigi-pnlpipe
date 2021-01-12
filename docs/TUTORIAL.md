@@ -519,8 +519,10 @@ for performing whole-brain tractography parcellation. The outputs of that script
 * a parcellation of anatomical fiber tracts organized according to the brain lobes they connect
 
 
-Usability of this script imposes a number of dependencies on your software environment--
-3D Slicer executable, SlicerDMRI extension, and xvfb-run server. Those dependencies of `wm_apply_ORG_atlas_to_subject.sh` 
+Configuration:
+
+Usability of this script imposes a number of dependencies on your software environment--3D Slicer executable, 
+SlicerDMRI extension, and xvfb-run server. Those dependencies of `wm_apply_ORG_atlas_to_subject.sh` 
 are specified in [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg) as follows:
 
 ```cfg
