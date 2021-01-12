@@ -1,13 +1,10 @@
 import numpy as np
-
-from conversion import read_bvals, read_bvecs
 from nibabel import load
 import json
-import vtk
-from vtk.util.numpy_support import vtk_to_numpy
+from conversion import read_bvals, read_bvecs
 
-REL_DIFF_THRESH = 10
-DICE_COEFF_THRES = 0.7
+REL_DIFF_MAX = 10
+DICE_COEFF_MIN = 0.95
 
 def test_header(params):
 
@@ -24,7 +21,7 @@ def test_data(params):
 
     # relative percentage difference
     rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
-    np.testing.assert_array_less(rel_diff, REL_DIFF_THRESH)
+    np.testing.assert_array_less(rel_diff, REL_DIFF_MAX)
 
 
 def test_bvals(params):
@@ -34,7 +31,7 @@ def test_bvals(params):
 
     # relative percentage difference
     rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
-    np.testing.assert_array_less(rel_diff, REL_DIFF_THRESH)
+    np.testing.assert_array_less(rel_diff, REL_DIFF_MAX)
 
 
 def test_bvecs(params):
@@ -44,7 +41,7 @@ def test_bvecs(params):
 
     # relative percentage difference
     rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
-    np.testing.assert_array_less(rel_diff, REL_DIFF_THRESH)
+    np.testing.assert_array_less(rel_diff, REL_DIFF_MAX)
 
 
 def test_json(params):
@@ -89,41 +86,19 @@ def test_wmparc(params):
 
         dice_coeff[i]= dice
 
-    outliers= dice_coeff[dice_coeff<DICE_COEFF_THRES]
-
-    np.testing.assert_array_less(len(outliers)/len(labels), REL_DIFF_THRESH)
-
-
-def read_tensor(filename, tenname):
-
-    # Read vtk
-    pdr = vtk.vtkPolyDataReader()
-    pdr.SetFileName(filename)
-    pdr.Update()
-    out = pdr.GetOutput()
-    pd = out.GetPointData()
-
-    tensors = pd.GetArray(tenname)
-
-    if tensors is not None:
-        return vtk_to_numpy(tensors)
-    else:
-        return -1
+    np.testing.assert_array_less(DICE_COEFF_MIN, dice_coeff.min())
 
 
 def test_tracts(params):
 
-    for t in ['tensor1', 'tensor2']:
-        gt_data= read_tensor(params['gt_name'], t)
-        out_data= read_tensor(params['out_name'], t)
+    from tract_compare import tract2vol, calc_dice
 
+    gt_tract, gt_bse= params['gt_name'].split(',')
+    out_tract, out_bse = params['out_name'].split(',')
 
-        # test if they are they really out of shape
-        with np.testing.assert_raises(ValueError):
-            gt_data - out_data
+    voxel_data_1 = tract2vol(gt_tract, gt_bse)
+    voxel_data_2 = tract2vol(out_tract, out_bse)
 
-
-        # if they are, test if their shapes lie within REL_DIFF_THRESH of each other
-        rel_diff = 2 * abs(gt_data.shape[0] - out_data.shape[0]) / (gt_data.shape[0] + out_data.shape[0]) * 100
-        np.testing.assert_array_less(rel_diff, REL_DIFF_THRESH)
+    d_standard, d_weighted= calc_dice(voxel_data_1, voxel_data_2)
+    np.testing.assert_array_less(DICE_COEFF_MIN, d_weighted)
 
