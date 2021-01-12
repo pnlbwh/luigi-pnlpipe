@@ -227,7 +227,11 @@ for i in `find . -name *.bval`; do pytest -v -s test_luigi.py -k test_bvals --fi
 for i in `find . -name *.bvec`; do pytest -v -s test_luigi.py -k test_bvecs --filename $i --outroot ~; done
 
 # tracts
-for i in `find . -name *.vtk`; do pytest -v -s test_luigi.py -k test_tracts --filename $i --outroot ~; done
+for i in `find . -name *EdEp_bse.nii.gz`,`find . -name *EdEp.vtk`
+do
+    pytest -v -s test_luigi.py -k test_tracts --filename $i --outroot ~
+done
+
 
 # json
 for i in `find . -name *.json`; do pytest -v -s test_luigi.py -k test_json --filename $i --outroot ~; done
