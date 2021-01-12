@@ -512,9 +512,16 @@ exec/ExecuteTask --task Ukf \
 ## Wma800
 
 We use [SlicerDMRI/whitematteranalysis](https://github.com/SlicerDMRI/whitematteranalysis) provided 
-`wm_apply_ORG_atlas_to_subject.sh` script for performing white matter clustering. Usability of this script imposes a 
-number of dependencies on your software environment--3D Slicer executable, SlicerDMRI extension, and xvfb-run server. 
-Those dependencies of `wm_apply_ORG_atlas_to_subject.sh` are specified in [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg) as follows:
+`wm_apply_ORG_atlas_to_subject.sh` script and [ORG-800FC-100HCP white matter atlas](https://dmri.slicer.org/atlases/) 
+for performing whole-brain tractography parcellation. The outputs of that script include:
+
+* a parcellation of the entire white matter into 800 fiber clusters
+* a parcellation of anatomical fiber tracts organized according to the brain lobes they connect
+
+
+Usability of this script imposes a number of dependencies on your software environment--
+3D Slicer executable, SlicerDMRI extension, and xvfb-run server. Those dependencies of `wm_apply_ORG_atlas_to_subject.sh` 
+are specified in [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg) as follows:
 
 ```cfg
 slicer_exec: /path/to/Slicer-4.10.2-linux-amd64/SlicerWithExtensions.sh
