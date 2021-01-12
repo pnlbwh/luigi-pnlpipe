@@ -93,8 +93,8 @@ def test_tracts(params):
 
     from tract_compare import tract2vol, calc_dice
 
-    gt_tract, gt_bse= params['gt_name'].split(',')
-    out_tract, out_bse = params['out_name'].split(',')
+    gt_bse, gt_tract = params['gt_name'].split(',')
+    out_bse, out_tract = params['out_name'].split(',')
 
     voxel_data_1 = tract2vol(gt_tract, gt_bse)
     voxel_data_2 = tract2vol(out_tract, out_bse)
