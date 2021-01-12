@@ -166,7 +166,7 @@ in a shared cluster environment.
 in the rest of the tutorial. You can follow the above group example as a model for the rest.
 * Each relevant configuration snippet should be saved in a `.cfg` file and defined in `LUIGI_CONFIG_PATH` environment variable.
 * If there is more than one task under a workflow, which is generally the case, a `[DEFAULT]` section should be used 
-in their configuration file to allow parameter sharing with top level-tasks. [Run FSL eddy and PNL epi](#run-fsl-eddy-and-pnl-epi) sections 
+in their configuration file to allow parameter sharing with top level-tasks. [EddyEpi](#eddyepi) section 
 explains this requirement in detail.
 
 Tips:
