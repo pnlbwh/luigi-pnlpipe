@@ -654,7 +654,7 @@ Then, you should edit only the parameters relevant to your task(s).
 
 ### fs2dwi_pipe_params.cfg
 
-Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `PnlEddyEpi`, `Ukf`, `Fs2Dwi`, `Wmql`, and `Wmqlqc` tasks.
+Used by `Fs2Dwi`, `Wmql`, `Wmqlqc`, and `TractMeasures` tasks.
 
 See [fs2dwi_pipe_params.cfg](../params/fs2dwi_pipe_params.cfg)
 
