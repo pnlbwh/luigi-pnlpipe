@@ -562,11 +562,9 @@ Run it:
 ```bash
 export LUIGI_CONFIG_PATH=/path/to/fs2dwi_pipe_params.cfg
 
-
 # direct fs2dwi.py
 workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz
-
 
 # witht2 fs2dwi.py
 workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
