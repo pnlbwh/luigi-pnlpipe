@@ -2,7 +2,6 @@
 import numpy
 import vtk
 import nibabel
-from nibabel.affines import apply_affine
 
 def read_polydata(filename):
     reader = vtk.vtkPolyDataReader()
@@ -16,7 +15,7 @@ def read_polydata(filename):
 
 def convert_cluster_to_volume(inpd, volume):
 
-    volume_shape = volume.get_data().shape
+    volume_shape = volume.get_fdata().shape
     new_voxel_data = numpy.zeros(volume_shape)
 
     inpoints = inpd.GetPoints()
@@ -30,7 +29,7 @@ def convert_cluster_to_volume(inpd, volume):
         for pidx in range(0, ptids.GetNumberOfIds()):
             point = inpoints.GetPoint(ptids.GetId(pidx))
 
-            point_ijk = apply_affine(numpy.linalg.inv(volume.affine), point)
+            point_ijk = nibabel.affines.apply_affine(numpy.linalg.inv(volume.affine), point)
             point_ijk = numpy.rint(point_ijk).astype(numpy.int32)
 
             new_voxel_data[(point_ijk[0], point_ijk[1], point_ijk[2])] += 1
