@@ -93,9 +93,13 @@ fi
 
 # download test data
 test_data=luigi-pnlpipe-test-data.tar.gz
-if [ ! -d CTE/rawdata ] || [ ! -d HCP/rawdata ]
+if [ ! -f $test_data ]
 then
     wget https://www.dropbox.com/s/pzloevkr8h3kyac/$test_data
+fi
+
+if [ ! -d CTE/rawdata ] || [ ! -d HCP/rawdata ]
+then
 
     tar -xzvf $test_data
 
