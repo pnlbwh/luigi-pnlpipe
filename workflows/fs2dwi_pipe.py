@@ -124,6 +124,29 @@ class Wmql(Task):
 
 
 @requires(Wmql)
+class TractMeasures(Task):
+
+    exe= Parameter()
+
+    def run(self):
+
+        cmd = (' ').join([self.exe,
+                          '--inputtype Fibers_File_Folder',
+                          '--format Column_Hierarchy',
+                          '--separator Comma',
+                          '--inputdirectory', self.input(),
+                          '--outputfile', self.output()])
+        p = Popen(cmd, shell=True)
+        p.wait()
+
+        write_provenance(self)
+
+    def output(self):
+
+        return local.path(self.input().replace('wmql', 'tractMeasures.csv'))
+
+
+@requires(Wmql)
 class Wmqlqc(Task):
 
     id = Parameter()
