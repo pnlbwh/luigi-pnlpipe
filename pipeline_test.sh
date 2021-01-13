@@ -123,6 +123,8 @@ fi
 
 
 
+export ANTS_RANDOM_SEED=123456
+
 cd luigi-pnlpipe
 
 # create test log directory
