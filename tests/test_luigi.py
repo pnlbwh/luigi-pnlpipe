@@ -2,6 +2,7 @@ import numpy as np
 from nibabel import load
 import json
 from conversion import read_bvals, read_bvecs
+import pandas as pd
 
 REL_DIFF_MAX = 10
 DICE_COEFF_MIN = 0.95
@@ -101,4 +102,15 @@ def test_tracts(params):
 
     d_standard, d_weighted= calc_dice(voxel_data_1, voxel_data_2)
     np.testing.assert_array_less(DICE_COEFF_MIN, d_weighted)
+
+
+
+def test_wmql(params):
+
+    gt_data= pd.read_csv(params['gt_name']).values
+    out_data= pd.read_csv(params['out_name']).values
+
+    # relative percentage difference
+    rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
+    np.testing.assert_array_less(rel_diff, REL_DIFF_MAX)
 

@@ -238,6 +238,8 @@ do
     pytest -v -s test_luigi.py -k test_tracts --filename $i --outroot ~
 done
 
+# wmql tract measures
+for i in `find . -name *.csv`; do pytest -v -s test_luigi.py -k test_wmql --filename $i --outroot ~; done
 
 # json
 for i in `find . -name *.json`; do pytest -v -s test_luigi.py -k test_json --filename $i --outroot ~; done
