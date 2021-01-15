@@ -8,7 +8,7 @@ from struct_pipe import StructMask, Freesurfer
 # TODO remove FslEddyEpi
 from dwi_pipe import CnnMask, PnlEddy, FslEddy, FslEddyEpi, \
     TopupEddy, EddyEpi, Ukf
-from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc
+from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc, TractMeasures
 from scripts.util import abspath, isfile, pjoin, LIBDIR
 from os import getenv, stat
 
@@ -47,7 +47,7 @@ if __name__ == '__main__':
                                  'PnlEddy', 'FslEddy', 'TopupEddy',
                                  'FslEddyEpi', 'EddyEpi',
                                  'Ukf',
-                                 'Fs2Dwi', 'Wmql', 'Wmqlqc'])
+                                 'Fs2Dwi', 'Wmql', 'Wmqlqc', 'TractMeasures'])
 
     parser.add_argument('--num-workers', type=int, default=1, help='number of Luigi workers')
 
@@ -131,11 +131,19 @@ if __name__ == '__main__':
 
                 elif args.task=='Wmql':
                     jobs.append(Wmql(bids_data_dir=args.bids_data_dir,
-                                       derivatives_dir=derivatives_dir,
-                                       id=id,
-                                       ses=ses,
-                                       dwi_template=args.dwi_template,
-                                       struct_template=args.t2_template))
+                                     derivatives_dir=derivatives_dir,
+                                     id=id,
+                                     ses=ses,
+                                     dwi_template=args.dwi_template,
+                                     struct_template=args.t2_template))
+                                     
+                elif args.task=='TractMeasures':
+                    jobs.append(TractMeasures(bids_data_dir=args.bids_data_dir,
+                                              derivatives_dir=derivatives_dir,
+                                              id=id,
+                                              ses=ses,
+                                              dwi_template=args.dwi_template,
+                                              struct_template=args.t2_template))
 
 
                 # clash b/w Freesurfer and PnlEpi
@@ -211,10 +219,10 @@ if __name__ == '__main__':
 
                 elif args.task == 'Wmql':
                     jobs.append(Wmql(bids_data_dir=args.bids_data_dir,
-                                       derivatives_dir=derivatives_dir,
-                                       id=id,
-                                       ses=ses,
-                                       dwi_template=args.dwi_template))
+                                     derivatives_dir=derivatives_dir,
+                                     id=id,
+                                     ses=ses,
+                                     dwi_template=args.dwi_template))
 
 
                 elif args.task=='Wmqlqc':
@@ -223,6 +231,14 @@ if __name__ == '__main__':
                                        id=id,
                                        ses=ses,
                                        dwi_template=args.dwi_template))
+                                       
+                                       
+                elif args.task=='TractMeasures':
+                    jobs.append(TractMeasures(bids_data_dir=args.bids_data_dir,
+                                              derivatives_dir=derivatives_dir,
+                                              id=id,
+                                              ses=ses,
+                                              dwi_template=args.dwi_template))
 
 
     build(jobs, workers=args.num_workers)
