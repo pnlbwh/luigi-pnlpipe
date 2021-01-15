@@ -211,6 +211,11 @@ workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -
 --dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/anat/*_T2w.nii.gz \
 > $log/Wmql.txt 2>&1
 
+# test of TractMeasures
+workflows/ExecuteTask.py --task TractMeasures --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
+--dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/anat/*_T2w.nii.gz \
+> $log/TractMeasures.txt 2>&1
+
 fi
 
 
