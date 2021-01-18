@@ -19,7 +19,7 @@ def _get_env():
     # get hashes
     hash_file= pjoin(gettempdir(), f'hashes-{getpid()}.txt')
     if not isfile(hash_file):
-        check_call(' '.join(pjoin(dirname(__file__), 'getenv.sh'), hash_file), shell=True)
+        check_call(' '.join([pjoin(dirname(__file__), 'getenv.sh'), hash_file]), shell=True)
     
     # read hashes
     with open(hash_file) as f:
