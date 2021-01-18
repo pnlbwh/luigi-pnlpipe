@@ -1,5 +1,7 @@
 from _deps_tree import print_tree, print_history_tree
-from os.path import join as pjoin, dirname
+from os.path import join as pjoin, dirname, getpid, isfile
+from subprocess import check_call
+from tempfile import gettempdir
 
 import json
 
@@ -11,9 +13,32 @@ def _get_provenance(task):
 
     return prov
 
+def _get_env()
+    
+    # get hashes
+    hash_file= pjoin(gettempdir(), f'hashes-{getpid()}.txt')
+    if not isfile(hash_file):
+        check_call(' '.join(pjoin(dirname(__file__), 'getenv.sh'), hash_file), shell=True)
+    
+    # read hashes
+    with open(hash_file) as f:
+        content= f.read().split()
+    
+    # save hashes in a dictionary for integrating with json provenance
+    hash_dict={}
+    for line in content:
+        key,value=line.split(',')
+        hash_dict[key]=value
+        
+    return hash_dict
+
 def json_provenance(task, output=None):
     if not output:
         output = task.output()
+    
+    prov= _get_provenance(task)
+
+    prov['env']= _get_env()
 
     with open(output.dirname.join(output.stem + '.log.json'), 'w') as f:
         json.dump(_get_provenance(task), f)
