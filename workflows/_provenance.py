@@ -13,7 +13,7 @@ def _get_provenance(task):
 
     return prov
 
-def _get_env()
+def _get_env():
     
     # get hashes
     hash_file= pjoin(gettempdir(), f'hashes-{getpid()}.txt')
