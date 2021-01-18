@@ -1,5 +1,6 @@
 from _deps_tree import print_tree, print_history_tree
-from os.path import join as pjoin, dirname, getpid, isfile
+from os.path import join as pjoin, dirname, isfile
+from os import getpid
 from subprocess import check_call
 from tempfile import gettempdir
 
