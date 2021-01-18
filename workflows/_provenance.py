@@ -42,7 +42,7 @@ def json_provenance(task, output=None):
     prov['env']= _get_env()
 
     with open(output.dirname.join(output.stem + '.log.json'), 'w') as f:
-        json.dump(_get_provenance(task), f)
+        json.dump(prov, f)
 
 def write_provenance(obj, output=None):
 
