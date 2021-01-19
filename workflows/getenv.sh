@@ -10,7 +10,7 @@ log_file=$1
 echo luigi-pnlpipe,`$cmd` > $log_file
 
 # pnlNipype hash
-cd ../../pnlNipype
+[ $(basename $CWD) == workflows ] && cd ../../pnlNipype || cd ../pnlNipype
 echo pnlNipye,`$cmd` >> $log_file
 
 # pnlpipe hash
