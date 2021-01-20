@@ -1,7 +1,7 @@
 from _deps_tree import print_tree, print_history_tree
 from os.path import join as pjoin, dirname, isfile
 from os import getpid
-from subprocess import check_call
+from subprocess import check_call, check_output
 from tempfile import gettempdir
 
 import json
@@ -30,6 +30,9 @@ def _get_env():
     for line in content:
         key,value=line.split(',')
         hash_dict[key]=value
+    
+    # export conda env
+    hash_dict['conda_env']= check_output('conda env export', shell=True).decode()
         
     return hash_dict
 
