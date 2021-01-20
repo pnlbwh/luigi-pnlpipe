@@ -22,6 +22,7 @@ def test_data(params):
 
     # relative percentage difference
     rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
+    print(f'Difference {rel_diff}%')
     np.testing.assert_array_less(rel_diff, REL_DIFF_MAX)
 
 
