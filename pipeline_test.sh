@@ -183,20 +183,20 @@ workflows/ExecuteTask.py --task Freesurfer --bids-data-dir $HOME/CTE/rawdata -c 
 git checkout -- test_params/dwi_pipe_params.cfg
 export LUIGI_CONFIG_PATH=`pwd`/test_params/dwi_pipe_params.cfg
 
-# test of EddyEpi (FslEddy+PnlEpi) and Ukf
-workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
+# test of EddyEpi (FslEddy+PnlEpi)
+workflows/ExecuteTask.py --task EddyEpi --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz \
 > $log/EddyEpiUkf.txt 2>&1
 
 
-# test of EddyEpi (PnlEddy+PnlEpi)
+# test of EddyEpi (PnlEddy+PnlEpi) and Ukf
 # replace eddy_task in dwi_pipe_params
 sed -i "s/eddy_task:\ FslEddy/eddy_task:\ PnlEddy/g" test_params/dwi_pipe_params.cfg
 # delete *Ed_dwi.nii.gz, *EdEp_dwi.nii.gz, and *EdEp_bse.nii.gz
 (( remove==1 )) && rm $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/dwi/*Ed*_dwi.nii.gz \
 $HOME/CTE/derivatives/pnlpipe/sub-*/ses-*/dwi/*Ed*_bse.nii.gz
 
-workflows/ExecuteTask.py --task EddyEpi --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
+workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz \
 > $log/PnlEddy.txt 2>&1
 
