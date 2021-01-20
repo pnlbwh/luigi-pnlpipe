@@ -189,7 +189,7 @@ workflows/ExecuteTask.py --task Ukf --bids-data-dir $HOME/CTE/rawdata -c 1004 -s
 > $log/EddyEpiUkf.txt 2>&1
 
 
-# test of EddyEpi (PnlEddy)
+# test of EddyEpi (PnlEddy+PnlEpi)
 # replace eddy_task in dwi_pipe_params
 sed -i "s/eddy_task:\ FslEddy/eddy_task:\ PnlEddy/g" test_params/dwi_pipe_params.cfg
 # delete *Ed_dwi.nii.gz and *EdEp_dwi.nii.gz
