@@ -110,7 +110,11 @@ def test_wmql(params):
     gt_data= pd.read_csv(params['gt_name']).values
     out_data= pd.read_csv(params['out_name']).values
 
+    # check if all tracts have been found
+    np.testing.assert_equal(gt_data[:,0], out_data[:,0])
+    
+    # compare attributes of the found tracts
     # relative percentage difference
-    rel_diff = 2 * abs(gt_data - out_data).sum() / (gt_data + out_data).sum() * 100
+    rel_diff = 2 * abs(gt_data[:,1:] - out_data[:,1:]).sum() / (gt_data[:,1:] + out_data[:,1:]).sum() * 100
     np.testing.assert_array_less(rel_diff, REL_DIFF_MAX)
 
