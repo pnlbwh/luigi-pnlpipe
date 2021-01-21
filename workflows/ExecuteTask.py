@@ -5,12 +5,13 @@ from conversion import read_cases
 from luigi import build, configuration
 from _define_outputs import IO
 from struct_pipe import StructMask, Freesurfer
-# TODO remove FslEddyEpi
-from dwi_pipe import CnnMask, PnlEddy, FslEddy, FslEddyEpi, \
-    TopupEddy, EddyEpi, Ukf
+from dwi_pipe import CnnMask, PnlEddy, FslEddy, TopupEddy, EddyEpi, Ukf
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc, TractMeasures
 from scripts.util import abspath, isfile, pjoin, LIBDIR
 from os import getenv, stat
+from tempfile import gettempdir
+from shutil import remove
+from glob import glob
 
 if __name__ == '__main__':
     
@@ -45,7 +46,7 @@ if __name__ == '__main__':
                         choices=['StructMask', 'Freesurfer',
                                  'CnnMask',
                                  'PnlEddy', 'FslEddy', 'TopupEddy',
-                                 'FslEddyEpi', 'EddyEpi',
+                                 'EddyEpi',
                                  'Ukf',
                                  'Fs2Dwi', 'Wmql', 'Wmqlqc', 'TractMeasures'])
 
@@ -95,8 +96,8 @@ if __name__ == '__main__':
                                            t1_template=args.t1_template,
                                            t2_template=args.t2_template))
 
-                # TODO keep EddyEpi only
-                elif args.task=='PnlEddyEpi' or args.task=='FslEddyEpi' or args.task=='EddyEpi':
+                
+                elif args.task=='EddyEpi':
                     jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
                                                 derivatives_dir=derivatives_dir,
                                                 id=id,
@@ -106,7 +107,7 @@ if __name__ == '__main__':
 
 
 
-                # the following three tasks do not have pa_ap_template because
+                # Ukf task does not have pa_ap_template because
                 # when axt2 is available, pa_ap acquisition should be unavailable
                 # in other words, PnlEpi and TopupEddy are mutually exclusive
                 elif args.task=='Ukf':
@@ -118,9 +119,6 @@ if __name__ == '__main__':
                                     struct_template=args.t2_template))
 
 
-                # clash b/w Freesurfer and PnlEpi
-                # either Freesurfer have to be run separately before with t1+t2 or
-                # as part of Fs2Dwi with just t1
                 elif args.task=='Fs2Dwi':
                     jobs.append(Fs2Dwi(bids_data_dir=args.bids_data_dir,
                                        derivatives_dir=derivatives_dir,
@@ -146,9 +144,7 @@ if __name__ == '__main__':
                                               struct_template=args.t2_template))
 
 
-                # clash b/w Freesurfer and PnlEpi
-                # either Freesurfer have to be run separately before with t1+t2 or
-                # as part of Fs2Dwi with just t1
+
                 elif args.task=='Wmqlqc':
                     jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
                                        derivatives_dir=derivatives_dir,
@@ -181,8 +177,8 @@ if __name__ == '__main__':
                                         ses=ses,
                                         dwi_template=args.dwi_template))
 
-                # TODO keep EddyEpi only
-                elif args.task=='PnlEddy' or args.task=='FslEddy' or args.task=='EddyEpi':
+                
+                elif args.task=='PnlEddy' or args.task=='FslEddy':
                     jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
                                                 derivatives_dir=derivatives_dir,
                                                 id=id,
@@ -198,7 +194,7 @@ if __name__ == '__main__':
                                           pa_ap_template=args.dwi_template))
 
 
-                # the following three tasks have both dwi_template and pa_ap_template
+                # Ukf task has both dwi_template and pa_ap_template
                 # because a user may want to run {PnlEddy,FslEddy} or TopupEddy
                 elif args.task=='Ukf':
                     jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
@@ -242,4 +238,13 @@ if __name__ == '__main__':
 
 
     build(jobs, workers=args.num_workers)
-
+    
+    
+    # remove temporary provenance files
+    for f in glob(pjoin(gettempdir(), 'hashes-*.txt')):
+        remove(f)
+        
+    for f in glob(pjoin(gettempdir(), 'env-*.yml')):
+        remove(f)
+    
+    
