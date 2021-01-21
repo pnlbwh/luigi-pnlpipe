@@ -12,6 +12,16 @@ from os import getenv, stat, remove
 from tempfile import gettempdir
 from glob import glob
 
+
+def _rm_tempfiles(names):
+
+    for f in names:
+        try:
+            remove(f)
+        except PermissionError:
+            pass
+
+
 if __name__ == '__main__':
     
     config = configuration.get_config()
@@ -240,10 +250,7 @@ if __name__ == '__main__':
     
     
     # remove temporary provenance files
-    for f in glob(pjoin(gettempdir(), 'hashes-*.txt')):
-        remove(f)
-        
-    for f in glob(pjoin(gettempdir(), 'env-*.yml')):
-        remove(f)
+    _rm_tempfiles(glob(pjoin(gettempdir(), 'hashes-*.txt')))
+    _rm_tempfiles(glob(pjoin(gettempdir(), 'env-*.yml')))
     
     
