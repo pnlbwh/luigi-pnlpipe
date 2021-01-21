@@ -1,6 +1,6 @@
 from _deps_tree import print_tree, print_history_tree
 from os.path import join as pjoin, dirname, isfile
-from os import getpid
+from os import getpid, environ
 from subprocess import check_call, check_output
 from tempfile import gettempdir
 
@@ -32,7 +32,12 @@ def _get_env():
         hash_dict[key]=value
     
     # export conda env
-    hash_dict['conda_env']= check_output('conda env export', shell=True).decode()
+    env_file= pjoin(gettempdir(), f'env-{getpid()}.yml')
+    if not isfile(env_file):
+        check_output(f"{environ['CONDA_EXE']} env export > {env_file}", shell=True)
+    
+    with open(env_file) as f:
+        hash_dict['conda_env']= f.read()
         
     return hash_dict
 
