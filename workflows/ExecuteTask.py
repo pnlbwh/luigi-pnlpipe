@@ -249,7 +249,7 @@ if __name__ == '__main__':
     build(jobs, workers=args.num_workers)
     
     
-    # remove temporary provenance files
+    print('Removing temporary provenance files')
     _rm_tempfiles(glob(pjoin(gettempdir(), 'hashes-*.txt')))
     _rm_tempfiles(glob(pjoin(gettempdir(), 'env-*.yml')))
     
