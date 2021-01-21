@@ -8,9 +8,8 @@ from struct_pipe import StructMask, Freesurfer
 from dwi_pipe import CnnMask, PnlEddy, FslEddy, TopupEddy, EddyEpi, Ukf
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc, TractMeasures
 from scripts.util import abspath, isfile, pjoin, LIBDIR
-from os import getenv, stat
+from os import getenv, stat, remove
 from tempfile import gettempdir
-from shutil import remove
 from glob import glob
 
 if __name__ == '__main__':
