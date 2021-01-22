@@ -52,13 +52,13 @@ usage: ExecuteTask.py [-h] --bids-data-dir BIDS_DATA_DIR -c C -s S
                       [--dwi-template DWI_TEMPLATE]
                       [--t1-template T1_TEMPLATE] [--t2-template T2_TEMPLATE]
                       --task
-                      {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
+                      {StructMask,Freesurfer,CnnMask,PnlEddy,FslEddy,TopupEddy,EddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc,TractMeasures}
                       [--num-workers NUM_WORKERS]
                       [--derivatives-name DERIVATIVES_NAME]
 
 pnlpipe glued together using Luigi, optional parameters can be set by
 environment variable LUIGI_CONFIG_PATH, see luigi-pnlpipe/scripts/params/*.cfg
-as example
+as examples
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -69,17 +69,19 @@ optional arguments:
   -s S                  a single session ID or a .txt file where each line is
                         a session ID
   --dwi-template DWI_TEMPLATE
-                        glob bids-data-dir/dwi-template to find input data
-                        e.g. sub-*/ses-*/dwi/*_dwi.nii.gz 
-                        (default: sub-*/dwi/*_dwi.nii.gz)
+                        dwi pipeline: glob bids-data-dir/dwi-template to find
+                        input data e.g. sub-*/ses-*/dwi/*_dwi.nii.gz, fs2dwi
+                        pipeline: glob bids-data-dir/derivatives/derivatives-
+                        name/dwi-template to find input data (default:
+                        sub-*/dwi/*_dwi.nii.gz)
   --t1-template T1_TEMPLATE
-                        glob bids-data-dir/t1-template to find input data
-                        e.g. sub-*/ses-*/anat/*_T1w.nii.gz 
-                        (default: sub-*/anat/*_T1w.nii.gz)
+                        glob bids-data-dir/t1-template to find input data e.g.
+                        sub-*/ses-*/anat/*_T1w.nii.gz (default:
+                        sub-*/anat/*_T1w.nii.gz)
   --t2-template T2_TEMPLATE
                         glob bids-data-dir/t2-template to find input data
                         (default: None)
-  --task {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
+  --task {StructMask,Freesurfer,CnnMask,PnlEddy,FslEddy,TopupEddy,EddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc,TractMeasures}
                         number of Luigi workers (default: None)
   --num-workers NUM_WORKERS
                         number of Luigi workers (default: 1)
