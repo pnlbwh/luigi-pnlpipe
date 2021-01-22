@@ -683,7 +683,7 @@ the mask using your favorite visualizer and save it like shown above.
 
 ### dwi_pipe_params.cfg
 
-Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `PnlEddyEpi`, and `Ukf` tasks.
+Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `FslEddy`, `EddyEpi`, `TopupEddy`, `Ukf`, and `Wma800` tasks.
 
 See [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg)
 
