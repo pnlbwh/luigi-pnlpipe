@@ -239,7 +239,7 @@ for i in `find . -name *.bval`; do pytest -v -s test_luigi.py -k test_bvals --fi
 for i in `find . -name *.bvec`; do pytest -v -s test_luigi.py -k test_bvecs --filename $i --outroot ~; done
 
 # tracts
-for i in `find . -name sub-1042*EdEp_bse.nii.gz`,`find . -name sub-1042*EdEp.vtk`
+for i in `find . -name sub-1004*EdEp_bse.nii.gz`,`find . -name sub-1004*EdEp.vtk`
 do
     pytest -v -s test_luigi.py -k test_tracts --filename $i --outroot ~
 done
