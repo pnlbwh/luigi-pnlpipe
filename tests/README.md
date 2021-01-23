@@ -3,10 +3,10 @@
 Table of Contents
 =================
 
-     * [Download Slicer](#download-slicer)
-     * [Download test data](#download-test-data)
-     * [Launch container](#launch-container)
-     * [Run tests](#run-tests)
+ * [Download Slicer](#download-slicer)
+ * [Download test data](#download-test-data)
+ * [Launch container](#launch-container)
+ * [Run tests](#run-tests)
 
 
 
