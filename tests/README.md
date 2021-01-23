@@ -1,5 +1,15 @@
 ## Guide for running tests
 
+Table of Contents
+=================
+
+    * [Download Slicer](#download-slicer)
+    * [Download test data](#download-test-data)
+    * [Launch container](#launch-container)
+    * [Run tests](#run-tests)
+
+
+
 ### Download Slicer
 
 * Download a fresh Slicer-4.11.20200930-linux-amd64 locally
