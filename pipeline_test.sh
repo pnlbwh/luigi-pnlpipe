@@ -131,6 +131,10 @@ export ANTS_RANDOM_SEED=123456
 
 cd luigi-pnlpipe
 
+# use pnlservers hosted scheduler
+sed -i "s+http://localhost:8082/+https://pnlservers.bwh.harvard.edu/luigi/+g" luigi.cfg
+
+
 # create test log directory
 datestamp=$(date +"%Y-%m-%d")
 log=logs-$datestamp
