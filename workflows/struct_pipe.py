@@ -4,6 +4,7 @@ from luigi import Task, ExternalTask, Parameter, BoolParameter, IntParameter
 from luigi.util import inherits, requires
 from glob import glob
 from os.path import join as pjoin, abspath, isfile, basename, dirname
+from os import getenv
 import re
 
 from plumbum import local
@@ -13,6 +14,9 @@ from time import sleep
 from scripts.util import N_PROC, FILEDIR, QC_POLL, _mask_name
 
 from _glob import _glob
+from _provenance import write_provenance
+
+from warnings import warn
 
 class SelectStructFiles(ExternalTask):
     id = Parameter()
@@ -38,6 +42,9 @@ class StructAlign(Task):
                           '-o', self.output().rsplit('.nii.gz')[0]])
         p = Popen(cmd, shell=True)
         p.wait()
+
+        write_provenance(self)
+
 
     def output(self):
 
@@ -106,27 +113,32 @@ class StructMask(Task):
                 return
 
 
-        if self.slicer_exec or self.mask_qc:
+        if self.mask_qc:
             print('\n\n** Check quality of created mask {} . Once you are done, save the (edited) mask as {} **\n\n'
                   .format(auto_mask,self.output()['mask']))
 
 
-        if self.slicer_exec:
-            cmd= (' ').join([self.slicer_exec, '--python-code',
-                            '\"slicer.util.loadVolume(\'{}\'); '
-                            'slicer.util.loadLabelVolume(\'{}\')\"'
-                            .format(self.input()['aligned'],auto_mask)])
+            if self.slicer_exec:
 
-            p = Popen(cmd, shell= True)
-            p.wait()
+                if not getenv('DISPLAY'):
+                    warn('DISPLAY is undefined, cannot open Slicer')
 
+                else:
+                    cmd= (' ').join([self.slicer_exec, '--python-code',
+                                    '\"slicer.util.loadVolume(\'{}\'); '
+                                    'slicer.util.loadLabelVolume(\'{}\')\"'
+                                    .format(self.input()['aligned'],auto_mask)])
 
-        elif self.mask_qc:
+                    p = Popen(cmd, shell= True)
+                    p.wait()
+
             while 1:
                 sleep(QC_POLL)
                 if isfile(self.output()['mask']):
                     break
 
+
+        write_provenance(self, self.output()['mask'])
 
 
     def output(self):
@@ -137,7 +149,38 @@ class StructMask(Task):
             desc= 'T1wXcMabs' if '_T1w' in prefix else 'T2wXcMabs'
         
         elif self.ref_img:
-            ref_desc= glob(pjoin(self.input().dirname, self.ref_mask))[0]
+            ref_mask_pattern= pjoin(self.input().dirname, self.ref_mask)
+            try:
+                ref_desc= glob(ref_mask_pattern)[0]
+            except IndexError:
+                print(f'''\n\nERROR
+You provided *ref_img* and *ref_mask* values in:
+{getenv("LUIGI_CONFIG_PATH")}
+But no mask was found with the pattern:
+{ref_mask_pattern}
+If you are indeed trying to create a mask for {prefix} by warping
+previously created mask of {self.ref_img}, make sure *ref_img* and *ref_mask*
+contain valid suffix for existing files in:
+{self.input().dirname}
+Remember--you should have run StructMask task separately beforehand
+with the following configuration:
+```
+[StructMask]
+csvFile: /path/to/training/data.csv
+ref_img:
+ref_mask:
+```
+Once the mask is created, define *ref_img* and *ref_mask* correctly
+and re-attempt your task. If you are trying to create a T1w mask,
+*ref_img* and *ref_mask* attributes should correspond to T2w and vice-versa.\n''')
+
+                if 'Qc_mask.nii.gz' in self.ref_mask:
+                    print(f'''By the way, did you forget to quality check the previously created mask
+or save it after quality checking with {self.ref_mask} suffix?\n\n''')
+            
+                exit(1)
+
+
             desc= re.search('_desc-(.+?)_mask.nii.gz', ref_desc).group(1)
             if '_T1w' in prefix:
                 desc+= 'ToT1wXc'
@@ -148,7 +191,7 @@ class StructMask(Task):
         
         
         mask_prefix= local.path(pjoin(self.input().dirname, prefix.split('_desc-')[0])+ '_desc-'+ desc)
-        mask = _mask_name(mask_prefix, self.slicer_exec, self.mask_qc)
+        mask = _mask_name(mask_prefix, self.mask_qc)
         
         return dict(aligned= self.input(), mask=mask)
 
@@ -163,6 +206,8 @@ class N4BiasCorrect(Task):
         cmd = (' ').join(['N4BiasFieldCorrection', '-d', '3', '-i', self.output()['masked'], '-o', self.output()['n4corr']])
         check_call(cmd, shell=True)
        
+        write_provenance(self, self.output()['n4corr'])
+
 
     def output(self):
         prefix= self.input()['aligned'].basename
@@ -175,78 +220,6 @@ class N4BiasCorrect(Task):
             outPrefix= pjoin(self.input()['aligned'].dirname, prefix.split('_T2w.nii')[0])
             return dict(masked= local.path(outPrefix+ 'Ma_T2w.nii.gz'), n4corr= local.path(outPrefix+ 'MaN4_T2w.nii.gz'))
 
-
-@inherits(StructMask)
-class FreesurferAlign(Task):
-
-    t1_template= Parameter()
-    t1_csvFile = Parameter(default='')
-    t1_ref_img= Parameter(default='')
-    t1_ref_mask= Parameter(default='')
-    t1_mask_qc= BoolParameter(default=False)
-
-    t2_template= Parameter(default='')
-    t2_csvFile = Parameter(default='')
-    t2_ref_img= Parameter(default='')
-    t2_ref_mask= Parameter(default='')
-    t2_mask_qc= BoolParameter(default=False)
-
-    freesurfer_nproc= IntParameter(default=1)
-    expert_file= Parameter(default=pjoin(FILEDIR,'expert_file.txt'))
-    no_hires= BoolParameter(default=False)
-    no_skullstrip= BoolParameter(default=False)
-    subfields= BoolParameter(default=False)
-    
-    # fsWithT2= BoolParameter(default=False)
-    
-    fs_dirname= Parameter(default='freesurfer')
-
-    def requires(self):
-    
-        self.struct_template= self.t1_template
-        self.csvFile= self.t1_csvFile
-        self.ref_img= self.t1_ref_img
-        self.ref_mask= self.t1_ref_mask
-        self.mask_qc= self.t1_mask_qc
-
-        t1_attr= self.clone(StructMask)
-
-        if self.t2_template:
-            self.struct_template = self.t2_template
-            self.csvFile = self.t2_csvFile
-            self.ref_img = self.t2_ref_img
-            self.ref_mask = self.t2_ref_mask
-            self.mask_qc = self.t2_mask_qc
-            
-            t2_attr= self.clone(StructMask)
-
-            return (t1_attr,t2_attr)
-
-        else:
-            return (t1_attr,)
-
-
-    def run(self):
-        cmd = (' ').join(['fs.py',
-                          '-i', self.input()[0]['aligned'],
-                          '-m', self.input()[0]['mask'],
-                          '-o', self.output(),
-                          f'-n {self.freesurfer_nproc}',
-                          f'--expert {self.expert_file}' if self.expert_file else '',
-                          '--nohires' if self.no_hires else '',
-                          '--noskullstrip' if self.no_skullstrip else '',
-                          '--subfields' if self.subfields else '',
-                          '--t2 {} --t2mask {}'.format(self.input()[1]['aligned'],self.input()[1]['mask'])
-                                                if self.t2_template else ''])
-
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-        check_call(f'recon-all --version > {self.output()}/version.txt', shell=True)
-
-
-    def output(self):
-        return local.path(pjoin(self.input()[0]['aligned'].dirname, self.fs_dirname))
 
 
 @inherits(N4BiasCorrect)
@@ -268,6 +241,7 @@ class Freesurfer(Task):
     expert_file= Parameter(default=pjoin(FILEDIR,'expert_file.txt'))
     no_hires= BoolParameter(default=False)
     no_skullstrip= BoolParameter(default=False)
+    no_rand= BoolParameter(default=False)
     subfields= BoolParameter(default=False)
     
     # fsWithT2= BoolParameter(default=False)
@@ -299,6 +273,7 @@ class Freesurfer(Task):
             return (t1_attr,)
 
 
+
     def run(self):
         cmd = (' ').join(['fs.py',
                           '-i', self.input()[0]['n4corr'],
@@ -307,6 +282,7 @@ class Freesurfer(Task):
                           f'--expert {self.expert_file}' if self.expert_file else '',
                           '--nohires' if self.no_hires else '',
                           '--noskullstrip',
+                          '--norandomness' if self.no_rand else '',
                           '--subfields' if self.subfields else '',
                           '--t2 {}'.format(self.input()[1]['n4corr']) if self.t2_template else ''])
 
@@ -314,6 +290,8 @@ class Freesurfer(Task):
         p.wait()
         
         check_call(f'recon-all --version > {self.output()}/version.txt', shell=True)
+
+        write_provenance(self)
         
 
     def output(self):
