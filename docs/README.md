@@ -13,6 +13,9 @@ Table of Contents
    * [Luigi pipeline](#luigi-pipeline)
    * [Citation](#citation)
    * [Installation](#installation)
+      * [luigi-pnlpipe](#luigi-pnlpipe)
+      * [CNN-Diffusion-MRIBrain-Segmentation](#cnn-diffusion-mribrain-segmentation)
+      * [whitematteranalysis](#whitematteranalysis)
    * [How Luigi works](#how-luigi-works)
    * [Running luigi-pnlpipe](#running-luigi-pnlpipe)
       * [1. Organize data according to BIDS](#1-organize-data-according-to-bids)
@@ -72,18 +75,58 @@ https://github.com/pnlbwh/luigi-pnlpipe, 2020, DOI: 10.5281/zenodo.3666802
 
 # Installation
 
+## luigi-pnlpipe
 The pipeline depends on [external software](https://github.com/pnlbwh/pnlNipype#dependencies). Please follow [this](https://github.com/pnlbwh/pnlNipype#ii-independently) 
-instruction to install those software. Then, you can install *luigi-pnlpipe* as follows:
+instruction to install those software. Then, you can clone *luigi-pnlpipe* as follows:
 
     git clone https://github.com/pnlbwh/luigi-pnlpipe.git
-    cd luigi-pnlpipe
-    pip install -r requirements.txt
 
+**NOTE** `luigi-pnlpipe` and `pnlNipype` must be cloned in the same directory. It is essential because 
+the former leverages upon soft-linked (`ln -s`) scripts from the latter.
 
 The pipeline is built upon https://github.com/pnlbwh/pnlNipype individual modules.
 Documentation about individual *pnlNipype* modules can be found in [pnlNipype/TUTORIAL.md](https://github.com/pnlbwh/pnlNipype/blob/master/docs/TUTORIAL.md).
+Finally, see [here](#running-luigi-pnlpipe) for instructions about running the pipeline.
 
-Finally, see [Running luigi-pnlpipe](#running-luigi-pnlpipe) for running the pipeline.
+
+## CNN-Diffusion-MRIBrain-Segmentation
+
+* Clone it
+
+
+    git clone https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation.git
+
+* Download models
+
+https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation#4-download-models
+
+* Add to PATH
+
+
+    export PATH=/path/to/CNN-Diffusion-MRIBrain-Segmentation/pipeline/:$PATH
+
+## whitematteranalysis
+
+Firstly, this requirement is optional. Secondly, it is only required if you would like to run [Wma800](https://github.com/pnlbwh/luigi-pnlpipe/blob/c1af1082829fa19d9cdfd65040597dbb04da8f96/docs/TUTORIAL.md#wma800) task 
+from our `luigi-pnlpipe`. The latest whitematteranalysis software comes with a 
+[script](https://github.com/SlicerDMRI/whitematteranalysis/blob/master/bin/wm_apply_ORG_atlas_to_subject.sh) that performs whole-brain tractography parcellation. 
+That script alone imposes a number of dependecies on `luigi-pipeline`:
+
+* Slicer
+
+Get the stable Slicer from here, unzip it, launch `./Slicer`, and finally click on the `E` like icon on top-right 
+to install `SlicerDMRI` extension module.
+
+* Xvfb
+
+The above script needs to launch `Slicer` under the hood. For that to happen, either run that script within a virtual desktop (NoMachine) or 
+install [xorg-x11-server-Xvfb](https://centos.pkgs.org/7/centos-x86_64/xorg-x11-server-Xvfb-1.20.4-10.el7.x86_64.rpm.html).
+
+* An atlas
+
+After you have installed whitematteranalysis through our conda recipe, download the required atlas as follows:
+
+    wm_download_anatomically_curated_atlas.py -atlas ORG-800FC-100HCP ./ 
 
 
 # How Luigi works
@@ -234,7 +277,7 @@ optional arguments:
   --t2-template T2_TEMPLATE
                         glob bids-data-dir/t2-template to find input data
                         (default: None)
-  --task {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
+  --task {StructMask,Freesurfer,CnnMask,PnlEddy,FslEddy,TopupEddy,EddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc,TractMeasures}
                         number of Luigi workers (default: None)
   --num-workers NUM_WORKERS
                         number of Luigi workers (default: 1)
@@ -640,9 +683,9 @@ the mask using your favorite visualizer and save it like shown above.
 
 ### dwi_pipe_params.cfg
 
-Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `PnlEddyEpi`, and `Ukf` tasks.
+Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `FslEddy`, `EddyEpi`, `TopupEddy`, `Ukf`, and `Wma800` tasks.
 
-See [dwi_pipe_params.cfg](../params/struct_pipe_params.cfg)
+See [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg)
 
 Each parameter is preceded by the task names that use the parameter. 
 You may see [Workflows](#workflows) to know which requisite tasks are run as part of the task you want to run. 
@@ -651,9 +694,9 @@ Then, you should edit only the parameters relevant to your task(s).
 
 ### fs2dwi_pipe_params.cfg
 
-Used by `StructMask`, `BseBetmask`, `BseExtract`, `PnlEddy`, `PnlEddyEpi`, `Ukf`, `Fs2Dwi`, `Wmql`, and `Wmqlqc` tasks.
+Used by `Fs2Dwi`, `Wmql`, `Wmqlqc`, and `TractMeasures` tasks.
 
-See [fs2dwi_pipe_params.cfg](../params/struct_pipe_params.cfg)
+See [fs2dwi_pipe_params.cfg](../params/fs2dwi_pipe_params.cfg)
 
 
 

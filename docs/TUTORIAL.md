@@ -19,9 +19,13 @@ Table of Contents
          * [With both T1w and T2w](#with-both-t1w-and-t2w)
    * [DWI pipeline](#dwi-pipeline)
       * [Create masks](#create-masks-1)
-      * [Run FSL eddy and PNL epi](#run-fsl-eddy-and-pnl-epi)
-      * [Run FSL eddy](#run-fsl-eddy)
-      * [Run Topup eddy](#run-topup-eddy)
+      * [Correct eddy and epi](#correct-eddy-and-epi)
+         * [EddyEpi](#eddyepi)
+            * [FslEddy and PnlEddy](#fsleddy-and-pnleddy)
+         * [TopupEddy](#topupeddy)
+      * [UKFTractography](#ukftractography)
+      * [Wma800](#wma800)
+   * [Fs2Dwi pipeline](#fs2dwi-pipeline)
       
       
 Table of Contents created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
@@ -48,13 +52,13 @@ usage: ExecuteTask.py [-h] --bids-data-dir BIDS_DATA_DIR -c C -s S
                       [--dwi-template DWI_TEMPLATE]
                       [--t1-template T1_TEMPLATE] [--t2-template T2_TEMPLATE]
                       --task
-                      {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
+                      {StructMask,Freesurfer,CnnMask,PnlEddy,FslEddy,TopupEddy,EddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc,TractMeasures}
                       [--num-workers NUM_WORKERS]
                       [--derivatives-name DERIVATIVES_NAME]
 
 pnlpipe glued together using Luigi, optional parameters can be set by
 environment variable LUIGI_CONFIG_PATH, see luigi-pnlpipe/scripts/params/*.cfg
-as example
+as examples
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -65,17 +69,19 @@ optional arguments:
   -s S                  a single session ID or a .txt file where each line is
                         a session ID
   --dwi-template DWI_TEMPLATE
-                        glob bids-data-dir/dwi-template to find input data
-                        e.g. sub-*/ses-*/dwi/*_dwi.nii.gz 
-                        (default: sub-*/dwi/*_dwi.nii.gz)
+                        dwi pipeline: glob bids-data-dir/dwi-template to find
+                        input data e.g. sub-*/ses-*/dwi/*_dwi.nii.gz, fs2dwi
+                        pipeline: glob bids-data-dir/derivatives/derivatives-
+                        name/dwi-template to find input data (default:
+                        sub-*/dwi/*_dwi.nii.gz)
   --t1-template T1_TEMPLATE
-                        glob bids-data-dir/t1-template to find input data
-                        e.g. sub-*/ses-*/anat/*_T1w.nii.gz 
-                        (default: sub-*/anat/*_T1w.nii.gz)
+                        glob bids-data-dir/t1-template to find input data e.g.
+                        sub-*/ses-*/anat/*_T1w.nii.gz (default:
+                        sub-*/anat/*_T1w.nii.gz)
   --t2-template T2_TEMPLATE
                         glob bids-data-dir/t2-template to find input data
                         (default: None)
-  --task {StructMask,Freesurfer,CnnMask,PnlEddy,PnlEddyEpi,FslEddy,FslEddyEpi,TopupEddy,PnlEddyUkf,Fs2Dwi,Wmql,Wmqlqc}
+  --task {StructMask,Freesurfer,CnnMask,PnlEddy,FslEddy,TopupEddy,EddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc,TractMeasures}
                         number of Luigi workers (default: None)
   --num-workers NUM_WORKERS
                         number of Luigi workers (default: 1)
@@ -162,7 +168,7 @@ in a shared cluster environment.
 in the rest of the tutorial. You can follow the above group example as a model for the rest.
 * Each relevant configuration snippet should be saved in a `.cfg` file and defined in `LUIGI_CONFIG_PATH` environment variable.
 * If there is more than one task under a workflow, which is generally the case, a `[DEFAULT]` section should be used 
-in their configuration file to allow parameter sharing with top level-tasks. [Run FSL eddy and PNL epi](#run-fsl-eddy-and-pnl-epi) sections 
+in their configuration file to allow parameter sharing with top level-tasks. [EddyEpi](#eddyepi) section 
 explains this requirement in detail.
 
 Tips:
@@ -332,12 +338,13 @@ slicer_exec:
 dwi_mask_qc: False
 model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
 percentile: 97
+filter:
 ```
 
 Run `CnnMask` task as follows:
 
 ```bash
-export LUIGI_CONFIG_PATH=/path/to/cnn_mask_params.cfg
+export LUIGI_CONFIG_PATH=/path/to/dwi_pipe_params.cfg
 
 exec/ExecuteTask --task CnnMask \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz
@@ -350,74 +357,33 @@ with `Qc` suffix in the `desc` field for its integration with later part of the 
     Quality checked : sub-1001/ses-01/dwi/sub-1001_ses-01_desc-dwiXcCNNQc_mask.nii.gz
 
 
-
-## Run FSL eddy and PNL epi
-
-The last task of dwi pipeline is EPI correction that makes use of a different T2w image acquired in the same plane of 
-dwi, identified by `_AXT2.nii.gz` suffix. The configuration file to be used for this top-level task is:
-
-```cfg
-[DEFAULT]
-
-## [StructMask] ##
-csvFile:
-mabs_mask_nproc: 8
-fusion:
-mask_qc: False
-ref_img: *_desc-Xc_T2w.nii.gz
-ref_mask: *_desc-T2wXcMabsQc_mask.nii.gz
-reg_method: SyN
+**NOTE** To clean up the CNN generated mask, assign `scipy` or `mrtrix` to `filter` field. See [here](https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation#3-clean-up) for details.
 
 
-## [StructMask] [PnlEddy] [PnlEddyEpi] ##
-debug: False
+## Correct eddy and epi
+
+Different methods for eddy and epi corrections are described below:
+
+* PnlEddy + PnlEpi (EddyEpi)
+* FslEddy + PnlEpi (EddyEpi)
+* TopupEddy
 
 
-## [StructMask] [BseBetmask] [CnnMask] ##
-slicer_exec:
+### EddyEpi
 
+Epi correction method at PNL makes use of an axial T2w image acquired in the same plane of dwi, 
+identified by `_AXT2.nii.gz` suffix. This method can be applied on top of either PNL eddy or FSL eddy. The task 
+that implements this method is called `EddyEpi`. The configuration file used for this task can be found at [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg). 
+In the configuration, one has to define `eddy_task` parameter properly as `eddy_task: PnlEddy` or 
+`eddy_task: FslEddy` based on what method they have chosen for eddy correction.
 
-## [BseMask] [CnnMask] ##
-dwi_mask_qc: True
-
-
-## [CnnMask] ##
-model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
-
-
-## [BseExtract] ##
-which_bse:
-b0_threshold: 50
-
-
-## [FslEddy] [FslEddyEpi] ##
-acqp: /data/pnl/DIAGNOSE_CTE_U01/acqp.txt
-index: /data/pnl/DIAGNOSE_CTE_U01/index.txt
-config: /data/pnl/DIAGNOSE_CTE_U01/eddy_config.txt
-
-
-## [PnlEddyEpi] [FslEddyEpi] ##
-epi_nproc: 8
-
-
-[StructMask]
-
-[BseExtract]
-
-[CnnMask]
-
-[FslEddy]
-
-[FslEddyEpi]
-
-```
 
 Notice the use of `[DEFAULT]` section that allows sharing of parameters across various tasks. Refer to the flowchart of 
-`FslEddyEpi`:
+`FslEddyEpi` (now called `EddyEpi`):
 
 ![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/FslEddyEpi.png)
 
-`FslEddyEpi` task directly depends upon `FslEddy` and `StructMask` tasks. So the parameters of the latter two also become 
+`FslEddyEpi` (now called `EddyEpi`) task directly depends upon `FslEddy` and `StructMask` tasks. So the parameters of the latter two also become 
 the parameters of the top-level task. On the other hand, defining task specific parameters under `FslEddy` and `StructMask` 
 in the configuration would not make them visible to the top-level task. Hence, the right thing is to define them under 
 `[DEFAULT]` section so they are visible to any top-level tasks.
@@ -427,7 +393,7 @@ Finally, run the big dwi pipeline as follows:
 ```bash
 export LUIGI_CONFIG_PATH=/path/to/dwi_pipe_params.cfg
 
-exec/ExecuteTask --task FslEddyEpi \
+exec/ExecuteTask --task EddyEpi \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 \
 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz \
 --t2-template sub-*/ses-01/anat/*_AXT2.nii.gz
@@ -444,35 +410,28 @@ any new artifact in the warped mask.
 * Notice that we used computation intensive `SyN` registration to obtain AXT2 mask compared to `rigid` registration 
 we used for obtaining T2w mask.
 
-## Run FSL eddy
 
-This section serves as an example about running `FslEddy` separately. When you run `FslEddyEpi`, it will run the former 
+#### FslEddy and PnlEddy
+
+This section serves as an example about running `FslEddy`/`PnlEddy` separately. When you run `EddyEpi`, it will run the former 
 already to fulfill its requirement.
 
 Configuration:
 
+The configuration file used for `FslEddy`/`PnlEddy` tasks is the same as above [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg). 
+`FslEddy` requires the following parameters definition in addition to the ones already defined for `PnlEddy`:
+
 ```cfg
-[DEFAULT]
-
-## [CnnMask] ##
-slicer_exec:
-dwi_mask_qc: False
-model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
-
 ## [FslEddy] ##
 acqp: /data/pnl/DIAGNOSE_CTE_U01/acqp.txt
 index: /data/pnl/DIAGNOSE_CTE_U01/index.txt
 config: /data/pnl/DIAGNOSE_CTE_U01/eddy_config.txt
-
-[CnnMask]
-
-[FslEddy]
 ```
 
 Run it:
 
 ```bash
-export LUIGI_CONFIG_PATH=/path/to/fsl_eddy_params.cfg
+export LUIGI_CONFIG_PATH=/path/to/dwi_pipe_params.cfg
 
 exec/ExecuteTask --task FslEddy \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz
@@ -482,7 +441,7 @@ The mask and baseline image provided to `FslEddy` are approximated as eddy corre
 be fed into later task FslEddyEpi.
 
 
-## Run Topup eddy
+### TopupEddy
 
 When two opposing acquisitions--AP and PA are available such as in Human Connectom Project (HCP), 
 eddy+epi correction can be done in a more sophisticated way through FSL topup and eddy. 
@@ -493,14 +452,10 @@ In that way, AP and PA acquisitions are processed independently until *TopupEddy
 
 Configuration:
 
+Once again, the configuration file is [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg). Like `FslEddy`, `TopupEddy` requires 
+the following parameters definition:
+
 ```cfg
-[DEFAULT]
-
-## [CnnMask] ##
-slicer_exec:
-dwi_mask_qc: False
-model_folder: /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/model_folder
-
 ## [TopupEddy] ##
 acqp: /data/pnl/U01_HCP_Psychosis/acqp.txt
 index: /data/pnl/U01_HCP_Psychosis/index.txt
@@ -509,17 +464,12 @@ TopupOutDir: topup_eddy_107_dir
 numb0: 1
 whichVol: 1
 scale: 2
-
-
-[CnnMask]
-
-[TopupEddy]
 ```
 
 Run it:
 
 ```bash
-export LUIGI_CONFIG_PATH=/path/to/fsl_eddy_params.cfg
+export LUIGI_CONFIG_PATH=/path/to/dwi_pipe_params.cfg
 
 exec/ExecuteTask --task TopupEddy \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 -s BWH01 \
@@ -529,20 +479,109 @@ exec/ExecuteTask --task TopupEddy \
 Notice that `--dwi-template` is followed by two templates, one for AP and the other for PA acquisition. Output prefix 
 for corrected data is determined as follows:
 
-```bash
-# correct only the first volume
-whichVol: 1
+    # correct only the first volume (whichVol: 1)
+    # preserve _acq-*_ and _dir-*_
     _acq-AP_*_dir-107_* 
     
-# correct both volumes
-whichVol: 1,2
-    # omit _acq-*_, double _dir-*_
+    # correct both volumes (whichVol: 1,2)
+    # omit _acq-*_ and double _dir-*_
     *_dir-214_*
+
+
+
+
+## UKFTractography
+
+UKFTractography can be performed after any of the methods of eddy and epi correction. To make it aware of what methods 
+were used, two parameters are needed in [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg):
+
+    eddy_task:      # one of {FslEddy,PnlEddy}
+    eddy_epi_task:  # one of {FslEddy,PnlEddy,EddyEpi,TopupEddy}
+
+In addition, as of now, UKFTractography is performed on b-shells<=2000. This default can be adjusted through:
+
+    bhigh: 2000
+
+![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/Ukf_TopupEddy.PNG)
+
+Run it:
+
+```bash
+export LUIGI_CONFIG_PATH=/path/to/dwi_pipe_params.cfg
+
+exec/ExecuteTask --task Ukf \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz
+```
+
+## Wma800
+
+We use [SlicerDMRI/whitematteranalysis](https://github.com/SlicerDMRI/whitematteranalysis) provided 
+`wm_apply_ORG_atlas_to_subject.sh` script and [ORG-800FC-100HCP white matter atlas](https://dmri.slicer.org/atlases/) 
+for performing whole-brain tractography parcellation. The outputs of that script include:
+
+* a parcellation of the entire white matter into 800 fiber clusters
+* a parcellation of anatomical fiber tracts organized according to the brain lobes they connect
+
+
+Configuration:
+
+Usability of this script imposes a number of dependencies on your software environment--3D Slicer executable, 
+SlicerDMRI extension, and xvfb-run server. Those dependencies of `wm_apply_ORG_atlas_to_subject.sh` 
+are specified in [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg) as follows:
+
+```cfg
+slicer_exec: /path/to/Slicer-4.10.2-linux-amd64/SlicerWithExtensions.sh
+FiberTractMeasurements: /path/to/Slicer-4.10.2-linux-amd64/SlicerWithExtensions.sh --launch /path/to/Slicer-4.10.2-linux-amd64/.config/NA-MIC/Extensions-28257/SlicerDMRI/lib/Slicer-4.10/cli-modules/FiberTractMeasurements
+atlas: /path/to/ORG-Atlases-1.1.1
+wma_nproc: 4
+xvfb: 1
+wma_cleanup: 0
+```
+
+Consult `wm_apply_ORG_atlas_to_subject.sh --help` to know the details of these parameters.
+
+Run it:
+
+```bash
+export LUIGI_CONFIG_PATH=/path/to/dwi_pipe_params.cfg
+
+exec/ExecuteTask --task Wma800 \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz
 ```
 
 
----
 
-After the completion of structural and diffusion pipelines, tractography pipeline can proceed as follows:
+# Fs2Dwi pipeline
+
+After the completion of structural and diffusion pipelines, Fs2Dwi pipeline can proceed as follows:
 
 ![](https://raw.githubusercontent.com/pnlbwh/pnlNipype/master/docs/Fs2Dwi.png)
+
+The tasks defined in Fs2Dwi pipeline are the ones downstream from `Fs2Dwi` node. The configuration file is [fs2dwi_pipe_params.cfg](../params/fs2dwi_pipe_params.cfg).
+The parameter of most interest is `fs2dwi.py` registration `mode`. The default is `mode: direct`. However, you can choose 
+to do through T2w registration by `mode: witht2`.
+
+Run it:
+
+```bash
+export LUIGI_CONFIG_PATH=/path/to/fs2dwi_pipe_params.cfg
+
+# direct fs2dwi.py
+workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
+--dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz
+
+# witht2 fs2dwi.py
+workflows/ExecuteTask.py --task Wmql --bids-data-dir $HOME/CTE/rawdata -c 1004 -s 01 \
+--dwi-template sub-*/ses-*/dwi/*EdEp_dwi.nii.gz --t2-template sub-*/ses-*/anat/*_T2w.nii.gz
+```
+
+**NOTE** In Fs2Dwi pipeline, the `--dwi-template` is used to search `bids-data-dir/derivatives/derivatives-name/dwi-template` 
+to find input data. Note that the search directory is different than that of [DWI pipeline](#dwi-pipeline) where `--dwi-template` was used to search 
+rawdata directory i.e. `bids-data-dir/rawdata/dwi-template`. The reason behind this discrepancy is--Fs2Dwi pipeline starts 
+from processed dwi data, not rawdata. However, once a dwi is found, the associated mask is found according to 
+the knowledge of outputs of different nodes from the DWI pipeline. There is a one to one mapping between dwi and mask 
+of each pipeline node as written [here](https://github.com/pnlbwh/luigi-pnlpipe/blob/ea7a80dfd2389db238c2b48687ccaec24d363a53/workflows/fs2dwi_pipe.py#L42).
+
+
+You can run `Fs2Dwi`, `TractMeasures`, and `Wmqlqc` tasks in the same way as above. Note that, `Wmqlqc` task 
+would require GUI capability so it is better to attempt that through a virtual desktop e.g. NoMachine. 
