@@ -50,7 +50,7 @@ https://www.dropbox.com/s/gi7kukud44bl6p2/luigi-pnlpipe-g-truth.tar.gz
     # mount FreeSurfer license
     -v /home/tb571/freesurfer/license.txt:/home/pnlbwh/freesurfer-7.1.0/license.txt \
     # mount IITmean_b0_256.nii.gz for CNN-Diffusion-MRIBrain-Segmentation
-    -v `pwd`/IITmean_b0_256.nii.gz:/home/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation/model_folder \
+    -v `pwd`/IITmean_b0_256.nii.gz:/home/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation/model_folder/IITmean_b0_256.nii.gz \
     tbillah/pnlpipe
 
 
