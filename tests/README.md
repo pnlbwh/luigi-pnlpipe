@@ -26,9 +26,16 @@ This approach is particularly useful when you would have to rebuild the Docker c
 inside the container, then they would be lost during rebuild. But if they are downloaded locally once, 
 you can mount them into your container after a rebuild.
 
+* Test data
 https://www.dropbox.com/s/pzloevkr8h3kyac/luigi-pnlpipe-test-data.tar.gz
 
+* Ground truth
 https://www.dropbox.com/s/gi7kukud44bl6p2/luigi-pnlpipe-g-truth.tar.gz
+
+
+### Download IITmean_b0_256.nii.gz
+
+    wget https://www.nitrc.org/frs/download.php/11290/IITmean_b0_256.nii.gz
 
 
 ### Launch container
@@ -42,7 +49,9 @@ https://www.dropbox.com/s/gi7kukud44bl6p2/luigi-pnlpipe-g-truth.tar.gz
     -v /home/tb571/tmp/Reference/:/home/pnlbwh/luigi-pnlpipe/Reference \
     # mount FreeSurfer license
     -v /home/tb571/freesurfer/license.txt:/home/pnlbwh/freesurfer-7.1.0/license.txt \
-    tbillah/pnlpipe:latest
+    # mount IITmean_b0_256.nii.gz for CNN-Diffusion-MRIBrain-Segmentation
+    -v `pwd`/IITmean_b0_256.nii.gz:/home/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation/model_folder \
+    tbillah/pnlpipe
 
 
 ### Run tests
