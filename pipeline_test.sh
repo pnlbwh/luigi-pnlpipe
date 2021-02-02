@@ -137,7 +137,7 @@ sed -i "s+http://localhost:8082/+https://pnlservers.bwh.harvard.edu/luigi/+g" lu
 
 # create test log directory
 datestamp=$(date +"%Y-%m-%d")
-log=`pwd`/pnlpipe-nightly-tests/logs-$datestamp
+log=pnlpipe-nightly-tests/logs-$datestamp
 mkdir -p $log
 
 
@@ -282,7 +282,7 @@ else
     
     # instead export test logs to GitHub
     # bind ~/.gitconfig, ~/.ssh, and ~/pnlpipe-nightly-tests to the container
-    cd $log
+    cd ../$log
     git add .
     git commit -m "test logs of ${datestamp}"
     git push origin master
