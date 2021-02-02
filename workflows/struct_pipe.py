@@ -287,7 +287,7 @@ class Freesurfer(Task):
                           '--t2 {}'.format(self.input()[1]['n4corr']) if self.t2_template else ''])
 
         
-        # DONOT remove fs-exec comment, used for pipeline_test.sh: --hack-fs
+        # DONOT remove the trailing comment, used for pipeline_test.sh: --hack-fs
         p = Popen(cmd, shell=True) # fs-exec
         p.wait()
         
