@@ -121,7 +121,7 @@ fi
 # hack recon-all
 if [[ ! -z $hackfs ]]
 then
-    sed -i "361s+cmd+'mv $HOME/CTE/rawdata/freesurfer $HOME/CTE/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" \
+    sed -i "289s+cmd+'mv $HOME/CTE/rawdata/freesurfer $HOME/CTE/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" \
     luigi-pnlpipe/workflows/struct_pipe.py
 fi
 
