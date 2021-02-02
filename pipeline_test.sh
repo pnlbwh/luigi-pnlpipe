@@ -137,7 +137,7 @@ sed -i "s+http://localhost:8082/+https://pnlservers.bwh.harvard.edu/luigi/+g" lu
 
 # create test log directory
 datestamp=$(date +"%Y-%m-%d")
-log=pnlpipe-nightly-tests/logs-$datestamp
+log=`pwd`/pnlpipe-nightly-tests/logs-$datestamp
 mkdir -p $log
 
 
