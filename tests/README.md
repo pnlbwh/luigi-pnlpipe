@@ -5,6 +5,7 @@ Table of Contents
 
  * [Download Slicer](#download-slicer)
  * [Download test data](#download-test-data)
+ * [Set up log directory](#set-up-log-directory)
  * [Launch container](#launch-container)
  * [Run tests](#run-tests)
 
@@ -38,19 +39,54 @@ https://www.dropbox.com/s/gi7kukud44bl6p2/luigi-pnlpipe-g-truth.tar.gz
     wget https://www.nitrc.org/frs/download.php/11290/IITmean_b0_256.nii.gz
 
 
+### Set up log directory
+
+* .gitconfig
+
+Define the following `~/.gitconfig`:
+
+```cfg
+[color]
+    ui = auto
+[user]
+    email = your_email
+    name = your_name
+```
+
+* .ssh
+
+Define the following `~/.ssh/config`:
+
+```cfg
+Host github.com
+    IdentityFile ~/.ssh/your_private_key
+    StrictHostKeyChecking no
+```
+
+
+* clone
+
+Clone the private repo with SSH protocol:
+
+> git clone git@github.com:pnlbwh/pnlpipe-nightly-tests.git
+
 ### Launch container
 
 
     docker run --rm -ti \
     # mount SlicerDMRI
-    -v `pwd`/Slicer-4.11.20200930-linux-amd64:/Slicer-4.11 \
-    -v `pwd`/SlicerDMRI:/SlicerDMRI \
+    -v ~/Slicer-4.11.20200930-linux-amd64:/Slicer-4.11 \
+    -v ~/SlicerDMRI:/SlicerDMRI \
     # mount ground truth
-    -v /home/tb571/tmp/Reference/:/home/pnlbwh/luigi-pnlpipe/Reference \
+    -v ~/Reference/:/home/pnlbwh/luigi-pnlpipe/tests/Reference \
     # mount FreeSurfer license
-    -v /home/tb571/freesurfer/license.txt:/home/pnlbwh/freesurfer-7.1.0/license.txt \
+    -v ~/license.txt:/home/pnlbwh/freesurfer-7.1.0/license.txt \
     # mount IITmean_b0_256.nii.gz for CNN-Diffusion-MRIBrain-Segmentation
-    -v `pwd`/IITmean_b0_256.nii.gz:/home/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation/model_folder/IITmean_b0_256.nii.gz \
+    -v ~/IITmean_b0_256.nii.gz:/home/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation/model_folder/IITmean_b0_256.nii.gz \
+    # mount .ssh, .gitconfig, pnlpipe-nightly-tests
+    -v ~/.ssh:/root/.ssh \
+    -v ~/.gitconfig:/home/pnlbwh/.gitconfig \
+    -v ~/pnlpipe-nightly-tests:/home/pnlbwh/luigi-pnlpipe/pnlpipe-nightly-tests \
     tbillah/pnlpipe
 
 
