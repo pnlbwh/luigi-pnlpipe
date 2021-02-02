@@ -6,12 +6,14 @@ Convenient script for testing luigi-pnlpipe, pnlNipype,
 CNN-Diffusion-MRIBrain-Segmentation, and pnlpipe_software
 
 Usage:
-./pipeline_test.sh [--no-clone] [--no-remove] [--hack-fs] [--pytest-only] [--console-print]
-                   [--luigi-pnlpipe BRANCH_NAME] [--pnlNipype BRANCH_NAME] [--to RECIPIENTS]
+./pipeline_test.sh [--no-remove] [--hack-fs] [--pytest-only] [--console-print]
+                   [--to RECIPIENTS]
 
 The default branches are the ones at https://github.com/pnlbwh/luigi-pnlpipe
-and https://github.com/pnlbwh/pnlNipype.
-Specify email recipients of the domain @bwh.harvard.edu within double quotes e.g.
+and https://github.com/pnlbwh/pnlNipype. All test logs are exported to 
+https://github.com/pnlbwh/pnlpipe-nightly-tests.
+
+TBD: Specify email recipients of the domain @bwh.harvard.edu within double quotes e.g.
 --to \"sbouix tbillah kcho\"
 "
 
@@ -19,19 +21,14 @@ exit 0
 }
 
 
-OPTS=`getopt -l help,no-clone,no-remove,hack-fs,pytest-only,console-print,branch:,to: \
--o h,c,r,f,o,p,b:,t: -- "$@"`
+OPTS=`getopt -l help,no-remove,hack-fs,pytest-only,console-print,to: -o h,n,f,p,c,t: -- "$@"`
 eval set -- "$OPTS"
-
 
 while true
 do
-    case "$1" in
+    case $1 in
         -h|--help)
             usage;;
-        --no-clone)
-            noclone=1;
-            shift 1;;
         --no-remove)
             noremove=1;
             shift 1;;
@@ -44,18 +41,14 @@ do
         --console-print)
             console_print=1;
             shift 1;;
-        --luigi-pnlpipe)
-            luigi_branch=$2;
-            shift 2;;
-        --pnlNipype)
-            nipype_branch=$2;
-            shift 2;;
         --to)
             to=$2;
             shift 2;;
         --) 
             shift;
             break;;
+        
+        # FIXME does not fail on illegal options
         *)  
             echo One or more of the args could not be recognized
             echo See ./pipeline_test.sh --help
@@ -66,19 +59,6 @@ done
 
 cd /home/pnlbwh
 
-
-# do not clone again
-if [[ -z $noclone ]]
-then
-    cd luigi-pnlpipe
-    git reset --hard
-    git pull origin $luigi_branch
-
-    cd ../pnlNipype
-    git pull origin $nipype_branch
-
-    cd ..
-fi
 
 
 # do not remove any previous output
