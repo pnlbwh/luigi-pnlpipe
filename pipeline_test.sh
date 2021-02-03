@@ -98,6 +98,24 @@ then
 fi
 
 
+# download ground truth data
+pushd .
+cd luigi-pnlpipe/tests/
+test_data=luigi-pnlpipe-g-truth.tar.gz
+if [ ! -f $test_data ]
+then
+    wget https://www.dropbox.com/s/gi7kukud44bl6p2/$test_data
+fi
+
+if [ ! -d Reference ]
+then
+
+    tar -xzvf $test_data
+
+fi
+popd
+
+
 # hack recon-all
 if [[ ! -z $hackfs ]]
 then
