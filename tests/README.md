@@ -8,6 +8,7 @@ Table of Contents
  * [Set up log directory](#set-up-log-directory)
  * [Launch container](#launch-container)
  * [Run tests](#run-tests)
+ * [Local pull request](#local-pull-request)
 
 
 
@@ -29,19 +30,19 @@ you can mount them into your container after a rebuild.
 
 * Test data
 
-    d=luigi-pnlpipe-test-data.tar.gz
-    # download locally
-    wget https://www.dropbox.com/s/pzloevkr8h3kyac/$d
-    # mount as
-    docker run ... -v ~/$d:/home/pnlbwh/$d ...
+        d=luigi-pnlpipe-test-data.tar.gz
+        # download locally
+        wget https://www.dropbox.com/s/pzloevkr8h3kyac/$d
+        # mount as
+        docker run ... -v ~/$d:/home/pnlbwh/$d ...
 
 * Ground truth
 
-    d=luigi-pnlpipe-g-truth.tar.gz
-    # download locally
-    wget https://www.dropbox.com/s/gi7kukud44bl6p2/$d
-    # mount as
-    docker run ... -v ~/$d:/home/pnlbwh/luigi-pnlpipe/tests/$d ...
+        d=luigi-pnlpipe-g-truth.tar.gz
+        # download locally
+        wget https://www.dropbox.com/s/gi7kukud44bl6p2/$d
+        # mount as
+        docker run ... -v ~/$d:/home/pnlbwh/luigi-pnlpipe/tests/$d ...
 
 
 ### Download IITmean_b0_256.nii.gz
@@ -103,3 +104,26 @@ Clone the private repo with SSH protocol:
 ### Run tests
 
     luigi-pnlpipe/pipeline_test.sh -h
+
+
+### Local pull request
+
+Let's say want to test the PR hcp<--provenance. Before merging on GitHub, we want to merge locally and test. Upon successful testing, 
+we can merge the PR on GitHub. For this purpose, the following commands would come handy:
+
+* PR when local branch is hcp
+
+        git reset --hard
+        git pull origin hcp --ff-only
+        git pull origin provenance --rebase
+
+
+* PR when local branch is not hcp
+
+        git reset --hard
+        git checkout --orphan hcp
+        git rm -rf .
+        git pull origin hcp --ff-only
+        git pull origin azure --rebase
+
+
