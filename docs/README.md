@@ -135,7 +135,7 @@ After you have installed whitematteranalysis through our conda recipe, download 
 
 # Tests
 
-The pipeline is tested nightly via an isolated Docker container. Testing instruction is available [here](./tests/README.md). Tests are 
+The pipeline is tested nightly via an isolated Docker container. Testing instruction is available [here](../tests/README.md). Tests are 
 designed to be fairly straight forward. However, you may need some Docker and git knowledge to be able to run the tests.
 
 
