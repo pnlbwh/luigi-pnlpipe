@@ -78,6 +78,11 @@ Clone the private repo with SSH protocol:
 
 > git clone git@github.com:pnlbwh/pnlpipe-nightly-tests.git
 
+**NOTE** Users outside PNL will not have access to this repository. They can create a repository named `pnlpipe-nightly-tests` in 
+their GitHub and adjust the above `pnlbwh/pnlpipe-nightly-tests.git` with their remote. In the simplest manner, just 
+`mkdir pnlpipe-nightly-tests` and forget about `.gitconfig` or `.ssh`. If you do not set up a repository, you will not be able to 
+upload the test logs to GitHub. Yet, you will be able to access them within `pnlpipe-nightly-tests` folder.
+
 ### Launch container
 
 
