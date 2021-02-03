@@ -1,7 +1,7 @@
 ## Guide for running tests
 
 Table of Contents
-=================
+---
 
  * [Download Slicer](#download-slicer)
  * [Download test data](#download-test-data)
@@ -111,14 +111,14 @@ Clone the private repo with SSH protocol:
 Let's say want to test the PR hcp<--provenance. Before merging on GitHub, we want to merge locally and test. Upon successful testing, 
 we can merge the PR on GitHub. For this purpose, the following commands would come handy:
 
-* PR when local branch is hcp
+* PR when the local branch is hcp
 
         git reset --hard
         git pull origin hcp --ff-only
         git pull origin provenance --rebase
 
 
-* PR when local branch is not hcp
+* PR when the local branch is not hcp
 
         git reset --hard
         git checkout --orphan hcp
