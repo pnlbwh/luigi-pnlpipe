@@ -1,8 +1,5 @@
 ## Guide for running tests
 
-Table of Contents
----
-
  * [Download Slicer](#download-slicer)
  * [Download test data](#download-test-data)
  * [Set up log directory](#set-up-log-directory)
