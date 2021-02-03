@@ -28,10 +28,20 @@ inside the container, then they would be lost during rebuild. But if they are do
 you can mount them into your container after a rebuild.
 
 * Test data
-https://www.dropbox.com/s/pzloevkr8h3kyac/luigi-pnlpipe-test-data.tar.gz
+
+    d=luigi-pnlpipe-test-data.tar.gz
+    # download locally
+    wget https://www.dropbox.com/s/pzloevkr8h3kyac/$d
+    # mount as
+    docker run ... -v ~/$d:/home/pnlbwh/$d ...
 
 * Ground truth
-https://www.dropbox.com/s/gi7kukud44bl6p2/luigi-pnlpipe-g-truth.tar.gz
+
+    d=luigi-pnlpipe-g-truth.tar.gz
+    # download locally
+    wget https://www.dropbox.com/s/gi7kukud44bl6p2/$d
+    # mount as
+    docker run ... -v ~/$d:/home/pnlbwh/luigi-pnlpipe/tests/$d ...
 
 
 ### Download IITmean_b0_256.nii.gz
