@@ -35,11 +35,11 @@ you can mount them into your container after a rebuild.
 
 * Ground truth
 
-        d=luigi-pnlpipe-g-truth.tar.gz
+        r=luigi-pnlpipe-g-truth.tar.gz
         # download locally
-        wget https://www.dropbox.com/s/gi7kukud44bl6p2/$d
+        wget https://www.dropbox.com/s/gi7kukud44bl6p2/$r
         # mount as
-        docker run ... -v ~/$d:/home/pnlbwh/luigi-pnlpipe/tests/$d ...
+        docker run ... -v ~/$r:/home/pnlbwh/luigi-pnlpipe/tests/$r ...
 
 
 ### Download IITmean_b0_256.nii.gz
