@@ -99,11 +99,12 @@ Finally, see [here](#running-luigi-pnlpipe) for instructions about running the p
 Client can use the official luigi package installed in `pnlpipe3` conda environment. However, server should install 
 Tashrif's work for `/history/by_task_id/` URI to work:
 
-    pip install pip install git+https://github.com/tashrifbillah/luigi.git@89c9aa750de8ae2badabe435d98c02e44a1aa8b4
+    pip install git+https://github.com/tashrifbillah/luigi.git@89c9aa750de8ae2badabe435d98c02e44a1aa8b4
 
 *luigi-pnlpipe* itself will not fail without Tashrif's work on the server side. That means, you can 
 also use the official luigi package on the server side. But you will not be able to redirect to 
-`/history/by_task_id/` URIs generated in `*.log.html` provenance files.
+`/history/by_task_id/` URIs generated in `*.log.html` provenance files. Notably, the provenance files 
+are generated when the pipeline is run.
 
 
 ## CNN-Diffusion-MRIBrain-Segmentation
