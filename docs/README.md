@@ -17,6 +17,7 @@ Table of Contents
    * [Citation](#citation)
    * [Installation](#installation)
       * [luigi-pnlpipe](#luigi-pnlpipe)
+      * [luigi-package](#luigi-package)
       * [CNN-Diffusion-MRIBrain-Segmentation](#cnn-diffusion-mribrain-segmentation)
       * [whitematteranalysis](#whitematteranalysis)
    * [Tests](#tests)
@@ -91,6 +92,18 @@ the former leverages upon soft-linked (`ln -s`) scripts from the latter.
 The pipeline is built upon https://github.com/pnlbwh/pnlNipype individual modules.
 Documentation about individual *pnlNipype* modules can be found in [pnlNipype/TUTORIAL.md](https://github.com/pnlbwh/pnlNipype/blob/master/docs/TUTORIAL.md).
 Finally, see [here](#running-luigi-pnlpipe) for instructions about running the pipeline.
+
+
+## luigi package
+
+Client can use the official luigi package installed in `pnlpipe3` conda environment. However, server should install 
+Tashrif's work for `/history/by_task_id/` URI to work:
+
+    pip install pip install git+https://github.com/tashrifbillah/luigi.git@89c9aa750de8ae2badabe435d98c02e44a1aa8b4
+
+*luigi-pnlpipe* itself will not fail without Tashrif's work on the server side. That means, you can 
+also use the official luigi package on the server side. But you will not be able to redirect to 
+`/history/by_task_id/` URIs generated in `*.log.html` provenance files.
 
 
 ## CNN-Diffusion-MRIBrain-Segmentation
