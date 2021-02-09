@@ -4,7 +4,7 @@ import json
 from conversion import read_bvals, read_bvecs
 import pandas as pd
 
-REL_DIFF_MAX = 10
+REL_DIFF_MAX = 1
 DICE_COEFF_MIN = 0.95
 
 def test_header(params):
