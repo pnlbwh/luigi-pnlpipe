@@ -90,8 +90,6 @@ upload the test logs to GitHub. Yet, you will be able to access them within `pnl
     # mount SlicerDMRI
     -v ~/Slicer-4.11.20200930-linux-amd64:/Slicer-4.11 \
     -v ~/SlicerDMRI:/SlicerDMRI \
-    # mount ground truth
-    -v ~/Reference/:/home/pnlbwh/luigi-pnlpipe/tests/Reference \
     # mount FreeSurfer license
     -v ~/license.txt:/home/pnlbwh/freesurfer-7.1.0/license.txt \
     # mount IITmean_b0_256.nii.gz for CNN-Diffusion-MRIBrain-Segmentation
