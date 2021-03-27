@@ -286,7 +286,9 @@ class Freesurfer(Task):
                           '--subfields' if self.subfields else '',
                           '--t2 {}'.format(self.input()[1]['n4corr']) if self.t2_template else ''])
 
-        p = Popen(cmd, shell=True)
+        
+        # DONOT remove the trailing comment, used for pipeline_test.sh: --hack-fs
+        p = Popen(cmd, shell=True) # fs-exec
         p.wait()
         
         check_call(f'recon-all --version > {self.output()}/version.txt', shell=True)

@@ -6,12 +6,14 @@ Convenient script for testing luigi-pnlpipe, pnlNipype,
 CNN-Diffusion-MRIBrain-Segmentation, and pnlpipe_software
 
 Usage:
-./pipeline_test.sh [--no-clone] [--no-remove] [--hack-fs] [--pytest-only] [--console-print]
-                   [--luigi-pnlpipe BRANCH_NAME] [--pnlNipype BRANCH_NAME] [--to RECIPIENTS]
+./pipeline_test.sh [--no-remove] [--hack-fs] [--pytest-only] [--console-print]
+                   [--to RECIPIENTS]
 
 The default branches are the ones at https://github.com/pnlbwh/luigi-pnlpipe
-and https://github.com/pnlbwh/pnlNipype.
-Specify email recipients of the domain @bwh.harvard.edu within double quotes e.g.
+and https://github.com/pnlbwh/pnlNipype. All test logs are exported to 
+https://github.com/pnlbwh/pnlpipe-nightly-tests.
+
+TBD: Specify email recipients of the domain @bwh.harvard.edu within double quotes e.g.
 --to \"sbouix tbillah kcho\"
 "
 
@@ -19,19 +21,14 @@ exit 0
 }
 
 
-OPTS=`getopt -l help,no-clone,no-remove,hack-fs,pytest-only,console-print,branch:,to: \
--o h,c,r,f,o,p,b:,t: -- "$@"`
+OPTS=`getopt -l help,no-remove,hack-fs,pytest-only,console-print,to: -o h,n,f,p,c,t: -- "$@"`
 eval set -- "$OPTS"
-
 
 while true
 do
-    case "$1" in
+    case $1 in
         -h|--help)
             usage;;
-        --no-clone)
-            noclone=1;
-            shift 1;;
         --no-remove)
             noremove=1;
             shift 1;;
@@ -44,18 +41,14 @@ do
         --console-print)
             console_print=1;
             shift 1;;
-        --luigi-pnlpipe)
-            luigi_branch=$2;
-            shift 2;;
-        --pnlNipype)
-            nipype_branch=$2;
-            shift 2;;
         --to)
             to=$2;
             shift 2;;
         --) 
             shift;
             break;;
+        
+        # FIXME does not fail on illegal options
         *)  
             echo One or more of the args could not be recognized
             echo See ./pipeline_test.sh --help
@@ -66,19 +59,6 @@ done
 
 cd /home/pnlbwh
 
-
-# do not clone again
-if [[ -z $noclone ]]
-then
-    cd luigi-pnlpipe
-    git reset --hard
-    git pull origin $luigi_branch
-
-    cd ../pnlNipype
-    git pull origin $nipype_branch
-
-    cd ..
-fi
 
 
 # do not remove any previous output
@@ -118,11 +98,32 @@ then
 fi
 
 
+# download ground truth data
+pushd .
+cd luigi-pnlpipe/tests/
+test_data=luigi-pnlpipe-g-truth.tar.gz
+if [ ! -f $test_data ]
+then
+    wget https://www.dropbox.com/s/gi7kukud44bl6p2/$test_data
+fi
+
+if [ ! -d Reference ]
+then
+
+    tar -xzvf $test_data
+
+fi
+popd
+
+
 # hack recon-all
 if [[ ! -z $hackfs ]]
 then
-    sed -i "361s+cmd+'mv $HOME/CTE/rawdata/freesurfer $HOME/CTE/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" \
-    luigi-pnlpipe/workflows/struct_pipe.py
+    struct_pipe=luigi-pnlpipe/workflows/struct_pipe.py
+    lineno=`awk '/fs-exec/{ print NR; exit }' $struct_pipe`s
+
+    sed -i "$lineno+cmd+'mv $HOME/CTE/rawdata/freesurfer $HOME/CTE/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" \
+    $struct_pipe
 fi
 
 
@@ -137,7 +138,7 @@ sed -i "s+http://localhost:8082/+https://pnlservers.bwh.harvard.edu/luigi/+g" lu
 
 # create test log directory
 datestamp=$(date +"%Y-%m-%d")
-log=logs-$datestamp
+log=pnlpipe-nightly-tests/logs-$datestamp
 mkdir -p $log
 
 
@@ -271,12 +272,22 @@ else
     equality_tests
     } > $pytest_log 2>&1
     
-    # email only pytest log
-    for u in $to
-    do
-        cat $pytest_log | mailx -s "luigi-pnlpipe test results" \
-        -a $pytest_log -- $u@bwh.harvard.edu
-    done
+    
+    # docker email is hard to set up
+    # # email only pytest log
+    # for u in $to
+    # do
+    #     cat $pytest_log | mailx -s "luigi-pnlpipe test results" \
+    #     -a $pytest_log -- $u@bwh.harvard.edu
+    # done
+    
+    # instead export test logs to GitHub
+    # bind ~/.gitconfig, ~/.ssh, and ~/pnlpipe-nightly-tests to the container
+    cd ../$log
+    git add .
+    git commit -m "test logs of ${datestamp}"
+    git push origin master
+
     
 fi
 

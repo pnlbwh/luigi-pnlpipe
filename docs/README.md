@@ -2,9 +2,12 @@
 
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.3666802.svg)](https://doi.org/10.5281/zenodo.3666802) [![Python](https://img.shields.io/badge/Python-3.6-green.svg)]() [![Platform](https://img.shields.io/badge/Platform-linux--64%20%7C%20osx--64-orange.svg)]()
 
-Developed by Tashrif Billah and Sylvain Bouix, Brigham and Women's Hospital (Harvard Medical School).
+Developed by Tashrif Billah and Sylvain Bouix, Brigham and Women's Hospital (Harvard Medical School)
 
-See the [TUTORIAL.md](./TUTORIAL.md) for more instruction.  
+* Running instruction is available at [TUTORIAL.md](./TUTORIAL.md).
+
+* This pipeline is also available as Docker and Singularity containers. See [pnlpipe-containers](https://github.com/pnlbwh/pnlpipe-containers) for details.
+
 
 
 Table of Contents
@@ -14,8 +17,10 @@ Table of Contents
    * [Citation](#citation)
    * [Installation](#installation)
       * [luigi-pnlpipe](#luigi-pnlpipe)
+      * [luigi-package](#luigi-package)
       * [CNN-Diffusion-MRIBrain-Segmentation](#cnn-diffusion-mribrain-segmentation)
       * [whitematteranalysis](#whitematteranalysis)
+   * [Tests](#tests)
    * [How Luigi works](#how-luigi-works)
    * [Running luigi-pnlpipe](#running-luigi-pnlpipe)
       * [1. Organize data according to BIDS](#1-organize-data-according-to-bids)
@@ -89,6 +94,19 @@ Documentation about individual *pnlNipype* modules can be found in [pnlNipype/TU
 Finally, see [here](#running-luigi-pnlpipe) for instructions about running the pipeline.
 
 
+## luigi package
+
+Client can use the official luigi package installed in `pnlpipe3` conda environment. However, server should install 
+Tashrif's work for `/history/by_task_id/` URI to work:
+
+    pip install git+https://github.com/tashrifbillah/luigi.git@89c9aa750de8ae2badabe435d98c02e44a1aa8b4
+
+*luigi-pnlpipe* itself will not fail without Tashrif's work on the server side. That means, you can 
+also use the official luigi package on the server side. But you will not be able to redirect to 
+`/history/by_task_id/` URIs generated in `*.log.html` provenance files. Notably, the provenance files 
+are generated when the pipeline is run.
+
+
 ## CNN-Diffusion-MRIBrain-Segmentation
 
 * Clone it
@@ -127,6 +145,13 @@ install [xorg-x11-server-Xvfb](https://centos.pkgs.org/7/centos-x86_64/xorg-x11-
 After you have installed whitematteranalysis through our conda recipe, download the required atlas as follows:
 
     wm_download_anatomically_curated_atlas.py -atlas ORG-800FC-100HCP ./ 
+
+
+# Tests
+
+The pipeline is tested nightly via an isolated Docker container. Testing instruction is available [here](../tests/README.md). Tests are 
+designed to be fairly straight forward. However, you may need some Docker and git knowledge to be able to run the tests.
+
 
 
 # How Luigi works
