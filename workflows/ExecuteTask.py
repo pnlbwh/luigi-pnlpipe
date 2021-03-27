@@ -38,7 +38,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', required= True, type=str, default= argparse.SUPPRESS,
                         help='a single case ID or a .txt file where each line is a case ID')
 
-    parser.add_argument('-s', required= True, type=str, default= argparse.SUPPRESS,
+    parser.add_argument('-s', type=str, default= '1',
                         help='a single session ID or a .txt file where each line is a session ID')
     
     parser.add_argument('--dwi-template', type=str, default='sub-*/dwi/*_dwi.nii.gz',
@@ -48,10 +48,11 @@ if __name__ == '__main__':
     parser.add_argument('--t1-template', type=str, default='sub-*/anat/*_T1w.nii.gz',
                         help='glob bids-data-dir/t1-template to find input data e.g. sub-*/ses-*/anat/*_T1w.nii.gz')
 
-    parser.add_argument('--t2-template', type=str,
+    parser.add_argument('--t2-template', type=str, default= argparse.SUPPRESS,
                         help='glob bids-data-dir/t2-template to find input data')
 
     parser.add_argument('--task', type=str, required=True, help='number of Luigi workers',
+                        default= argparse.SUPPRESS,
                         choices=['StructMask', 'Freesurfer',
                                  'CnnMask',
                                  'PnlEddy', 'FslEddy', 'TopupEddy',
