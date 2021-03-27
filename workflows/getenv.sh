@@ -1,16 +1,17 @@
 #!/usr/bin/bash
 
 cmd="git rev-parse --short=7 HEAD"
-CWD=`pwd`
+
+cd `dirname $0`/..
 
 log_file=$1
-[ -z $log_file ] && log_file=$CWD/hashes.txt
+[ -z $log_file ] && log_file=`pwd`/hashes.txt
 
 # luigi-pnlpipe hash
 echo luigi-pnlpipe,`$cmd` > $log_file
 
 # pnlNipype hash
-[ $(basename $CWD) == workflows ] && cd ../../pnlNipype || cd ../pnlNipype
+cd ../pnlNipype
 echo pnlNipype,`$cmd` >> $log_file
 
 # pnlpipe hash
@@ -37,4 +38,3 @@ echo FSL,$hash >> $log_file
 # FreeSurfer version
 echo FreeSurfer,`cat $FREESURFER_HOME/build-stamp.txt` >> $log_file
 
-cd $CWD
