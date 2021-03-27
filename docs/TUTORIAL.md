@@ -67,7 +67,7 @@ optional arguments:
   -c C                  a single case ID or a .txt file where each line is a
                         case ID
   -s S                  a single session ID or a .txt file where each line is
-                        a session ID
+                        a session ID (default: 1)
   --dwi-template DWI_TEMPLATE
                         dwi pipeline: glob bids-data-dir/dwi-template to find
                         input data e.g. sub-*/ses-*/dwi/*_dwi.nii.gz, fs2dwi
@@ -80,9 +80,8 @@ optional arguments:
                         sub-*/anat/*_T1w.nii.gz)
   --t2-template T2_TEMPLATE
                         glob bids-data-dir/t2-template to find input data
-                        (default: None)
   --task {StructMask,Freesurfer,CnnMask,PnlEddy,FslEddy,TopupEddy,EddyEpi,Ukf,Fs2Dwi,Wmql,Wmqlqc,TractMeasures}
-                        number of Luigi workers (default: None)
+                        number of Luigi workers
   --num-workers NUM_WORKERS
                         number of Luigi workers (default: 1)
   --derivatives-name DERIVATIVES_NAME
