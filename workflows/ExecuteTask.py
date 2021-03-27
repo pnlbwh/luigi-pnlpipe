@@ -48,7 +48,7 @@ if __name__ == '__main__':
     parser.add_argument('--t1-template', type=str, default='sub-*/anat/*_T1w.nii.gz',
                         help='glob bids-data-dir/t1-template to find input data e.g. sub-*/ses-*/anat/*_T1w.nii.gz')
 
-    parser.add_argument('--t2-template', type=str, default= argparse.SUPPRESS,
+    parser.add_argument('--t2-template', type=str,
                         help='glob bids-data-dir/t2-template to find input data')
 
     parser.add_argument('--task', type=str, required=True, help='number of Luigi workers',
