@@ -201,41 +201,44 @@ you should organize your data according to BIDS convention. For example, the fol
     caselist.txt
     derivatives
     sub-003GNX007
-    ├── anat
-    │   ├── sub-003GNX007_T1w.nii.gz
-    │   └── sub-003GNX007_T2w.nii.gz
-    └── dwi
-        ├── sub-003GNX007_dwi.bval
-        ├── sub-003GNX007_dwi.bvec
-        └── sub-003GNX007_dwi.nii.gz
+    └── ses-1
+        ├── anat
+        │   ├── sub-003GNX007_T1w.nii.gz
+        │   └── sub-003GNX007_T2w.nii.gz
+        └── dwi
+            ├── sub-003GNX007_dwi.bval
+            ├── sub-003GNX007_dwi.bvec
+            └── sub-003GNX007_dwi.nii.gz
     sub-003GNX012
-    ├── anat
-    │   ├── sub-003GNX012_T1w.nii.gz
-    │   └── sub-003GNX012_T2w.nii.gz
-    └── dwi
-        ├── sub-003GNX012_dwi.bval
-        ├── sub-003GNX012_dwi.bvec
-        └── sub-003GNX012_dwi.nii.gz
+    └── ses-1
+        ├── anat
+        │   ├── sub-003GNX012_T1w.nii.gz
+        │   └── sub-003GNX012_T2w.nii.gz
+        └── dwi
+            ├── sub-003GNX012_dwi.bval
+            ├── sub-003GNX012_dwi.bvec
+            └── sub-003GNX012_dwi.nii.gz
     sub-003GNX021
-    ├── anat
-    │   ├── sub-003GNX021_T1w.nii.gz
-    │   └── sub-003GNX021_T2w.nii.gz
-    └── dwi
-        ├── sub-003GNX021_dwi.bval
-        ├── sub-003GNX021_dwi.bvec
-        └── sub-003GNX021_dwi.nii.gz
+    └── ses-1
+        ├── anat
+        │   ├── sub-003GNX021_T1w.nii.gz
+        │   └── sub-003GNX021_T2w.nii.gz
+        └── dwi
+            ├── sub-003GNX021_dwi.bval
+            ├── sub-003GNX021_dwi.bvec
+            └── sub-003GNX021_dwi.nii.gz
 
 
 Once data is organized as above, you can define the following arguments:
     
     --bids-data-dir ~/Downloads/INTRuST_BIDS 
     -c ~/Downloads/INTRuST_BIDS/caselist.txt    
-    --t1-template sub-*/anat/*_T1w.nii.gz
-    --t2-template sub-*/anat/*_T2w.nii.gz
-    --dwi-template sub-*/dwi/*_dwi.nii.gz
+    --t1-template sub-*/ses-*/anat/*_T1w.nii.gz
+    --t2-template sub-*/ses-*/anat/*_T2w.nii.gz
+    --dwi-template sub-*/ses-*/dwi/*_dwi.nii.gz
     
     
-When *luigi-pnlpipe* globs `bids-data-dir/sub-*/anat/*_T1w.nii.gz` replacing `*` in `sub-*` 
+When *luigi-pnlpipe* globs `bids-data-dir/sub-*/ses-*/anat/*_T1w.nii.gz` replacing `*` in `sub-*` 
 with each line from `caselist.txt`, it will find the input data.
 
 Finally, output will go to `derivatives/pnlpipe` directory by default, again following BIDS convention.
@@ -357,56 +360,57 @@ such as `_bse` for baseline image, `_mask` for mask etc.
 derivatives
 └── pnlpipe
     └── sub-003GNX007
-        ├── anat
-        │   ├── freesurfer
-        │   │   ├── label
-        │   │   ├── mri
-        │   │   ├── scripts
-        │   │   ├── stats
-        │   │   ├── surf
-        │   │   ├── tmp
-        │   │   ├── touch
-        │   │   └── trash
-        │   ├── sub-003GNX007_desc-T1wXcMabs_mask.nii.gz
-        │   ├── sub-003GNX007_desc-T2wXcMabs_mask.nii.gz
-        │   ├── sub-003GNX007_desc-T1wXcMabsQc_mask.nii.gz
-        │   ├── sub-003GNX007_desc-T2wXcMabsQc_mask.nii.gz
-        │   ├── sub-003GNX007_desc-Xc_T1w.nii.gz
-        │   └── sub-003GNX007_desc-Xc_T2w.nii.gz
-        ├── dwi
-        │   ├── sub-003GNX007_desc-dwiXcEd_bse.nii.gz
-        │   ├── sub-003GNX007_desc-dwiXcEdMa_bse.nii.gz
-        │   ├── sub-003GNX007_desc-XcBseBet_mask.nii.gz
-        │   ├── sub-003GNX007_desc-XcBseBetQc_mask.nii.gz
-        │   ├── sub-003GNX007_desc-Xc_dwi.bval
-        │   ├── sub-003GNX007_desc-Xc_dwi.bvec
-        │   ├── sub-003GNX007_desc-Xc_dwi.nii.gz
-        │   ├── sub-003GNX007_desc-XcEd_dwi.bval
-        │   ├── sub-003GNX007_desc-XcEd_dwi.bvec
-        │   ├── sub-003GNX007_desc-XcEd_dwi.nii.gz
-        │   ├── sub-003GNX007_desc-XcEdEp_dwi.bval
-        │   ├── sub-003GNX007_desc-XcEdEp_dwi.bvec
-        │   └── sub-003GNX007_desc-XcEdEp_dwi.nii.gz
-        ├── fs2dwi
-        │   ├── eddy_fs2dwi
-        │   │   ├── b0maskedbrain.nii.gz
-        │   │   ├── b0masked.nii.gz
-        │   │   ├── wmparcInBrain.nii.gz
-        │   │   └── wmparcInDwi.nii.gz
-        │   └── epi_fs2dwi
-        │       ├── b0maskedbrain.nii.gz
-        │       ├── b0masked.nii.gz
-        │       ├── wmparcInBrain.nii.gz
-        │       └── wmparcInDwi.nii.gz
-        └── tracts
-            ├── sub-003GNX007_desc-XcEdEp.vtk
-            ├── sub-003GNX007_desc-XcEd.vtk
-            ├── wmql
-            │   ├── eddy
-            │   └── epi
-            └── wmqlqc
-                ├── eddy
-                └── epi
+        └── ses-1
+            ├── anat
+            │   ├── freesurfer
+            │   │   ├── label
+            │   │   ├── mri
+            │   │   ├── scripts
+            │   │   ├── stats
+            │   │   ├── surf
+            │   │   ├── tmp
+            │   │   ├── touch
+            │   │   └── trash
+            │   ├── sub-003GNX007_desc-T1wXcMabs_mask.nii.gz
+            │   ├── sub-003GNX007_desc-T2wXcMabs_mask.nii.gz
+            │   ├── sub-003GNX007_desc-T1wXcMabsQc_mask.nii.gz
+            │   ├── sub-003GNX007_desc-T2wXcMabsQc_mask.nii.gz
+            │   ├── sub-003GNX007_desc-Xc_T1w.nii.gz
+            │   └── sub-003GNX007_desc-Xc_T2w.nii.gz
+            ├── dwi
+            │   ├── sub-003GNX007_desc-dwiXcEd_bse.nii.gz
+            │   ├── sub-003GNX007_desc-dwiXcEdMa_bse.nii.gz
+            │   ├── sub-003GNX007_desc-XcBseBet_mask.nii.gz
+            │   ├── sub-003GNX007_desc-XcBseBetQc_mask.nii.gz
+            │   ├── sub-003GNX007_desc-Xc_dwi.bval
+            │   ├── sub-003GNX007_desc-Xc_dwi.bvec
+            │   ├── sub-003GNX007_desc-Xc_dwi.nii.gz
+            │   ├── sub-003GNX007_desc-XcEd_dwi.bval
+            │   ├── sub-003GNX007_desc-XcEd_dwi.bvec
+            │   ├── sub-003GNX007_desc-XcEd_dwi.nii.gz
+            │   ├── sub-003GNX007_desc-XcEdEp_dwi.bval
+            │   ├── sub-003GNX007_desc-XcEdEp_dwi.bvec
+            │   └── sub-003GNX007_desc-XcEdEp_dwi.nii.gz
+            ├── fs2dwi
+            │   ├── eddy_fs2dwi
+            │   │   ├── b0maskedbrain.nii.gz
+            │   │   ├── b0masked.nii.gz
+            │   │   ├── wmparcInBrain.nii.gz
+            │   │   └── wmparcInDwi.nii.gz
+            │   └── epi_fs2dwi
+            │       ├── b0maskedbrain.nii.gz
+            │       ├── b0masked.nii.gz
+            │       ├── wmparcInBrain.nii.gz
+            │       └── wmparcInDwi.nii.gz
+            └── tracts
+                ├── sub-003GNX007_desc-XcEdEp.vtk
+                ├── sub-003GNX007_desc-XcEd.vtk
+                ├── wmql
+                │   ├── eddy
+                │   └── epi
+                └── wmqlqc
+                    ├── eddy
+                    └── epi
 
 ```                
 
@@ -427,7 +431,7 @@ variable to the path of your edited parameter file.
 ```bash
 # MABS masking of T1w image for case 003GNX007, session BWH01
 exec/ExecuteTask --task StructMask \
---bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 -s BWH01 --t1-template sub-*/anat/*_T1w.nii.gz
+--bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 -s BWH01 --t1-template sub-*/ses-*/anat/*_T1w.nii.gz
 
 
 # MABS masking of T2w image for all cases and all sessions
@@ -435,7 +439,7 @@ exec/ExecuteTask --task StructMask \
 --bids-data-dir ~/Downloads/INTRuST_BIDS \
 -c ~/Downloads/INTRuST_BIDS/caselist.txt \
 -s ~/Downloads/INTRuST_BIDS/sessions.txt \
---t2-template sub-*/anat/*_T2w.nii.gz \
+--t2-template sub-*/ses-*/anat/*_T2w.nii.gz \
 --num-workers 3
 
 ```
@@ -445,7 +449,7 @@ exec/ExecuteTask --task StructMask \
 ```bash
 # Freesurfer segmentation using only T1w image for case 003GNX007
 exec/ExecuteTask --task Freesurfer \
---bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --t1-template sub-*/anat/*_T1w.nii.gz
+--bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --t1-template sub-*/ses-*/anat/*_T1w.nii.gz
 
 
 # Freesurfer segmentation using both T1w and T2w image for all cases
@@ -453,7 +457,7 @@ exec/ExecuteTask --task Freesurfer \
 --bids-data-dir ~/Downloads/INTRuST_BIDS \
 -c ~/Downloads/INTRuST_BIDS/caselist.txt \
 -s BWH01 \
---t2-template sub-*/anat/*_T2w.nii.gz --t2-template sub-*/anat/*_T2w.nii.gz \ 
+--t2-template sub-*/ses-*/anat/*_T2w.nii.gz --t2-template sub-*/ses-*/anat/*_T2w.nii.gz \ 
 --num-workers 3
 
 ```
@@ -463,13 +467,13 @@ exec/ExecuteTask --task Freesurfer \
 ```bash
 # pnl_eddy.py requires only DWI image
 exec/ExecuteTask --task PnlEddy \
---bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --dwi-template sub-*/dwi/*_dwi.nii.gz 
+--bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --dwi-template sub-*/ses-*/dwi/*_dwi.nii.gz 
 
 
 # pnl_epi.py requires a DWI and a T2w image
 exec/ExecuteTask --task PnlEddyEpi
 --bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt \
---t2-template sub-*/anat/*_T2w.nii.gz --dwi-template sub-*/dwi/*_dwi.nii.gz \
+--t2-template sub-*/ses-*/anat/*_T2w.nii.gz --dwi-template sub-*/ses-*/dwi/*_dwi.nii.gz \
 --num-workers 3
 
 ```
@@ -480,14 +484,14 @@ exec/ExecuteTask --task PnlEddyEpi
 # UKFTractography based on pnl_eddy.py corrected data, requires only DWI image
 exec/ExecuteTask --task Ukf
 --bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt \
---dwi-template sub-*/dwi/*_dwi.nii.gz \
+--dwi-template sub-*/ses-*/dwi/*_dwi.nii.gz \
 --num-workers 3
 
 
 # UKFTractography based on pnl_epi.py corrected data, requires a DWI and a T2w image
 exec/ExecuteTask --task Ukf
 --bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt \
---t2-template sub-*/anat/*_T2w.nii.gz --dwi-template sub-*/dwi/*_dwi.nii.gz \
+--t2-template sub-*/ses-*/anat/*_T2w.nii.gz --dwi-template sub-*/ses-*/dwi/*_dwi.nii.gz \
 --num-workers 3
 
 ```
@@ -498,13 +502,13 @@ exec/ExecuteTask --task Ukf
 ```bash
 # Wmqlqc based on pnl_eddy.py corrected data, requires only DWI image
 exec/ExecuteTask --task Wmqlqc
---bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --dwi-template sub-*/dwi/*_dwi.nii.gz
+--bids-data-dir ~/Downloads/INTRuST_BIDS -c 003GNX007 --dwi-template sub-*/ses-*/dwi/*_dwi.nii.gz
 
 
 # Wmqlqc based on pnl_epi.py corrected data, requires a DWI and a T2w image
 exec/ExecuteTask --task Wmqlqc
 --bids-data-dir ~/Downloads/INTRuST_BIDS -c ~/Downloads/INTRuST_BIDS/caselist.txt \
---t2-template sub-*/anat/*_T2w.nii.gz --dwi-template sub-*/dwi/*_dwi.nii.gz \
+--t2-template sub-*/ses-*/anat/*_T2w.nii.gz --dwi-template sub-*/ses-*/dwi/*_dwi.nii.gz \
 --num-workers 3
 
 ```
@@ -568,7 +572,7 @@ You should provide value for each of the arguments or at least the mandatory one
     build([StructMask(id= '001',
                       ses= 'BWH01',
                       bids_data_dir= '/home/tb571/Downloads/INTRUST_BIDS',
-                      struct_template= 'sub-*/anat/*_T2w.nii.gz',
+                      struct_template= 'sub-*/ses-*/anat/*_T2w.nii.gz',
                       csvFile= '-t2',
                       debug= False,
                       fusion= 'avg',
