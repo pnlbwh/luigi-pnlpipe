@@ -257,18 +257,20 @@ to find that configuration, you should change directory and initiate server as f
 
 In the packaged version, tasks are configured to use PNL hosted public `luigid` server:
 
+```cfg
     default-scheduler-url = https://pnlservers.bwh.harvard.edu/luigi/
-
+```
 
 Upon launching `luigid` server as above, you must edit `luigi.cfg` so tasks use your local server:
 
-    # for individual machine
-    default-scheduler-url = http://localhost:8082/
-    ...
-    ...
-    # PNL hosted public server
-    # default-scheduler-url = https://pnlservers.bwh.harvard.edu/luigi/
-
+```cfg
+# for individual machine
+default-scheduler-url = http://localhost:8082/
+...
+...
+# PNL hosted public server
+# default-scheduler-url = https://pnlservers.bwh.harvard.edu/luigi/
+```
 
 You may also edit `luigi.cfg` as you see fit.
 
