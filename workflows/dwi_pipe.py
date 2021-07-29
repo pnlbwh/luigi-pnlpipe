@@ -14,7 +14,8 @@ import re
 
 from struct_pipe import StructMask
 
-from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, _mask_name, LIBDIR, TemporaryDirectory
+from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, _mask_name, LIBDIR, \
+    load_nifti, TemporaryDirectory
 N_PROC= int(N_PROC)
 
 from _glob import _glob
@@ -589,15 +590,9 @@ class TopupEddy(Task):
         eddy_epi_prefix+= 'EdEp'
 
         # find dir field
-        try:
-            dir = re.search('_dir-(.+?)_', eddy_epi_prefix).group(1)
-            if self.whichVol == '1,2':
-                dir = 2 * int(dir)
-                eddy_epi_prefix= local.path(re.sub('_dir-(.+?)_', f'_dir-{dir}_', eddy_epi_prefix))
-        # dir field may not exist
-        # AttributeError: 'NoneType' object has no attribute 'group'
-        except AttributeError:
-            pass
+        if '_dir-' in self.input()[0]['dwi'] and '_dir-' in self.input()[1]['dwi'] and self.whichVol == '1,2':
+            dir= load_nifti(self.input()[0]['dwi']).shape[3]+ load_nifti(self.input()[1]['dwi']).shape[3]
+            eddy_epi_prefix= local.path(re.sub('_dir-(.+?)_', f'_dir-{dir}_', eddy_epi_prefix))
 
         dwi = local.path(eddy_epi_prefix+ '_dwi.nii.gz')
         bval = dwi.with_suffix('.bval', depth=2)
