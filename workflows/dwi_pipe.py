@@ -144,7 +144,7 @@ class CnnMask(Task):
         outPrefix= prefix.split('_desc-')[0]+ '_desc-'+ desc
         
         bse= local.path(outPrefix+ '_bse.nii.gz')
-        mask= outPrefix+ 'CNN_mask.nii.gz'
+        mask= local.path(outPrefix+ 'CNN_mask.nii.gz')
         
         return dict(bse= bse, mask=mask)
 
