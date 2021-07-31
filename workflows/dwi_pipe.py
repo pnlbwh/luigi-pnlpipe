@@ -129,13 +129,10 @@ class CnnMask(Task):
         cmd = (' ').join(['ImageMath', '3', self.output()['bse'], 'm', self.output()['bse'], self.output()['mask']])
         p = Popen(cmd, shell=True)
         p.wait()
-
-
-        qc_mask = self.output()['mask'].replace('_mask.nii.gz','Qc_mask.nii.gz')
-        print('\n\n** Check quality of created mask {} . Once you are done, save the (edited) mask as {} **\n\n'
-              .format(self.output()['mask'], qc_mask))
-
-
+        
+        # print instruction for quality checking
+        _mask_name(self.output()['mask'])
+        
         write_provenance(self, self.output()['mask'])
 
 
@@ -254,6 +251,7 @@ class BseMask(Task):
 class PnlEddy(Task):
     debug = BoolParameter(default=False)
     eddy_nproc = IntParameter(default=N_PROC)
+    mask_qc= BoolParameter(default=True)
 
     def run(self):
 
@@ -283,8 +281,9 @@ class PnlEddy(Task):
         dwi = local.path(eddy_prefix + '_dwi.nii.gz')
         bval = dwi.with_suffix('.bval', depth=2)
         bvec = dwi.with_suffix('.bvec', depth=2)
-
-        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=self.input()[1]['mask'])
+        mask= _mask_name(self.input()[1]['mask'], self.mask_qc)
+        
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=mask)
 
 
 
