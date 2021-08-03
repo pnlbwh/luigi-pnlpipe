@@ -347,72 +347,6 @@ class FslEddy(Task):
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=self.input()[1]['mask'])
 
 
-# TODO delete this task
-@inherits(FslEddy,StructMask,BseExtract)
-class FslEddyEpi(Task):
-    
-    debug= BoolParameter(default=False)
-    epi_nproc= IntParameter(default=N_PROC)
-
-    def requires(self):
-        return dict(eddy= self.clone(FslEddy), t2= self.clone(StructMask))
-
-    def run(self):
-        
-        eddy_epi_prefix= self.output()['dwi'].rsplit('.nii.gz')[0]
-
-        for name in ['dwi', 'bval', 'bvec']:
-            if not self.output()[name].exists(): 
-                cmd = (' ').join(['pnl_epi.py',
-                                  '--dwi', self.input()['eddy']['dwi'],
-                                  '--bvals', self.input()['eddy']['bval'],
-                                  '--bvecs', self.input()['eddy']['bvec'],
-                                  '--dwimask', self.input()['eddy']['mask'],
-                                  '--bse', self.input()['eddy']['bse'],
-                                  '--t2', self.input()['t2']['aligned'],
-                                  '--t2mask', self.input()['t2']['mask'],
-                                  '-o', eddy_epi_prefix,
-                                  '-d' if self.debug else '',
-                                  f'-n {self.epi_nproc}' if self.epi_nproc else ''])
-                p = Popen(cmd, shell=True)
-                p.wait()
-                
-                move(eddy_epi_prefix+'_mask.nii.gz', self.output()['mask'])
-
-                break
-
-        
-        # write_provenance(self)
-
-                
-        self.dwi= self.output()['dwi']
-        yield self.clone(BseExtract)
-
-    def output(self):
-
-        eddy_epi_prefix= self.input()['eddy']['dwi'].rsplit('_dwi.nii.gz')[0]+ 'Ep'
-        dwi = local.path(eddy_epi_prefix+ '_dwi.nii.gz')
-        bval = dwi.with_suffix('.bval', depth= 2)
-        bvec = dwi.with_suffix('.bvec', depth= 2)
-        
-        # adding EdEp suffix to be consistent with dwi
-        mask_prefix= self.input()['eddy']['mask'].rsplit('_mask.nii.gz')[0]+ 'EdEp'
-        
-        # ENH
-        # two things could be done:
-        # * introduce `epi_mask_qc` param, separate from `dwi_mask_qc` param
-        # * do not qc at all: the mask is generated at the beginning of the pipeline, hence no qc after warping
-        # following the latter at this time
-        mask = local.path(mask_prefix+ '_mask.nii.gz')
-
-        
-        # adding EdEp suffix to be consistent with dwi
-        bse_prefix= self.input()['eddy']['bse'].rsplit('_bse.nii.gz')[0]+ 'EdEp'
-        bse = local.path(bse_prefix+ '_bse.nii.gz')
-        
-        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
-        
-
 
 @inherits(FslEddy, PnlEddy, StructMask, BseExtract)
 class EddyEpi(Task):
@@ -582,9 +516,9 @@ class TopupEddy(Task):
         mask_prefix = dwi.rsplit('_desc-')[0]
         desc= re.search('_desc-(.+?)_mask.nii.gz', basename(self.input()[1]['mask'])).group(1)
         desc= desc+ 'EdEp'
-        mask_prefix= local.path(mask_prefix+ '_desc-'+ desc)
+        mask_prefix= mask_prefix+ '_desc-'+ desc
 
-        mask = _mask_name(mask_prefix, False)
+        mask = local.path(mask_prefix+ '_mask.nii.gz')
 
         bse_prefix= dwi._path
         desc= re.search('_desc-(.+?)_dwi.nii.gz', bse_prefix).group(1)
@@ -592,31 +526,6 @@ class TopupEddy(Task):
         bse= local.path(bse_prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
 
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
-
-
-
-# TODO delete this task
-@requires(PnlEddy)
-class PnlEddyUkf(Task):
-
-    ukf_params = Parameter(default='')
-
-    def run(self):
-        self.output().dirname.mkdir()
-
-        cmd = (' ').join(['ukf.py',
-                          '-i', self.input()['dwi'],
-                          '--bvals', self.input()['bval'],
-                          '--bvecs', self.input()['bvec'],
-                          '-m', self.input()['mask'],
-                          '-o', self.output(),
-                          '--params', self.ukf_params])
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-
-    def output(self):
-        return local.path(self.input()['dwi'].replace('/dwi/', '/tracts/').replace('_dwi.nii.gz', '.vtk'))
 
 
 
