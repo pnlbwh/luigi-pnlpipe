@@ -290,12 +290,14 @@ class PnlEddy(Task):
 @requires(GibbsUn,CnnMask)
 class FslEddy(Task):
     
+    mask_qc= BoolParameter(default=True)
     acqp = Parameter()
     index = Parameter()
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
     useGpu = BoolParameter(default=False)
      
     def run(self):
+    
         # TODO check Qc_mask.nii.gz here and print message if it is not? Write a function to do that may be?
         
         outDir= self.output()['dwi'].dirname.join('fsl_eddy')
@@ -451,6 +453,8 @@ class TopupEddy(Task):
         ap_mask= self.clone(CnnMask)
         
         # TODO check Qc_mask.nii.gz here and print message if it is not? Write a function to do that may be?
+        if not(_mask_name(pa_mask).exists() and _mask_name(ap_mask).exists()):
+            raise FileNotFoundError('One or both *Qc_mask.nii.gz do not exist')
         
         return (pa, pa_mask, ap, ap_mask)
 
