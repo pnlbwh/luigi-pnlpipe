@@ -396,14 +396,14 @@ class FslEddyEpi(Task):
         bvec = dwi.with_suffix('.bvec', depth= 2)
         
         # adding EdEp suffix to be consistent with dwi
-        mask_prefix= local.path(self.input()['eddy']['mask'].rsplit('_mask.nii.gz')[0]+ 'EdEp')
+        mask_prefix= self.input()['eddy']['mask'].rsplit('_mask.nii.gz')[0]+ 'EdEp'
         
         # ENH
         # two things could be done:
         # * introduce `epi_mask_qc` param, separate from `dwi_mask_qc` param
         # * do not qc at all: the mask is generated at the beginning of the pipeline, hence no qc after warping
-        # following the latter, the second argument is set to False
-        mask = _mask_name(mask_prefix, False)
+        # following the latter at this time
+        mask = local.path(mask_prefix+ '_mask.nii.gz')
 
         
         # adding EdEp suffix to be consistent with dwi
@@ -470,14 +470,14 @@ class EddyEpi(Task):
         bvec = dwi.with_suffix('.bvec', depth=2)
 
         # adding EdEp suffix to be consistent with dwi
-        mask_prefix = local.path(self.input()['eddy']['mask'].rsplit('_mask.nii.gz')[0] + 'EdEp')
+        mask_prefix = self.input()['eddy']['mask'].rsplit('_mask.nii.gz')[0] + 'EdEp'
 
         # ENH
         # two things could be done:
         # * introduce `epi_mask_qc` param, separate from `dwi_mask_qc` param
         # * do not qc at all: the mask is generated at the beginning of the pipeline, hence no qc after warping
-        # following the latter, the second argument is set to False
-        mask = _mask_name(mask_prefix, False)
+        # following the latter at this time
+        mask = local.path(mask_prefix+ '_mask.nii.gz')
 
         # adding EdEp suffix to be consistent with dwi
         bse_prefix = self.input()['eddy']['bse'].rsplit('_bse.nii.gz')[0] + 'EdEp'
