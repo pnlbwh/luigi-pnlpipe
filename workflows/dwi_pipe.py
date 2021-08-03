@@ -452,14 +452,17 @@ class TopupEddy(Task):
         ap= self.clone(GibbsUn)
         ap_mask= self.clone(CnnMask)
         
-        # TODO check Qc_mask.nii.gz here and print message if it is not? Write a function to do that may be?
-        if not(_mask_name(pa_mask).exists() and _mask_name(ap_mask).exists()):
-            raise FileNotFoundError('One or both *Qc_mask.nii.gz do not exist')
         
         return (pa, pa_mask, ap, ap_mask)
 
     def run(self):
 
+        # TODO check Qc_mask.nii.gz here and print message if it is not? Write a function to do that may be?
+        mask_pa= _mask_name(self.input()[1]['mask'])
+        mask_ap= _mask_name(self.input()[3]['mask'])
+        if not(mask_pa.exists() and mask_ap.exists()):
+            raise FileNotFoundError(f'One or both *Qc_mask.nii.gz do not exist')
+            
         outDir = self.output()['dwi'].dirname.join(self.TopupOutDir)
 
         for name in ['dwi', 'bval', 'bvec']:
@@ -470,7 +473,7 @@ class TopupEddy(Task):
                                   '--imain', '{},{}'.format(self.input()[0]['dwi'],self.input()[2]['dwi']),
                                   '--bvals', '{},{}'.format(self.input()[0]['bval'],self.input()[2]['bval']),
                                   '--bvecs', '{},{}'.format(self.input()[0]['bvec'],self.input()[2]['bvec']),
-                                  '--mask', '{},{}'.format(self.input()[1]['mask'],self.input()[3]['mask']),
+                                  '--mask', '{},{}'.format(mask_pa,mask_ap),
                                   '--acqp', self.acqp,
                                   '--config', self.config,
                                   '--eddy-cuda' if self.useGpu else '',
