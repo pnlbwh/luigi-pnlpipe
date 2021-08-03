@@ -75,67 +75,36 @@ class StructMask(Task):
     ref_mask= Parameter(default= '')
     reg_method= Parameter(default='rigid')
 
-    # for qc'ing the created mask
-    slicer_exec= Parameter(default= '')
-    mask_qc= BoolParameter(default=False)
 
 
     def run(self):
 
-        auto_mask = self.output()['mask'].replace('Qc_mask.nii.gz','_mask.nii.gz')
+        if self.csvFile:
+            cmd = (' ').join(['atlas.py',
+                              '-t', self.input(),
+                              '--train', self.csvFile,
+                              '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
+                              f'-n {self.mabs_mask_nproc}',
+                              '-d' if self.debug else '',
+                              f'--fusion {self.fusion}' if self.fusion else ''])
 
-        if not isfile(auto_mask):
-            if self.csvFile:
-                cmd = (' ').join(['atlas.py',
-                                  '-t', self.input(),
-                                  '--train', self.csvFile,
-                                  '-o', auto_mask.rsplit('_mask.nii.gz')[0],
-                                  f'-n {self.mabs_mask_nproc}',
-                                  '-d' if self.debug else '',
-                                  f'--fusion {self.fusion}' if self.fusion else ''])
+            p = Popen(cmd, shell=True)
+            p.wait()
 
-                p = Popen(cmd, shell=True)
-                p.wait()
+            # print instruction for quality checking
+            _mask_name(self.output()['mask'])
 
-            else:
-                
-                cmd = (' ').join(['makeAlignedMask.py',
-                                  '-t', self.input(),
-                                  '-o', auto_mask,
-                                  '-i', glob(pjoin(self.input().dirname, self.ref_img))[0],
-                                  '-l', glob(pjoin(self.input().dirname, self.ref_mask))[0],
-                                  '--reg', self.reg_method])
+        else:
+            
+            cmd = (' ').join(['makeAlignedMask.py',
+                              '-t', self.input(),
+                              '-o', self.output()['mask'],
+                              '-i', glob(pjoin(self.input().dirname, self.ref_img))[0],
+                              '-l', glob(pjoin(self.input().dirname, self.ref_mask))[0],
+                              '--reg', self.reg_method])
 
-                p = Popen(cmd, shell=True)
-                p.wait()
-
-            if p.returncode:
-                return
-
-
-        if self.mask_qc:
-            print('\n\n** Check quality of created mask {} . Once you are done, save the (edited) mask as {} **\n\n'
-                  .format(auto_mask,self.output()['mask']))
-
-
-            if self.slicer_exec:
-
-                if not getenv('DISPLAY'):
-                    warn('DISPLAY is undefined, cannot open Slicer')
-
-                else:
-                    cmd= (' ').join([self.slicer_exec, '--python-code',
-                                    '\"slicer.util.loadVolume(\'{}\'); '
-                                    'slicer.util.loadLabelVolume(\'{}\')\"'
-                                    .format(self.input()['aligned'],auto_mask)])
-
-                    p = Popen(cmd, shell= True)
-                    p.wait()
-
-            while 1:
-                sleep(QC_POLL)
-                if isfile(self.output()['mask']):
-                    break
+            p = Popen(cmd, shell=True)
+            p.wait()
 
 
         write_provenance(self, self.output()['mask'])
@@ -191,7 +160,7 @@ or save it after quality checking with {self.ref_mask} suffix?\n\n''')
         
         
         mask_prefix= local.path(pjoin(self.input().dirname, prefix.split('_desc-')[0])+ '_desc-'+ desc)
-        mask = _mask_name(mask_prefix, self.mask_qc)
+        mask = local.path(mask_prefix+ '_mask.nii.gz')
         
         return dict(aligned= self.input(), mask=mask)
 
