@@ -425,6 +425,8 @@ class EddyEpi(Task):
 @inherits(GibbsUn,CnnMask)
 class TopupEddy(Task):
 
+    mask_qc= BoolParameter(default=True)
+    
     pa_ap_template = Parameter(default='')
     acqp = Parameter()
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
@@ -458,8 +460,8 @@ class TopupEddy(Task):
     def run(self):
 
         # TODO check Qc_mask.nii.gz here and print message if it is not? Write a function to do that may be?
-        mask_pa= _mask_name(self.input()[1]['mask'])
-        mask_ap= _mask_name(self.input()[3]['mask'])
+        mask_pa= _mask_name(self.input()[1]['mask'], self.mask_qc)
+        mask_ap= _mask_name(self.input()[3]['mask'], self.mask_qc)
         if not(mask_pa.exists() and mask_ap.exists()):
             raise FileNotFoundError(f'One or both *Qc_mask.nii.gz do not exist')
             
