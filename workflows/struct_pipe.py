@@ -75,7 +75,8 @@ class StructMask(Task):
     ref_mask= Parameter(default= '')
     reg_method= Parameter(default='rigid')
 
-
+    # for checking existence of qc'ed mask
+    mask_qc= BoolParameter(default=False)
 
     def run(self):
 
@@ -167,8 +168,16 @@ or save it after quality checking with {self.ref_mask} suffix?\n\n''')
 
 @requires(StructMask)
 class N4BiasCorrect(Task):
-
+    
     def run(self):
+        
+        # check existence of quality checked mask for MABS only
+        # aligned mask won't be quality checked
+        if self.csvFile and self.mask_qc:
+            qc_mask= _mask_name(self.input()['mask'], self.mask_qc)
+            if not qc_mask.exists():
+                raise FileNotFoundError(f'{qc_mask} does not exist')
+        
         cmd = (' ').join(['ImageMath', '3', self.output()['masked'], 'm', self.input()['aligned'], self.input()['mask']])
         check_call(cmd, shell=True)
         
@@ -198,13 +207,11 @@ class Freesurfer(Task):
     t1_csvFile = Parameter(default='')
     t1_ref_img= Parameter(default='')
     t1_ref_mask= Parameter(default='')
-    t1_mask_qc= BoolParameter(default=False)
 
     t2_template= Parameter(default='')
     t2_csvFile = Parameter(default='')
     t2_ref_img= Parameter(default='')
     t2_ref_mask= Parameter(default='')
-    t2_mask_qc= BoolParameter(default=False)
 
     freesurfer_nproc= IntParameter(default=1)
     expert_file= Parameter(default=pjoin(FILEDIR,'expert_file.txt'))
@@ -223,7 +230,6 @@ class Freesurfer(Task):
         self.csvFile= self.t1_csvFile
         self.ref_img= self.t1_ref_img
         self.ref_mask= self.t1_ref_mask
-        self.mask_qc= self.t1_mask_qc
 
         t1_attr= self.clone(N4BiasCorrect)
 
@@ -232,7 +238,6 @@ class Freesurfer(Task):
             self.csvFile = self.t2_csvFile
             self.ref_img = self.t2_ref_img
             self.ref_mask = self.t2_ref_mask
-            self.mask_qc = self.t2_mask_qc
             
             t2_attr= self.clone(N4BiasCorrect)
 
