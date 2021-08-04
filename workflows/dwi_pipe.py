@@ -311,7 +311,7 @@ class FslEddy(Task):
                                   '--dwi', self.input()[0]['dwi'],
                                   '--bvals', self.input()[0]['bval'],
                                   '--bvecs', self.input()[0]['bvec'],
-                                  '--mask', self.input()[1]['mask'],
+                                  '--mask', self.output()['mask'],
                                   '--acqp', self.acqp,
                                   '--index', self.index,
                                   '--config', self.config,
