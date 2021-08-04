@@ -345,8 +345,9 @@ class FslEddy(Task):
         dwi = local.path(eddy_prefix+ '_dwi.nii.gz')
         bval = dwi.with_suffix('.bval', depth= 2)
         bvec = dwi.with_suffix('.bvec', depth= 2)
+        mask= _mask_name(self.input()[1]['mask'], self.mask_qc)
         
-        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=self.input()[1]['mask'])
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=mask)
 
 
 
