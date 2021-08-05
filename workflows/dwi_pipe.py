@@ -183,31 +183,27 @@ class BseMask(Task):
     bet_threshold = FloatParameter(default=float(BET_THRESHOLD))
     mask_method = Parameter(default='Bet')
     slicer_exec = Parameter(default='')
-    dwi_mask_qc= BoolParameter(default=False)
     model_folder= Parameter(default='')
 
     def run(self):
         
-        auto_mask = self.output()['mask'].replace('Qc','')
-
-        if not isfile(auto_mask):
-            if self.mask_method=='Bet':
-                cmd = (' ').join(['bet_mask.py',
-                                  '-i', self.input(),
-                                  '-o', auto_mask.rsplit('_mask.nii.gz')[0],
-                                  f'-f {self.bet_threshold}' if self.bet_threshold else ''])
-                p = Popen(cmd, shell=True)
-                p.wait()
-                
-                if p.returncode:
-                    return
+        if self.mask_method=='Bet':
+            cmd = (' ').join(['bet_mask.py',
+                              '-i', self.input(),
+                              '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
+                              f'-f {self.bet_threshold}' if self.bet_threshold else ''])
+            p = Popen(cmd, shell=True)
+            p.wait()
             
+            # print instruction for quality checking
+            _mask_name(self.output()['mask'])
             
-            elif self.mask_method=='CNN':
-                
-                pass
-                # see CnnMask task above
-                # also see https://github.com/pnlbwh/luigi-pnlpipe/issues/5
+        
+        elif self.mask_method=='CNN':
+            
+            pass
+            # see CnnMask task above
+            # also see https://github.com/pnlbwh/luigi-pnlpipe/issues/5
 
 
         # mask the baseline image
@@ -216,32 +212,10 @@ class BseMask(Task):
         p.wait()
 
 
-        if self.slicer_exec or self.dwi_mask_qc:
-            print('\n\n** Check quality of created mask {} . Once you are done, save the (edited) mask as {} **\n\n'
-                  .format(auto_mask,self.output()['mask']))
-
-
-        if self.slicer_exec:
-            cmd = (' ').join([self.slicer_exec, '--python-code',
-                              '\"slicer.util.loadVolume(\'{}\'); '
-                              'slicer.util.loadLabelVolume(\'{}\')\"'
-                             .format(self.input(), auto_mask)])
-
-            p = Popen(cmd, shell=True)
-            p.wait()
-
-
-        elif self.dwi_mask_qc:
-            while 1:
-                sleep(QC_POLL)
-                if isfile(self.output()['mask']):
-                    break
-
-
     def output(self):
     
-        prefix= local.path(self.input().rsplit('_bse.nii.gz')[0]+ self.mask_method)
-        mask= _mask_name(prefix, self.dwi_mask_qc)
+        prefix= self.input().rsplit('_bse.nii.gz')[0]
+        mask= local.path(prefix+ 'Bet_mask.nii.gz')
         
         return dict(bse= self.input(), mask=mask)
 
