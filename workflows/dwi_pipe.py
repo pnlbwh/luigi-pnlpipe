@@ -182,7 +182,6 @@ class BseExtract(Task):
 class BseMask(Task):
     bet_threshold = FloatParameter(default=float(BET_THRESHOLD))
     mask_method = Parameter(default='Bet')
-    slicer_exec = Parameter(default='')
     model_folder= Parameter(default='')
 
     def run(self):
