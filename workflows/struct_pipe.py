@@ -75,8 +75,6 @@ class StructMask(Task):
     ref_mask= Parameter(default= '')
     reg_method= Parameter(default='rigid')
 
-    # for checking existence of qc'ed mask
-    mask_qc= BoolParameter(default=False)
 
     def run(self):
 
@@ -168,6 +166,9 @@ or save it after quality checking with {self.ref_mask} suffix?\n\n''')
 
 @requires(StructMask)
 class N4BiasCorrect(Task):
+    
+    # for checking existence of qc'ed mask
+    mask_qc= BoolParameter(default=False)
     
     def run(self):
         
