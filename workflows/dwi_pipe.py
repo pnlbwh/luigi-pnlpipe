@@ -206,7 +206,7 @@ class BseMask(Task):
 
 
         # mask the baseline image
-        cmd = (' ').join(['ImageMath', '3', self.output()['bse'], 'm', self.output()['bse'], auto_mask])
+        cmd = (' ').join(['ImageMath', '3', self.output()['bse'], 'm', self.output()['bse'], self.output()['mask']])
         p = Popen(cmd, shell=True)
         p.wait()
 
