@@ -167,21 +167,15 @@ or save it after quality checking with {self.ref_mask} suffix?\n\n''')
 @requires(StructMask)
 class N4BiasCorrect(Task):
     
-    # for checking existence of qc'ed mask
-    mask_qc= BoolParameter(default=False)
-    
     def run(self):
         
-        # check existence of quality checked mask for MABS only
-        # aligned mask won't be quality checked
-        if self.csvFile:
-            qc_mask= _mask_name(self.input()['mask'], self.mask_qc)
-            if not qc_mask.exists():
-                raise FileNotFoundError(f'{qc_mask} does not exist')
+        qc_mask= self.input()['mask'].rsplit('_mask.nii.gz')[0]+ 'Qc_mask.nii.gz'
+        if isfile(qc_mask):
+            mask_to_use= qc_mask
         else:
-            qc_mask= self.input()['mask']
-        
-        cmd = (' ').join(['ImageMath', '3', self.output()['masked'], 'm', self.input()['aligned'], qc_mask])
+            mask_to_use= self.input()['mask']
+            
+        cmd = (' ').join(['ImageMath', '3', self.output()['masked'], 'm', self.input()['aligned'], mask_to_use])
         check_call(cmd, shell=True)
         
         cmd = (' ').join(['N4BiasFieldCorrection', '-d', '3', '-i', self.output()['masked'], '-o', self.output()['n4corr']])
