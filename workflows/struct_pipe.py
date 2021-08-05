@@ -171,12 +171,14 @@ class N4BiasCorrect(Task):
     
     def run(self):
         
-        qc_mask= _mask_name(self.input()['mask'], self.mask_qc)
         # check existence of quality checked mask for MABS only
         # aligned mask won't be quality checked
         if self.csvFile:
+            qc_mask= _mask_name(self.input()['mask'], self.mask_qc)
             if not qc_mask.exists():
                 raise FileNotFoundError(f'{qc_mask} does not exist')
+        else:
+            qc_mask= self.input()['mask']
         
         cmd = (' ').join(['ImageMath', '3', self.output()['masked'], 'm', self.input()['aligned'], qc_mask])
         check_call(cmd, shell=True)
