@@ -728,7 +728,7 @@ See [fs2dwi_pipe_params.cfg](../params/fs2dwi_pipe_params.cfg)
 # Caveat/Issues
 
 1. To force re-running of a job, please delete all intermediate outputs. 
-See [How Luigi works](#how-luigi-works) for details.
+See [how Luigi works](#how-luigi-works) for details.
 
 2. Use appropriate parameter file to define `LUIGI_CONFIG_PATH`. Please edit relevant parameters only.
 
@@ -741,7 +741,7 @@ You should:
 
   * mark that job as done on the visualizer 
   * or kill and restart `luigid` server to re-run successfully
-
+    
 To kill `luigid` server, use `killall -9 luigid`.
 
 
