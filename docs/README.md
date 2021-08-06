@@ -33,6 +33,7 @@ Table of Contents
          * [ii. HPC](#ii-hpc)
             * [a. Launch job](#a-launch-job-1)
             * [b. Monitor progress](#b-monitor-progress-1)
+   * [PNL Luigi server](#pnl-luigi-server)
    * [Example commands](#example-commands)
       * [Structural masking](#structural-masking)
       * [Freesurfer segmentation](#freesurfer-segmentation)
@@ -410,6 +411,11 @@ derivatives
 
 ```                
 
+# PNL Luigi server
+
+To facilitate external collaborators to use *luigi-pnlpipe* without having to set up a Luigi server at their end,
+we have set up a public Luigi server. Our server not only runs Luigi tasks but also provides data provenance associated
+with each output. It is particularly helpful when Luigi tasks are run inside [pnlpipe-containers](https://github.com/pnlbwh/pnlpipe-containers).
                 
 # Example commands
 
