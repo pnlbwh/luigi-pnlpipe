@@ -728,19 +728,19 @@ See [fs2dwi_pipe_params.cfg](../params/fs2dwi_pipe_params.cfg)
 # Caveat/Issues
 
 1. To force re-running of a job, please delete all intermediate outputs. 
-See (How Luigi Work)(#how-luigi-works) for details.
+See [How Luigi works](#how-luigi-works) for details.
 
 2. Use appropriate parameter file to define `LUIGI_CONFIG_PATH`. Please edit relevant parameters only.
 
 3. If you attempt to re-run a job, but:
  
-* it does not get run permission
-* or shows as being executed by another scheduler
+  * it does not get run permission
+  * or shows as being executed by another scheduler
 
 You should:
 
-* mark that job as done on the visualizer 
-* or kill and restart `luigid` server to re-run successfully
+  * mark that job as done on the visualizer 
+  * or kill and restart `luigid` server to re-run successfully
 
 To kill `luigid` server, use `killall -9 luigid`.
 
@@ -748,8 +748,8 @@ To kill `luigid` server, use `killall -9 luigid`.
 4. There are two types of *Dependency Graph*: `SVG` and `D3`. You can switch between them by clicking on the tab on 
 top right corner. When the parent task has a bunch of dependencies, `SVG` graph depicts the order in which jobs are 
 picked up for running. On the other hand, `D3` graph shows the actual dependency. 
-See [luigi/issues/2889](https://github.com/spotify/luigi/issues/2889) for better explanation. So, it is always advisable 
-to look at `D3` graph.
+See [luigi/issues/2889](https://github.com/spotify/luigi/issues/2889) for better explanation. So, it is advised 
+to always look at `D3` graph.
 
 
 Feel free to report any other issues at https://github.com/pnlbwh/luigi-pnlpipe/issues
