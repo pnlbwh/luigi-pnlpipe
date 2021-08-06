@@ -111,17 +111,17 @@ are generated when the pipeline is run.
 
 * Clone it
 
-
-    git clone https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation.git
+> git clone https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation.git
 
 * Download models
 
-https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation#4-download-models
+> https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation#4-download-models
 
 * Add to PATH
 
-
-    export PATH=/path/to/CNN-Diffusion-MRIBrain-Segmentation/pipeline/:$PATH
+> export PATH=/path/to/CNN-Diffusion-MRIBrain-Segmentation/pipeline/:$PATH
+  
+  
 
 ## whitematteranalysis
 
