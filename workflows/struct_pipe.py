@@ -169,18 +169,14 @@ class N4BiasCorrect(Task):
     
     def run(self):
         
-        qc_mask= self.input()['mask'].rsplit('_mask.nii.gz')[0]+ 'Qc_mask.nii.gz'
-        if isfile(qc_mask):
-            mask_to_use= qc_mask
-        else:
-            mask_to_use= self.input()['mask']
+        mask_to_use= _mask_name(self.input()['mask'])
             
         cmd = (' ').join(['ImageMath', '3', self.output()['masked'], 'm', self.input()['aligned'], mask_to_use])
         check_call(cmd, shell=True)
         
         cmd = (' ').join(['N4BiasFieldCorrection', '-d', '3', '-i', self.output()['masked'], '-o', self.output()['n4corr']])
         check_call(cmd, shell=True)
-       
+        
         write_provenance(self, self.output()['n4corr'])
 
 
