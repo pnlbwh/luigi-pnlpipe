@@ -98,7 +98,7 @@ Finally, see [here](#running-luigi-pnlpipe) for instructions about running the p
 ## luigi package
 
 A *client* (PNL external collaborator) can use the official luigi package installed in `pnlpipe3` conda environment.
-However, a *server* should install Tashrif's development for `/history/by_task_id/` URI to function:
+However, a *server* should install Tashrif's development for `/history/by_task_id/` URL to function:
 
     pip install git+https://github.com/tashrifbillah/luigi.git@89c9aa750de8ae2badabe435d98c02e44a1aa8b4
 
@@ -416,6 +416,13 @@ derivatives
 To facilitate external collaborators to use *luigi-pnlpipe* without having to set up a Luigi server at their end,
 we have set up a public Luigi server. Our server not only runs Luigi tasks but also provides data provenance associated
 with each output. It is particularly helpful when Luigi tasks are run inside [pnlpipe-containers](https://github.com/pnlbwh/pnlpipe-containers).
+
+* Luigi dashboard https://pnlservers.bwh.harvard.edu/static/visualiser/index.html
+* History by task name https://pnlservers.bwh.harvard.edu/history/by_name/Freesurfer
+* History by task parameters https://pnlservers.bwh.harvard.edu/history/by_params/Freesurfer?data={"id":"1004"}
+* History by task ID https://pnlservers.bwh.harvard.edu/history/by_id/69
+* List of all tasks https://pnlservers.bwh.harvard.edu/tasklist
+* API graph https://pnlservers.bwh.harvard.edu/api/graph
                 
 # Example commands
 
