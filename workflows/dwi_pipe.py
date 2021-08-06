@@ -177,7 +177,7 @@ class BseExtract(Task):
         return bse
 
 
-
+# this task may be broken
 @requires(BseExtract)
 class BseMask(Task):
     bet_threshold = FloatParameter(default=float(BET_THRESHOLD))
@@ -224,11 +224,8 @@ class BseMask(Task):
 class PnlEddy(Task):
     debug = BoolParameter(default=False)
     eddy_nproc = IntParameter(default=N_PROC)
-    mask_qc= BoolParameter(default=True)
 
     def run(self):
-
-        # TODO check Qc_mask.nii.gz here and print message if it is not? Write a function to do that may be?
         
         for name in ['dwi', 'bval', 'bvec']:
             if not self.output()[name].exists():
@@ -254,7 +251,7 @@ class PnlEddy(Task):
         dwi = local.path(eddy_prefix + '_dwi.nii.gz')
         bval = dwi.with_suffix('.bval', depth=2)
         bvec = dwi.with_suffix('.bvec', depth=2)
-        mask= _mask_name(self.input()[1]['mask'], self.mask_qc)
+        mask= _mask_name(self.input()[1]['mask'])
         
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=mask)
 
@@ -262,16 +259,13 @@ class PnlEddy(Task):
 
 @requires(GibbsUn,CnnMask)
 class FslEddy(Task):
-    
-    mask_qc= BoolParameter(default=True)
+
     acqp = Parameter()
     index = Parameter()
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
     useGpu = BoolParameter(default=False)
      
     def run(self):
-    
-        # TODO check Qc_mask.nii.gz here and print message if it is not? Write a function to do that may be?
         
         outDir= self.output()['dwi'].dirname.join('fsl_eddy')
 
@@ -318,7 +312,7 @@ class FslEddy(Task):
         dwi = local.path(eddy_prefix+ '_dwi.nii.gz')
         bval = dwi.with_suffix('.bval', depth= 2)
         bvec = dwi.with_suffix('.bvec', depth= 2)
-        mask= _mask_name(self.input()[1]['mask'], self.mask_qc)
+        mask= _mask_name(self.input()[1]['mask'])
         
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=mask)
 
@@ -398,8 +392,6 @@ class EddyEpi(Task):
 
 @inherits(GibbsUn,CnnMask)
 class TopupEddy(Task):
-
-    mask_qc= BoolParameter(default=True)
     
     pa_ap_template = Parameter(default='')
     acqp = Parameter()
@@ -418,13 +410,11 @@ class TopupEddy(Task):
 
         # acq-PA
         self.dwi_template= pa_template
-        # pa= self.clone(DwiAlign)
         pa= self.clone(GibbsUn)
         pa_mask= self.clone(CnnMask)
 
         # acq-AP
         self.dwi_template= ap_template
-        # ap= self.clone(DwiAlign)
         ap= self.clone(GibbsUn)
         ap_mask= self.clone(CnnMask)
         
@@ -433,12 +423,9 @@ class TopupEddy(Task):
 
     def run(self):
 
-        # TODO check Qc_mask.nii.gz here and print message if it is not? Write a function to do that may be?
-        mask_pa= _mask_name(self.input()[1]['mask'], self.mask_qc)
-        mask_ap= _mask_name(self.input()[3]['mask'], self.mask_qc)
-        if not(mask_pa.exists() and mask_ap.exists()):
-            raise FileNotFoundError(f'One or both *Qc_mask.nii.gz do not exist')
-            
+        pa_mask_to_use= _mask_name(self.input()[1]['mask']
+        ap_mask_to_use= _mask_name(self.input()[3]['mask']
+        
         outDir = self.output()['dwi'].dirname.join(self.TopupOutDir)
 
         for name in ['dwi', 'bval', 'bvec']:
@@ -449,7 +436,7 @@ class TopupEddy(Task):
                                   '--imain', '{},{}'.format(self.input()[0]['dwi'],self.input()[2]['dwi']),
                                   '--bvals', '{},{}'.format(self.input()[0]['bval'],self.input()[2]['bval']),
                                   '--bvecs', '{},{}'.format(self.input()[0]['bvec'],self.input()[2]['bvec']),
-                                  '--mask', '{},{}'.format(mask_pa,mask_ap),
+                                  '--mask', '{},{}'.format(pa_mask_to_use,ap_mask_to_use),
                                   '--acqp', self.acqp,
                                   '--config', self.config,
                                   '--eddy-cuda' if self.useGpu else '',
