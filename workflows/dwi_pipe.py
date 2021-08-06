@@ -423,8 +423,8 @@ class TopupEddy(Task):
 
     def run(self):
 
-        pa_mask_to_use= _mask_name(self.input()[1]['mask']
-        ap_mask_to_use= _mask_name(self.input()[3]['mask']
+        pa_mask_to_use= _mask_name(self.input()[1]['mask'])
+        ap_mask_to_use= _mask_name(self.input()[3]['mask'])
         
         outDir = self.output()['dwi'].dirname.join(self.TopupOutDir)
 
