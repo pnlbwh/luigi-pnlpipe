@@ -104,7 +104,7 @@ However, a *server* should install Tashrif's development for `/history/by_task_i
 
 *luigi-pnlpipe* itself will not fail without Tashrif's development on the *server* side. That means, you can 
 also use the official luigi package on the *server* side. But you will not be able to redirect to 
-`/history/by_task_id/` URIs generated in `*.log.html` provenance files. Notably, the provenance files 
+`/history/by_task_id/` URLs generated in `*.log.html` provenance files. Notably, the provenance files 
 are generated when the pipeline is run.
 
 
