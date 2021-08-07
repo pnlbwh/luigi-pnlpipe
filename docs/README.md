@@ -423,7 +423,21 @@ with each output. It is particularly helpful when Luigi tasks are run inside [pn
 * History by task ID https://pnlservers.bwh.harvard.edu/history/by_id/69
 * List of all tasks https://pnlservers.bwh.harvard.edu/tasklist
 * API graph https://pnlservers.bwh.harvard.edu/api/graph
-                
+
+In addition, `*.log.html` and `*.log.json` provenance files are generated for each output file in the directory of that file:
+
+```python
+sub-1004_ses-01_desc-XcMaN4_T1w.log.html  sub-1004_ses-01_desc-Xc_T1w.log.html
+sub-1004_ses-01_desc-XcMaN4_T1w.log.json  sub-1004_ses-01_desc-Xc_T1w.log.json
+sub-1004_ses-01_desc-XcMaN4_T1w.nii.gz    sub-1004_ses-01_desc-Xc_T1w.nii.gz
+sub-1004_ses-01_desc-XcMaN4_T2w.log.html  sub-1004_ses-01_desc-Xc_T2w.log.html
+sub-1004_ses-01_desc-XcMaN4_T2w.log.json  sub-1004_ses-01_desc-Xc_T2w.log.json
+sub-1004_ses-01_desc-XcMaN4_T2w.nii.gz    sub-1004_ses-01_desc-Xc_T2w.nii.gz
+```
+
+A provenance file capture information about the origin of the file it is associated with, the parameters and the versions of
+various software used in the pipeline to generate that file.
+
 # Example commands
 
 Before running any workflow, set the environment variable `LUIGI_CONFIG_PATH` from where optional parameter values 
