@@ -198,7 +198,7 @@ scheduler that you can view on your web browser.
 you should organize your data according to BIDS convention. For example, the following is a minimal BIDS organization:
 
 > tree ~/Downloads/INTRuST_BIDS
-
+```python
     caselist.txt
     derivatives
     sub-003GNX007
@@ -225,7 +225,7 @@ you should organize your data according to BIDS convention. For example, the fol
         ├── sub-003GNX021_dwi.bval
         ├── sub-003GNX021_dwi.bvec
         └── sub-003GNX021_dwi.nii.gz
-
+```
 
 Once data is organized as above, you can define the following arguments:
     
@@ -234,7 +234,7 @@ Once data is organized as above, you can define the following arguments:
     --t1-template sub-*/anat/*_T1w.nii.gz
     --t2-template sub-*/anat/*_T2w.nii.gz
     --dwi-template sub-*/dwi/*_dwi.nii.gz
-    
+   
     
 When *luigi-pnlpipe* globs `bids-data-dir/sub-*/anat/*_T1w.nii.gz` replacing `*` in `sub-*` 
 with each line from `caselist.txt`, it will find the input data.
@@ -589,23 +589,24 @@ You should provide value for each of the arguments or at least the mandatory one
 
 > ipython
 
-    from struct_pipe import StructMask
-    from luigi import build
-    
-    build([StructMask(id= '001',
-                      ses= 'BWH01',
-                      bids_data_dir= '/home/tb571/Downloads/INTRUST_BIDS',
-                      struct_template= 'sub-*/anat/*_T2w.nii.gz',
-                      csvFile= '-t2',
-                      debug= False,
-                      fusion= 'avg',
-                      mabs_mask_nproc= 8,
-                      ref_img= '',
-                      ref_mask= '',
-                      reg_method= '',
-                      slicer_exec= '',
-                      mask_qc= True)])
+```python
+from struct_pipe import StructMask
+from luigi import build
 
+build([StructMask(id= '001',
+                  ses= 'BWH01',
+                  bids_data_dir= '/home/tb571/Downloads/INTRUST_BIDS',
+                  struct_template= 'sub-*/anat/*_T2w.nii.gz',
+                  csvFile= '-t2',
+                  debug= False,
+                  fusion= 'avg',
+                  mabs_mask_nproc= 8,
+                  ref_img= '',
+                  ref_mask= '',
+                  reg_method= '',
+                  slicer_exec= '',
+                  mask_qc= True)])
+```
 
     
 # Workflows
