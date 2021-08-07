@@ -435,7 +435,7 @@ sub-1004_ses-01_desc-XcMaN4_T2w.log.json  sub-1004_ses-01_desc-Xc_T2w.log.json
 sub-1004_ses-01_desc-XcMaN4_T2w.nii.gz    sub-1004_ses-01_desc-Xc_T2w.nii.gz
 ```
 
-A provenance file capture information about the origin of the file it is associated with, the parameters and the versions of
+A provenance file captures information about the origin of the file it is associated with, the parameters and the versions of
 various software used in the pipeline to generate that file.
 
 # Example commands
