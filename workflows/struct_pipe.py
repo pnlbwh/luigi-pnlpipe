@@ -11,8 +11,9 @@ from plumbum import local
 from subprocess import Popen, check_call
 from time import sleep
 
-from scripts.util import N_PROC, FILEDIR, QC_POLL, _mask_name
+from scripts.util import N_PROC, FILEDIR, QC_POLL
 
+from _task_util import _mask_name
 from _glob import _glob
 from _provenance import write_provenance
 
@@ -167,17 +168,14 @@ or save it after quality checking with {self.ref_mask} suffix?\n\n''')
 @requires(StructMask)
 class N4BiasCorrect(Task):
     
-    # for checking existence of qc'ed mask
-    mask_qc= BoolParameter(default=False)
+    mask_qc= BoolParameter(default=True)
     
     def run(self):
         
-        # check existence of quality checked mask for MABS only
+        # ensure existence of quality checked MABS mask
         # aligned mask won't be quality checked
         if self.csvFile:
             qc_mask= _mask_name(self.input()['mask'], self.mask_qc)
-            if not qc_mask.exists():
-                raise FileNotFoundError(f'{qc_mask} does not exist')
         else:
             qc_mask= self.input()['mask']
         

@@ -13,8 +13,9 @@ from time import sleep
 import re
 
 from struct_pipe import StructMask
+from _task_util import _mask_name
 
-from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, _mask_name, LIBDIR, \
+from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, LIBDIR, \
     load_nifti, TemporaryDirectory
 N_PROC= int(N_PROC)
 
@@ -227,8 +228,6 @@ class PnlEddy(Task):
     mask_qc= BoolParameter(default=True)
 
     def run(self):
-
-        # TODO check Qc_mask.nii.gz here and print message if it is not? Write a function to do that may be?
         
         for name in ['dwi', 'bval', 'bvec']:
             if not self.output()[name].exists():
@@ -268,10 +267,8 @@ class FslEddy(Task):
     index = Parameter()
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
     useGpu = BoolParameter(default=False)
-     
-    def run(self):
     
-        # TODO check Qc_mask.nii.gz here and print message if it is not? Write a function to do that may be?
+    def run(self):
         
         outDir= self.output()['dwi'].dirname.join('fsl_eddy')
 
@@ -432,13 +429,10 @@ class TopupEddy(Task):
         return (pa, pa_mask, ap, ap_mask)
 
     def run(self):
-
-        # TODO check Qc_mask.nii.gz here and print message if it is not? Write a function to do that may be?
+        
         mask_pa= _mask_name(self.input()[1]['mask'], self.mask_qc)
         mask_ap= _mask_name(self.input()[3]['mask'], self.mask_qc)
-        if not(mask_pa.exists() and mask_ap.exists()):
-            raise FileNotFoundError(f'One or both *Qc_mask.nii.gz do not exist')
-            
+        
         outDir = self.output()['dwi'].dirname.join(self.TopupOutDir)
 
         for name in ['dwi', 'bval', 'bvec']:
