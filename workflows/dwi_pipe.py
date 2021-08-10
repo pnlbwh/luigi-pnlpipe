@@ -132,7 +132,7 @@ class CnnMask(Task):
         p.wait()
         
         # print instruction for quality checking
-        _mask_name(self.output()['mask'])
+        _mask_name(self.output()['mask'], False)
         
         write_provenance(self, self.output()['mask'])
 
