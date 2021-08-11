@@ -122,7 +122,7 @@ then
     struct_pipe=luigi-pnlpipe/workflows/struct_pipe.py
     lineno=`awk '/fs-exec/{ print NR; exit }' $struct_pipe`s
 
-    sed -i "$lineno+cmd+'mv $HOME/CTE/rawdata/freesurfer $HOME/CTE/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" \
+    sed -i "$lineno+cmd+'cp -a $HOME/CTE/rawdata/freesurfer $HOME/CTE/derivatives/pnlpipe/sub-1004/ses-01/anat/'+g" \
     $struct_pipe
 fi
 

@@ -11,8 +11,9 @@ from plumbum import local
 from subprocess import Popen, check_call
 from time import sleep
 
-from scripts.util import N_PROC, FILEDIR, QC_POLL, _mask_name
+from scripts.util import N_PROC, FILEDIR, QC_POLL
 
+from _task_util import _mask_name
 from _glob import _glob
 from _provenance import write_provenance
 
@@ -75,67 +76,35 @@ class StructMask(Task):
     ref_mask= Parameter(default= '')
     reg_method= Parameter(default='rigid')
 
-    # for qc'ing the created mask
-    slicer_exec= Parameter(default= '')
-    mask_qc= BoolParameter(default=False)
-
 
     def run(self):
 
-        auto_mask = self.output()['mask'].replace('Qc_mask.nii.gz','_mask.nii.gz')
+        if self.csvFile:
+            cmd = (' ').join(['atlas.py',
+                              '-t', self.input(),
+                              '--train', self.csvFile,
+                              '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
+                              f'-n {self.mabs_mask_nproc}',
+                              '-d' if self.debug else '',
+                              f'--fusion {self.fusion}' if self.fusion else ''])
 
-        if not isfile(auto_mask):
-            if self.csvFile:
-                cmd = (' ').join(['atlas.py',
-                                  '-t', self.input(),
-                                  '--train', self.csvFile,
-                                  '-o', auto_mask.rsplit('_mask.nii.gz')[0],
-                                  f'-n {self.mabs_mask_nproc}',
-                                  '-d' if self.debug else '',
-                                  f'--fusion {self.fusion}' if self.fusion else ''])
+            p = Popen(cmd, shell=True)
+            p.wait()
 
-                p = Popen(cmd, shell=True)
-                p.wait()
+            # print instruction for quality checking
+            _mask_name(self.output()['mask'], False)
 
-            else:
-                
-                cmd = (' ').join(['makeAlignedMask.py',
-                                  '-t', self.input(),
-                                  '-o', auto_mask,
-                                  '-i', glob(pjoin(self.input().dirname, self.ref_img))[0],
-                                  '-l', glob(pjoin(self.input().dirname, self.ref_mask))[0],
-                                  '--reg', self.reg_method])
+        else:
+            
+            cmd = (' ').join(['makeAlignedMask.py',
+                              '-t', self.input(),
+                              '-o', self.output()['mask'],
+                              '-i', glob(pjoin(self.input().dirname, self.ref_img))[0],
+                              '-l', glob(pjoin(self.input().dirname, self.ref_mask))[0],
+                              '--reg', self.reg_method])
 
-                p = Popen(cmd, shell=True)
-                p.wait()
-
-            if p.returncode:
-                return
-
-
-        if self.mask_qc:
-            print('\n\n** Check quality of created mask {} . Once you are done, save the (edited) mask as {} **\n\n'
-                  .format(auto_mask,self.output()['mask']))
-
-
-            if self.slicer_exec:
-
-                if not getenv('DISPLAY'):
-                    warn('DISPLAY is undefined, cannot open Slicer')
-
-                else:
-                    cmd= (' ').join([self.slicer_exec, '--python-code',
-                                    '\"slicer.util.loadVolume(\'{}\'); '
-                                    'slicer.util.loadLabelVolume(\'{}\')\"'
-                                    .format(self.input()['aligned'],auto_mask)])
-
-                    p = Popen(cmd, shell= True)
-                    p.wait()
-
-            while 1:
-                sleep(QC_POLL)
-                if isfile(self.output()['mask']):
-                    break
+            p = Popen(cmd, shell=True)
+            p.wait()
 
 
         write_provenance(self, self.output()['mask'])
@@ -191,16 +160,26 @@ or save it after quality checking with {self.ref_mask} suffix?\n\n''')
         
         
         mask_prefix= local.path(pjoin(self.input().dirname, prefix.split('_desc-')[0])+ '_desc-'+ desc)
-        mask = _mask_name(mask_prefix, self.mask_qc)
+        mask = local.path(mask_prefix+ '_mask.nii.gz')
         
         return dict(aligned= self.input(), mask=mask)
 
 
 @requires(StructMask)
 class N4BiasCorrect(Task):
-
+    
+    mask_qc= BoolParameter(default=True)
+    
     def run(self):
-        cmd = (' ').join(['ImageMath', '3', self.output()['masked'], 'm', self.input()['aligned'], self.input()['mask']])
+        
+        # ensure existence of quality checked MABS mask
+        # aligned mask won't be quality checked
+        if self.csvFile:
+            qc_mask= _mask_name(self.input()['mask'], self.mask_qc)
+        else:
+            qc_mask= self.input()['mask']
+        
+        cmd = (' ').join(['ImageMath', '3', self.output()['masked'], 'm', self.input()['aligned'], qc_mask])
         check_call(cmd, shell=True)
         
         cmd = (' ').join(['N4BiasFieldCorrection', '-d', '3', '-i', self.output()['masked'], '-o', self.output()['n4corr']])
@@ -229,13 +208,11 @@ class Freesurfer(Task):
     t1_csvFile = Parameter(default='')
     t1_ref_img= Parameter(default='')
     t1_ref_mask= Parameter(default='')
-    t1_mask_qc= BoolParameter(default=False)
 
     t2_template= Parameter(default='')
     t2_csvFile = Parameter(default='')
     t2_ref_img= Parameter(default='')
     t2_ref_mask= Parameter(default='')
-    t2_mask_qc= BoolParameter(default=False)
 
     freesurfer_nproc= IntParameter(default=1)
     expert_file= Parameter(default=pjoin(FILEDIR,'expert_file.txt'))
@@ -254,7 +231,6 @@ class Freesurfer(Task):
         self.csvFile= self.t1_csvFile
         self.ref_img= self.t1_ref_img
         self.ref_mask= self.t1_ref_mask
-        self.mask_qc= self.t1_mask_qc
 
         t1_attr= self.clone(N4BiasCorrect)
 
@@ -263,7 +239,6 @@ class Freesurfer(Task):
             self.csvFile = self.t2_csvFile
             self.ref_img = self.t2_ref_img
             self.ref_mask = self.t2_ref_mask
-            self.mask_qc = self.t2_mask_qc
             
             t2_attr= self.clone(N4BiasCorrect)
 

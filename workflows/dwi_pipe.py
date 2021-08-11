@@ -13,8 +13,9 @@ from time import sleep
 import re
 
 from struct_pipe import StructMask
+from _task_util import _mask_name
 
-from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, _mask_name, LIBDIR, \
+from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, LIBDIR, \
     load_nifti, TemporaryDirectory
 N_PROC= int(N_PROC)
 
@@ -93,74 +94,46 @@ class GibbsUn(Task):
 
 @requires(GibbsUn)
 class CnnMask(Task):
-    slicer_exec = Parameter(default='')
-    dwi_mask_qc= BoolParameter(default=False)
+
     model_folder= Parameter(default='')
     percentile= IntParameter(default=99)
     filter= Parameter(default='')
 
     def run(self):
         
-        auto_mask = self.output()['mask'].replace('Qc_mask.nii.gz','_mask.nii.gz')
-
-        if not isfile(auto_mask):
+        with TemporaryDirectory() as tmpdir, local.cwd(tmpdir):
+            symlink(self.input()['dwi'],self.input()['dwi'].basename)
+            symlink(self.input()['bval'],self.input()['bval'].basename)
+            symlink(self.input()['bvec'],self.input()['bvec'].basename)
             
-            with TemporaryDirectory() as tmpdir, local.cwd(tmpdir):
-                symlink(self.input()['dwi'],self.input()['dwi'].basename)
-                symlink(self.input()['bval'],self.input()['bval'].basename)
-                symlink(self.input()['bvec'],self.input()['bvec'].basename)
-                
-                
-                dwi_list= 'dwi_list.txt'
-                with open(dwi_list,'w') as f:
-                    f.write(pjoin(tmpdir,self.input()['dwi'].basename))
-               
+            
+            dwi_list= 'dwi_list.txt'
+            with open(dwi_list,'w') as f:
+                f.write(pjoin(tmpdir,self.input()['dwi'].basename))
+            
 
-                cmd = (' ').join(['dwi_masking.py',
-                                  '-i', dwi_list,
-                                  '-f', self.model_folder,
-                                  f'-p {self.percentile}',
-                                  f'-filter {self.filter}' if self.filter else ''])
-                p = Popen(cmd, shell=True)
-                p.wait()
-                
-                prefix= basename(self.input()['dwi'].stem)+'_bse'
-                move(prefix+'.nii.gz', self.output()['bse'])
-                move(prefix+'-multi_BrainMask.nii.gz', auto_mask)
+            cmd = (' ').join(['dwi_masking.py',
+                              '-i', dwi_list,
+                              '-f', self.model_folder,
+                              f'-p {self.percentile}',
+                              f'-filter {self.filter}' if self.filter else ''])
+            p = Popen(cmd, shell=True)
+            p.wait()
+            
+            prefix= basename(self.input()['dwi'].stem)+'_bse'
+            move(prefix+'.nii.gz', self.output()['bse'])
+            move(prefix+'-multi_BrainMask.nii.gz', self.output()['mask'])
 
 
 
         # mask the baseline image
-        cmd = (' ').join(['ImageMath', '3', self.output()['bse'], 'm', self.output()['bse'], auto_mask])
+        cmd = (' ').join(['ImageMath', '3', self.output()['bse'], 'm', self.output()['bse'], self.output()['mask']])
         p = Popen(cmd, shell=True)
         p.wait()
-
-
-        if self.dwi_mask_qc:
-            print('\n\n** Check quality of created mask {} . Once you are done, save the (edited) mask as {} **\n\n'
-                  .format(auto_mask,self.output()['mask']))
-
-
-            if self.slicer_exec:
-
-                if not getenv('DISPLAY'):
-                    warn('DISPLAY is undefined, cannot open Slicer')
-
-                else:
-                    cmd = (' ').join([self.slicer_exec, '--python-code',
-                                      '\"slicer.util.loadVolume(\'{}\'); '
-                                      'slicer.util.loadLabelVolume(\'{}\')\"'
-                                     .format(self.input(), auto_mask)])
-
-                    p = Popen(cmd, shell=True)
-                    p.wait()
-
-            while 1:
-                sleep(QC_POLL)
-                if isfile(self.output()['mask']):
-                    break
-
-
+        
+        # print instruction for quality checking
+        _mask_name(self.output()['mask'], False)
+        
         write_provenance(self, self.output()['mask'])
 
 
@@ -172,7 +145,7 @@ class CnnMask(Task):
         outPrefix= prefix.split('_desc-')[0]+ '_desc-'+ desc
         
         bse= local.path(outPrefix+ '_bse.nii.gz')
-        mask= _mask_name(local.path(outPrefix+ 'CNN'), self.dwi_mask_qc)
+        mask= local.path(outPrefix+ 'CNN_mask.nii.gz')
         
         return dict(bse= bse, mask=mask)
 
@@ -210,66 +183,39 @@ class BseExtract(Task):
 class BseMask(Task):
     bet_threshold = FloatParameter(default=float(BET_THRESHOLD))
     mask_method = Parameter(default='Bet')
-    slicer_exec = Parameter(default='')
-    dwi_mask_qc= BoolParameter(default=False)
     model_folder= Parameter(default='')
 
     def run(self):
         
-        auto_mask = self.output()['mask'].replace('Qc','')
-
-        if not isfile(auto_mask):
-            if self.mask_method=='Bet':
-                cmd = (' ').join(['bet_mask.py',
-                                  '-i', self.input(),
-                                  '-o', auto_mask.rsplit('_mask.nii.gz')[0],
-                                  f'-f {self.bet_threshold}' if self.bet_threshold else ''])
-                p = Popen(cmd, shell=True)
-                p.wait()
-                
-                if p.returncode:
-                    return
+        if self.mask_method=='Bet':
+            cmd = (' ').join(['bet_mask.py',
+                              '-i', self.input(),
+                              '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
+                              f'-f {self.bet_threshold}' if self.bet_threshold else ''])
+            p = Popen(cmd, shell=True)
+            p.wait()
             
+            # print instruction for quality checking
+            _mask_name(self.output()['mask'])
             
-            elif self.mask_method=='CNN':
-                
-                pass
-                # see CnnMask task above
-                # also see https://github.com/pnlbwh/luigi-pnlpipe/issues/5
+        
+        elif self.mask_method=='CNN':
+            
+            pass
+            # see CnnMask task above
+            # also see https://github.com/pnlbwh/luigi-pnlpipe/issues/5
 
 
         # mask the baseline image
-        cmd = (' ').join(['ImageMath', '3', self.output()['bse'], 'm', self.output()['bse'], auto_mask])
+        cmd = (' ').join(['ImageMath', '3', self.output()['bse'], 'm', self.output()['bse'], self.output()['mask']])
         p = Popen(cmd, shell=True)
         p.wait()
 
 
-        if self.slicer_exec or self.dwi_mask_qc:
-            print('\n\n** Check quality of created mask {} . Once you are done, save the (edited) mask as {} **\n\n'
-                  .format(auto_mask,self.output()['mask']))
-
-
-        if self.slicer_exec:
-            cmd = (' ').join([self.slicer_exec, '--python-code',
-                              '\"slicer.util.loadVolume(\'{}\'); '
-                              'slicer.util.loadLabelVolume(\'{}\')\"'
-                             .format(self.input(), auto_mask)])
-
-            p = Popen(cmd, shell=True)
-            p.wait()
-
-
-        elif self.dwi_mask_qc:
-            while 1:
-                sleep(QC_POLL)
-                if isfile(self.output()['mask']):
-                    break
-
-
     def output(self):
     
-        prefix= local.path(self.input().rsplit('_bse.nii.gz')[0]+ self.mask_method)
-        mask= _mask_name(prefix, self.dwi_mask_qc)
+        prefix= self.input().rsplit('_bse.nii.gz')[0]
+        mask= local.path(prefix+ 'Bet_mask.nii.gz')
         
         return dict(bse= self.input(), mask=mask)
 
@@ -279,9 +225,10 @@ class BseMask(Task):
 class PnlEddy(Task):
     debug = BoolParameter(default=False)
     eddy_nproc = IntParameter(default=N_PROC)
+    mask_qc= BoolParameter(default=True)
 
     def run(self):
-
+        
         for name in ['dwi', 'bval', 'bvec']:
             if not self.output()[name].exists():
                 cmd = (' ').join(['pnl_eddy.py',
@@ -306,20 +253,23 @@ class PnlEddy(Task):
         dwi = local.path(eddy_prefix + '_dwi.nii.gz')
         bval = dwi.with_suffix('.bval', depth=2)
         bvec = dwi.with_suffix('.bvec', depth=2)
-
-        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=self.input()[1]['mask'])
+        mask= _mask_name(self.input()[1]['mask'], self.mask_qc)
+        
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=mask)
 
 
 
 @requires(GibbsUn,CnnMask)
 class FslEddy(Task):
     
+    mask_qc= BoolParameter(default=True)
     acqp = Parameter()
     index = Parameter()
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
     useGpu = BoolParameter(default=False)
-     
+    
     def run(self):
+        
         outDir= self.output()['dwi'].dirname.join('fsl_eddy')
 
         for name in ['dwi', 'bval', 'bvec']:
@@ -331,7 +281,7 @@ class FslEddy(Task):
                                   '--dwi', self.input()[0]['dwi'],
                                   '--bvals', self.input()[0]['bval'],
                                   '--bvecs', self.input()[0]['bvec'],
-                                  '--mask', self.input()[1]['mask'],
+                                  '--mask', self.output()['mask'],
                                   '--acqp', self.acqp,
                                   '--index', self.index,
                                   '--config', self.config,
@@ -365,75 +315,10 @@ class FslEddy(Task):
         dwi = local.path(eddy_prefix+ '_dwi.nii.gz')
         bval = dwi.with_suffix('.bval', depth= 2)
         bvec = dwi.with_suffix('.bvec', depth= 2)
+        mask= _mask_name(self.input()[1]['mask'], self.mask_qc)
         
-        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=self.input()[1]['mask'])
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=mask)
 
-
-# TODO delete this task
-@inherits(FslEddy,StructMask,BseExtract)
-class FslEddyEpi(Task):
-    
-    debug= BoolParameter(default=False)
-    epi_nproc= IntParameter(default=N_PROC)
-
-    def requires(self):
-        return dict(eddy= self.clone(FslEddy), t2= self.clone(StructMask))
-
-    def run(self):
-        
-        eddy_epi_prefix= self.output()['dwi'].rsplit('.nii.gz')[0]
-
-        for name in ['dwi', 'bval', 'bvec']:
-            if not self.output()[name].exists(): 
-                cmd = (' ').join(['pnl_epi.py',
-                                  '--dwi', self.input()['eddy']['dwi'],
-                                  '--bvals', self.input()['eddy']['bval'],
-                                  '--bvecs', self.input()['eddy']['bvec'],
-                                  '--dwimask', self.input()['eddy']['mask'],
-                                  '--bse', self.input()['eddy']['bse'],
-                                  '--t2', self.input()['t2']['aligned'],
-                                  '--t2mask', self.input()['t2']['mask'],
-                                  '-o', eddy_epi_prefix,
-                                  '-d' if self.debug else '',
-                                  f'-n {self.epi_nproc}' if self.epi_nproc else ''])
-                p = Popen(cmd, shell=True)
-                p.wait()
-                
-                move(eddy_epi_prefix+'_mask.nii.gz', self.output()['mask'])
-
-                break
-
-        
-        # write_provenance(self)
-
-                
-        self.dwi= self.output()['dwi']
-        yield self.clone(BseExtract)
-
-    def output(self):
-
-        eddy_epi_prefix= self.input()['eddy']['dwi'].rsplit('_dwi.nii.gz')[0]+ 'Ep'
-        dwi = local.path(eddy_epi_prefix+ '_dwi.nii.gz')
-        bval = dwi.with_suffix('.bval', depth= 2)
-        bvec = dwi.with_suffix('.bvec', depth= 2)
-        
-        # adding EdEp suffix to be consistent with dwi
-        mask_prefix= local.path(self.input()['eddy']['mask'].rsplit('_mask.nii.gz')[0]+ 'EdEp')
-        
-        # ENH
-        # two things could be done:
-        # * introduce `epi_mask_qc` param, separate from `dwi_mask_qc` param
-        # * do not qc at all: the mask is generated at the beginning of the pipeline, hence no qc after warping
-        # following the latter, the second argument is set to False
-        mask = _mask_name(mask_prefix, False)
-
-        
-        # adding EdEp suffix to be consistent with dwi
-        bse_prefix= self.input()['eddy']['bse'].rsplit('_bse.nii.gz')[0]+ 'EdEp'
-        bse = local.path(bse_prefix+ '_bse.nii.gz')
-        
-        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
-        
 
 
 @inherits(FslEddy, PnlEddy, StructMask, BseExtract)
@@ -492,14 +377,14 @@ class EddyEpi(Task):
         bvec = dwi.with_suffix('.bvec', depth=2)
 
         # adding EdEp suffix to be consistent with dwi
-        mask_prefix = local.path(self.input()['eddy']['mask'].rsplit('_mask.nii.gz')[0] + 'EdEp')
+        mask_prefix = self.input()['eddy']['mask'].rsplit('_mask.nii.gz')[0] + 'EdEp'
 
         # ENH
         # two things could be done:
         # * introduce `epi_mask_qc` param, separate from `dwi_mask_qc` param
         # * do not qc at all: the mask is generated at the beginning of the pipeline, hence no qc after warping
-        # following the latter, the second argument is set to False
-        mask = _mask_name(mask_prefix, False)
+        # following the latter at this time
+        mask = local.path(mask_prefix+ '_mask.nii.gz')
 
         # adding EdEp suffix to be consistent with dwi
         bse_prefix = self.input()['eddy']['bse'].rsplit('_bse.nii.gz')[0] + 'EdEp'
@@ -511,6 +396,8 @@ class EddyEpi(Task):
 @inherits(GibbsUn,CnnMask)
 class TopupEddy(Task):
 
+    mask_qc= BoolParameter(default=True)
+    
     pa_ap_template = Parameter(default='')
     acqp = Parameter()
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
@@ -537,11 +424,15 @@ class TopupEddy(Task):
         # ap= self.clone(DwiAlign)
         ap= self.clone(GibbsUn)
         ap_mask= self.clone(CnnMask)
-
+        
+        
         return (pa, pa_mask, ap, ap_mask)
 
     def run(self):
-
+        
+        mask_pa= _mask_name(self.input()[1]['mask'], self.mask_qc)
+        mask_ap= _mask_name(self.input()[3]['mask'], self.mask_qc)
+        
         outDir = self.output()['dwi'].dirname.join(self.TopupOutDir)
 
         for name in ['dwi', 'bval', 'bvec']:
@@ -552,7 +443,7 @@ class TopupEddy(Task):
                                   '--imain', '{},{}'.format(self.input()[0]['dwi'],self.input()[2]['dwi']),
                                   '--bvals', '{},{}'.format(self.input()[0]['bval'],self.input()[2]['bval']),
                                   '--bvecs', '{},{}'.format(self.input()[0]['bvec'],self.input()[2]['bvec']),
-                                  '--mask', '{},{}'.format(self.input()[1]['mask'],self.input()[3]['mask']),
+                                  '--mask', '{},{}'.format(mask_pa,mask_ap),
                                   '--acqp', self.acqp,
                                   '--config', self.config,
                                   '--eddy-cuda' if self.useGpu else '',
@@ -602,9 +493,9 @@ class TopupEddy(Task):
         mask_prefix = dwi.rsplit('_desc-')[0]
         desc= re.search('_desc-(.+?)_mask.nii.gz', basename(self.input()[1]['mask'])).group(1)
         desc= desc+ 'EdEp'
-        mask_prefix= local.path(mask_prefix+ '_desc-'+ desc)
+        mask_prefix= mask_prefix+ '_desc-'+ desc
 
-        mask = _mask_name(mask_prefix, False)
+        mask = local.path(mask_prefix+ '_mask.nii.gz')
 
         bse_prefix= dwi._path
         desc= re.search('_desc-(.+?)_dwi.nii.gz', bse_prefix).group(1)
@@ -612,31 +503,6 @@ class TopupEddy(Task):
         bse= local.path(bse_prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
 
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
-
-
-
-# TODO delete this task
-@requires(PnlEddy)
-class PnlEddyUkf(Task):
-
-    ukf_params = Parameter(default='')
-
-    def run(self):
-        self.output().dirname.mkdir()
-
-        cmd = (' ').join(['ukf.py',
-                          '-i', self.input()['dwi'],
-                          '--bvals', self.input()['bval'],
-                          '--bvecs', self.input()['bvec'],
-                          '-m', self.input()['mask'],
-                          '-o', self.output(),
-                          '--params', self.ukf_params])
-        p = Popen(cmd, shell=True)
-        p.wait()
-
-
-    def output(self):
-        return local.path(self.input()['dwi'].replace('/dwi/', '/tracts/').replace('_dwi.nii.gz', '.vtk'))
 
 
 
