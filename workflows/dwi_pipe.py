@@ -318,7 +318,7 @@ class FslEddy(Task):
     index = Parameter()
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
     useGpu = BoolParameter(default=False)
-    
+     
     def run(self):
         outDir= self.output()['dwi'].dirname.join('fsl_eddy')
 
