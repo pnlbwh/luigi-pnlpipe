@@ -319,10 +319,8 @@ class FslEddy(Task):
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
     useGpu = BoolParameter(default=False)
     
-    FslOutDir= Parameter(default='fsl_eddy')
-    
     def run(self):
-        outDir= self.output()['dwi'].dirname.join(self.FslOutDir)
+        outDir= self.output()['dwi'].dirname.join('fsl_eddy')
 
         for name in ['dwi', 'bval', 'bvec']:
             if not self.output()[name].exists():
