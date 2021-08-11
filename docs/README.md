@@ -230,7 +230,7 @@ you should organize your data according to BIDS convention. For example, the fol
 Once data is organized as above, you can define the following arguments:
     
     --bids-data-dir ~/Downloads/INTRuST_BIDS 
-    -c ~/Downloads/INTRuST_BIDS/caselist.txt    
+    -c ~/Downloads/INTRuST_BIDS/caselist.txt
     --t1-template sub-*/anat/*_T1w.nii.gz
     --t2-template sub-*/anat/*_T2w.nii.gz
     --dwi-template sub-*/dwi/*_dwi.nii.gz
@@ -249,15 +249,32 @@ source `.bashrc` to set up your terminal for running `luigid`.
 
 ## 3. Initialize luigid server
     
-    luigid --background --logdir /tmp/luigi-server.log
-    
-A useful configuration for `luigid` server is given in `luigi-pnlpipe/workflows/luigi.cfg`. For `luigid` 
+A useful configuration for `luigid` server is given in `luigi-pnlpipe/luigi.cfg`. For `luigid`
 to find that configuration, you should change directory and initiate server as follows:
 
-    cd ~/luigi-pnlpipe/workflows/
+    cd ~/luigi-pnlpipe/
     luigid --background --logdir /tmp/luigi-server.log
 
-You may also edit `luigi.cfg` as you see fit.  
+
+In the packaged version, tasks are configured to use PNL hosted public `luigid` server:
+
+```cfg
+default-scheduler-url = https://pnlservers.bwh.harvard.edu/luigi/
+```
+
+Upon launching `luigid` server as above, you must edit `luigi.cfg` so tasks know to use your local server:
+
+```cfg
+# for individual machine
+default-scheduler-url = http://localhost:8082/
+...
+...
+# PNL hosted public server
+# default-scheduler-url = https://pnlservers.bwh.harvard.edu/luigi/
+```
+
+You may also edit `luigi.cfg` as you see fit.
+
     
 
     
