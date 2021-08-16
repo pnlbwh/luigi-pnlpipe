@@ -132,5 +132,7 @@ we can merge the PR on GitHub. For this purpose, the following commands would co
 
 * It is safe to ignore failures of [test_json](https://github.com/pnlbwh/luigi-pnlpipe/blob/a1537c3610da8429c4fc25a8fb3ee3ea76eec64f/tests/test_luigi.py#L49)
 and [test_html](https://github.com/pnlbwh/luigi-pnlpipe/blob/a1537c3610da8429c4fc25a8fb3ee3ea76eec64f/tests/test_luigi.py#L60). Every now and then, there is
-a parameter update in Luigi configuration files. For the above tests to pass, we need to update the ground truth data with new provenance files comprising
-the updated parameters. Given the large size of the latter and the slowness of Dropbox upload, it is quite problematic to update the whole ground truth data.
+a parameter update in Luigi configuration files. For the above tests to pass, we need to update ground truth data with new provenance files comprising
+the updated parameters. Provenance files are only a few kilobytes. However, given the large size of ground truth data and the slowness of Dropbox upload,
+it is quite problematic to update the remote ground truth data. Hence, we let the failures to occur. If the rest of the tests succeed, we satisfactorily
+conclude that nightly tests have succeeded.
