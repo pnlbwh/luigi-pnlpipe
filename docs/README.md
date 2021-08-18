@@ -438,8 +438,10 @@ with each output. It is particularly helpful when Luigi tasks are run inside [pn
 * History by task name https://pnlservers.bwh.harvard.edu/history/by_name/Freesurfer
 * History by task parameters https://pnlservers.bwh.harvard.edu/history/by_params/Freesurfer?data={"id":"1004"}
 * History by task ID https://pnlservers.bwh.harvard.edu/history/by_id/69
-* List of all tasks https://pnlservers.bwh.harvard.edu/tasklist
+* <sup>~</sup> List of all tasks https://pnlservers.bwh.harvard.edu/tasklist
 * API graph https://pnlservers.bwh.harvard.edu/api/graph
+
+<sup>~</sup> Click on a task to see status, duration, and occasion of all its past runs.
 
 In addition, `*.log.html` and `*.log.json` provenance files are generated for each output file in the directory of that file:
 
