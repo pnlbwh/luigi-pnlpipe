@@ -105,7 +105,7 @@ However, a *server* should install Tashrif's development for `/history/by_task_i
 *luigi-pnlpipe* itself will not fail without Tashrif's development on the *server* side. That means, you can 
 also use the official luigi package on the *server* side. But you will not be able to redirect to 
 `/history/by_task_id/` URLs generated in `*.log.html` provenance files. Notably, the provenance files 
-are generated when the pipeline is run.
+are generated on the *client* side by [_provenance.py](https://github.com/pnlbwh/luigi-pnlpipe/blob/afa6c8a86d481d8fe5d04ba1ceb533b5da740c32/workflows/_provenance.py) when *luigi-pipeline* is run.
 
 
 ## CNN-Diffusion-MRIBrain-Segmentation
