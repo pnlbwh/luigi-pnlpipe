@@ -25,7 +25,9 @@ Table of Contents
    * [Running luigi-pnlpipe](#running-luigi-pnlpipe)
       * [1. Organize data according to BIDS](#1-organize-data-according-to-bids)
       * [2. Source pnlpipe3 environment](#2-source-pnlpipe3-environment)
-      * [3. Initialize luigid server](#3-initialize-luigid-server)
+      * [3. Define luigid server](#3-define-luigid-server)
+         * [Use PNL public server](#use-pnl-public-server)
+         * [Launch your own server](#launch-your-own-server)
       * [4. Execute task](#4-execute-task)
          * [i. Workstation](#i-workstation)
             * [a. Launch job](#a-launch-job)
@@ -262,6 +264,9 @@ before running *luigi-pnlpipe* tasks:
 
     export LUIGI_USERNAME=hello
     export LUIGI_PASSWORD=world
+
+We strongly recommend using PNL hosted public `luigid` server for running *luigi-pnlpipe* tasks inside Docker and Singularity containers.
+Detailed instruction is given at [TBD]().
 
 
 ### Launch your own server
