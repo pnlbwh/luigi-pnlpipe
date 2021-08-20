@@ -266,7 +266,7 @@ before running *luigi-pnlpipe* tasks:
     export LUIGI_PASSWORD=world
 
 We strongly recommend using PNL hosted public `luigid` server for running *luigi-pnlpipe* tasks inside Docker and Singularity containers.
-Detailed instruction is given at [TBD]().
+Detailed instruction is given at [pnlpipe-containers/README.md#luigi-tasks](https://github.com/pnlbwh/pnlpipe-containers/blob/eb8093d7d43e323820cfe2ec789e6d1c88d7c125/docs/README.md#luigi-tasks).
 
 
 ### Launch your own server
