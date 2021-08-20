@@ -247,20 +247,30 @@ Finally, output will go to `derivatives/pnlpipe` directory by default, again fol
 Please follow the installation instruction as noted here. Upon successful installation of all software modules, 
 source `.bashrc` to set up your terminal for running `luigid`.
 
-## 3. Initialize luigid server
-    
-A useful configuration for `luigid` server is given in `luigi-pnlpipe/luigi.cfg`. For `luigid`
-to find that configuration, you should change directory and initiate server as follows:
+## 3. Define luigid server
 
-    cd ~/luigi-pnlpipe/
-    luigid --background --logdir /tmp/luigi-server.log
-
+### Use PNL public server
 
 In the packaged version, tasks are configured to use PNL hosted public `luigid` server:
 
 ```cfg
-default-scheduler-url = https://pnlservers.bwh.harvard.edu/luigi/
+default-scheduler-url = https://${LUIGI_USERNAME}:${LUIGI_PASSWORD}@pnlservers.bwh.harvard.edu/luigi/
 ```
+
+Please email tbillah@bwh.harvard.edu to obtain the username and password. They must be defined as environment variables
+before running *luigi-pnlpipe* tasks:
+
+    export LUIGI_USERNAME=hello
+    export LUIGI_PASSWORD=world
+
+
+### Launch your own server
+    
+Instead, you can set up your own `luigid` server. A useful configuration for `luigid` server is given in `luigi-pnlpipe/luigi.cfg`.
+For `luigid` to find that configuration, you should change directory and initiate server as follows:
+
+    cd ~/luigi-pnlpipe/
+    luigid --background --logdir /tmp/luigi-server.log
 
 Upon launching `luigid` server as above, you must edit `luigi.cfg` so tasks know to use your local server:
 
@@ -270,14 +280,13 @@ default-scheduler-url = http://localhost:8082/
 ...
 ...
 # PNL hosted public server
-# default-scheduler-url = https://pnlservers.bwh.harvard.edu/luigi/
+# default-scheduler-url = https://${LUIGI_USERNAME}:${LUIGI_PASSWORD}@pnlservers.bwh.harvard.edu/luigi/
 ```
 
 You may also edit `luigi.cfg` as you see fit.
 
-    
 
-    
+
 ## 4. Execute task
 
 For running all workflows of *luigi-pnlpipe* from one place, we have developed the following 
@@ -433,6 +442,7 @@ derivatives
 To facilitate external collaborators to use *luigi-pnlpipe* without having to set up a Luigi server at their end,
 we have set up a public Luigi server. Our server not only runs Luigi tasks but also provides data provenance associated
 with each output. It is particularly helpful when Luigi tasks are run inside [pnlpipe-containers](https://github.com/pnlbwh/pnlpipe-containers).
+However, you need a username and password to log in. Please email tbillah@bwh.harvard.edu to obtain that.
 
 * Luigi dashboard https://pnlservers.bwh.harvard.edu/static/visualiser/index.html
 * History by task name https://pnlservers.bwh.harvard.edu/history/by_name/Freesurfer
