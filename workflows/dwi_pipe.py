@@ -3,7 +3,7 @@
 from luigi import Task, ExternalTask, Parameter, BoolParameter, IntParameter, FloatParameter
 from luigi.util import inherits, requires
 from glob import glob
-from os.path import join as pjoin, abspath, isfile, basename, dirname
+from os.path import join as pjoin, abspath, isfile, basename, dirname, isdir
 from os import symlink, getenv
 from shutil import move, rmtree
 
@@ -508,7 +508,81 @@ class TopupEddy(Task):
 
 
 
-@inherits(PnlEddy, FslEddy, EddyEpi, TopupEddy)
+@inherits(SelectDwiFiles)
+class HcpPipe(ExternalTask):
+
+    # HcpOutDir= Parameter(default='hcpipe')
+    
+    def output(self):
+        
+        # glob HCP pipe output directory
+        _, hcpOutDir= _glob(self.bids_data_dir, self.dwi_template, self.id, self.ses)
+        hcpEddyDir= f'{hcpOutDir}/Diffusion/eddy'
+        if not isdir(hcpEddyDir):
+            raise NotADirectoryError(f'{hcpEddyDir} does not exist. '
+                                      'Provide HCP pipe output directory via --dwi-template')
+        
+        # construct HCP pipe outputs
+        '''
+        Observe the following output files in ${StudyFolder}/${Subject}:
+        dwi:   Diffusion/eddy/eddy_unwarped_images.nii.gz
+        bvals: Diffusion/eddy/Pos_Neg.bvals
+        bvecs: Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs
+        mask:  Diffusion/eddy/nodif_brain_mask.nii.gz
+        bse:   Diffusion/topup/hifib0.nii.gz
+        '''
+        dwiHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.nii.gz'
+        bvalHcp= dwi.split('.nii')[0]+'.bval'
+        bvecHcp= dwi.split('.nii')[0]+'.bvec'
+        maskHcp= f'{hcpOutDir}/Diffusion/eddy/nodif_brain_mask.nii.gz'
+        bseHcp= f'{hcpOutDir}/Diffusion/topup/hifib0.nii.gz'
+
+        
+        # determine luigi-pnlpipe outputs
+        
+        # read one unringed dwi
+        _, dwiUn= _glob(self.bids_data_dir, self.dwi_template.dirname.join('*XcUn_dwi.nii.gz'), self.id, self.ses)        
+        
+        # remove _acq-*
+        eddy_epi_prefix= dwiUn.rsplit('_dwi.nii.gz')[0]
+        eddy_epi_prefix= eddy_epi_prefix.replace('_acq-PA','')
+        eddy_epi_prefix= eddy_epi_prefix.replace('_acq-AP','')
+        eddy_epi_prefix+= 'EdEp'
+
+        # find dir field
+        if '_dir-' in dwiUn:
+            dir= load_nifti(dwiHcp).shape[3]
+            eddy_epi_prefix= local.path(re.sub('_dir-(.+?)_', f'_dir-{dir}_', eddy_epi_prefix))
+
+        dwi = local.path(eddy_epi_prefix+ '_dwi.nii.gz')
+        bval = dwi.with_suffix('.bval', depth=2)
+        bvec = dwi.with_suffix('.bvec', depth=2)
+
+        # adding EdEp suffix to be consistent with dwi
+        mask_prefix = dwi.rsplit('_desc-')[0]
+        desc= re.search('_desc-(.+?)_mask.nii.gz', basename(mask)).group(1)
+        desc= desc+ 'EdEp'
+        mask_prefix= mask_prefix+ '_desc-'+ desc
+        mask = local.path(mask_prefix+ '_mask.nii.gz')
+
+        bse_prefix= dwi._path
+        desc= re.search('_desc-(.+?)_dwi.nii.gz', bse_prefix).group(1)
+        desc= 'dwi'+ desc
+        bse= local.path(bse_prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
+        
+        
+        # create symlinks
+        symlink(dwiHcp, dwi)
+        symlink(bvalHcp, bval)
+        symlink(bvecHcp, bvec)
+        symlink(maskHcp, mask)
+        symlink(bseHcp, bse)
+        
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
+
+
+
+@inherits(PnlEddy, FslEddy, EddyEpi, TopupEddy, HcpPipe)
 class Ukf(Task):
 
     ukf_params = Parameter(default='')
@@ -526,8 +600,11 @@ class Ukf(Task):
             return self.clone(EddyEpi)
         elif self.eddy_epi_task=='topupeddy':
             return self.clone(TopupEddy)
+        elif self.eddy_epi_task=='hcppipe':
+            return self.clone(HcpPipe)
         else:
-            raise ValueError('Supported epi tasks are {EddyEpi,TopupEddy}. '
+            raise ValueError('Supported epi tasks are {EddyEpi,TopupEddy} '
+                'and eddy tasks are {PnlEddy,FslEddy}. '
                 f'Correct the value of eddy_epi_task in {getenv("LUIGI_CONFIG_PATH")}')
 
 
