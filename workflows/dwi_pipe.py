@@ -582,11 +582,12 @@ class HcpPipe(ExternalTask):
         
         
         # create symlinks
-        symlink(dwiHcp, dwi)
-        symlink(bvalHcp, bval)
-        symlink(bvecHcp, bvec)
-        symlink(maskHcp, mask)
-        symlink(bseHcp, bse)
+        if not isfile(dwi):
+            symlink(dwiHcp, dwi)
+            symlink(bvalHcp, bval)
+            symlink(bvecHcp, bvec)
+            symlink(maskHcp, mask)
+            symlink(bseHcp, bse)
         
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
 
@@ -613,7 +614,7 @@ class Ukf(Task):
         elif self.eddy_epi_task=='hcppipe':
             return self.clone(HcpPipe)
         else:
-            raise ValueError('Supported epi tasks are {EddyEpi,TopupEddy} '
+            raise ValueError('Supported epi tasks are {EddyEpi,TopupEddy,HcpPipe} '
                 'and eddy tasks are {PnlEddy,FslEddy}. '
                 f'Correct the value of eddy_epi_task in {getenv("LUIGI_CONFIG_PATH")}')
 
