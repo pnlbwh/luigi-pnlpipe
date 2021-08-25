@@ -511,7 +511,7 @@ class TopupEddy(Task):
 @inherits(SelectDwiFiles, DwiAlign)
 class HcpPipe(ExternalTask):
 
-    HcpOutDir= Parameter(default='hcpipe')
+    HcpOutDir= Parameter(default='hcppipe')
     
     def output(self):
         
