@@ -537,8 +537,8 @@ class HcpPipe(ExternalTask):
         bse:   Diffusion/topup/hifib0.nii.gz
         '''
         dwiHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.nii.gz'
-        bvalHcp= dwiHcp.split('.nii')[0]+'.bval'
-        bvecHcp= dwiHcp.split('.nii')[0]+'.bvec'
+        bvalHcp= f'{hcpOutDir}/Diffusion/eddy/Pos_Neg.bvals'
+        bvecHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs'
         maskHcp= f'{hcpOutDir}/Diffusion/eddy/nodif_brain_mask.nii.gz'
         bseHcp= f'{hcpOutDir}/Diffusion/topup/hifib0.nii.gz'
 
