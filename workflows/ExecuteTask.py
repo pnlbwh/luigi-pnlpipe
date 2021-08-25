@@ -5,7 +5,7 @@ from conversion import read_cases
 from luigi import build, configuration
 from _define_outputs import IO
 from struct_pipe import StructMask, Freesurfer
-from dwi_pipe import CnnMask, PnlEddy, FslEddy, TopupEddy, EddyEpi, Ukf
+from dwi_pipe import CnnMask, PnlEddy, FslEddy, TopupEddy, HcpPipe, EddyEpi, Ukf
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc, TractMeasures
 from scripts.util import abspath, isfile, pjoin, LIBDIR
 from os import getenv, stat, remove
@@ -55,7 +55,7 @@ if __name__ == '__main__':
                         default= argparse.SUPPRESS,
                         choices=['StructMask', 'Freesurfer',
                                  'CnnMask',
-                                 'PnlEddy', 'FslEddy', 'TopupEddy',
+                                 'PnlEddy', 'FslEddy', 'TopupEddy','HcpPipe',
                                  'EddyEpi',
                                  'Ukf',
                                  'Fs2Dwi', 'Wmql', 'Wmqlqc', 'TractMeasures'])
@@ -188,7 +188,7 @@ if __name__ == '__main__':
                                         dwi_template=args.dwi_template))
 
                 
-                elif args.task=='PnlEddy' or args.task=='FslEddy':
+                elif args.task=='PnlEddy' or args.task=='FslEddy' or args.task=='HcpPipe':
                     jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
                                                 derivatives_dir=derivatives_dir,
                                                 id=id,
@@ -202,7 +202,6 @@ if __name__ == '__main__':
                                           id=id,
                                           ses=ses,
                                           pa_ap_template=args.dwi_template))
-
 
                 # Ukf task has both dwi_template and pa_ap_template
                 # because a user may want to run {PnlEddy,FslEddy} or TopupEddy
