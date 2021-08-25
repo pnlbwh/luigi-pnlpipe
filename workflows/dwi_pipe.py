@@ -508,15 +508,16 @@ class TopupEddy(Task):
 
 
 
-@inherits(SelectDwiFiles)
+@inherits(SelectDwiFiles, DwiAlign)
 class HcpPipe(ExternalTask):
 
-    # HcpOutDir= Parameter(default='hcpipe')
+    HcpOutDir= Parameter(default='hcpipe')
     
     def output(self):
         
         # glob HCP pipe output directory
-        _, hcpOutDir= _glob(self.bids_data_dir, self.dwi_template, self.id, self.ses)
+        derivatives_dir= self.bids_data_dir.replace('rawdata', self.derivatives_dir)
+        hcpOutDir= glob(derivaties_dir, self.HcpOutDir)
         hcpEddyDir= f'{hcpOutDir}/Diffusion/eddy'
         if not isdir(hcpEddyDir):
             raise NotADirectoryError(f'{hcpEddyDir} does not exist. '
@@ -532,8 +533,8 @@ class HcpPipe(ExternalTask):
         bse:   Diffusion/topup/hifib0.nii.gz
         '''
         dwiHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.nii.gz'
-        bvalHcp= dwi.split('.nii')[0]+'.bval'
-        bvecHcp= dwi.split('.nii')[0]+'.bvec'
+        bvalHcp= dwiHcp.split('.nii')[0]+'.bval'
+        bvecHcp= dwiHcp.split('.nii')[0]+'.bvec'
         maskHcp= f'{hcpOutDir}/Diffusion/eddy/nodif_brain_mask.nii.gz'
         bseHcp= f'{hcpOutDir}/Diffusion/topup/hifib0.nii.gz'
 
@@ -541,7 +542,7 @@ class HcpPipe(ExternalTask):
         # determine luigi-pnlpipe outputs
         
         # read one unringed dwi
-        _, dwiUn= _glob(self.bids_data_dir, self.dwi_template.dirname.join('*XcUn_dwi.nii.gz'), self.id, self.ses)        
+        _, dwiUn= _glob(self.bids_data_dir, self.dwi_template, self.id, self.ses)
         
         # remove _acq-*
         eddy_epi_prefix= dwiUn.rsplit('_dwi.nii.gz')[0]
