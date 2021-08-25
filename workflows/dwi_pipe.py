@@ -514,10 +514,14 @@ class HcpPipe(ExternalTask):
     HcpOutDir= Parameter(default='hcppipe')
     
     def output(self):
+
+        # read one dwi to learn name and containing directory
+        _, dwiRaw= _glob(self.bids_data_dir, self.dwi_template, self.id, self.ses)
+        dwiRaw= dwiRaw.replace('rawdata', self.derivatives_dir)
+
         
-        # glob HCP pipe output directory
-        derivatives_dir= self.bids_data_dir.replace('rawdata', self.derivatives_dir)
-        hcpOutDir= glob(derivaties_dir, self.HcpOutDir)
+        # obtain HCP pipe output directory
+        hcpOutDir= pjoin(dirname(dwiRaw), self.HcpOutDir)
         hcpEddyDir= f'{hcpOutDir}/Diffusion/eddy'
         if not isdir(hcpEddyDir):
             raise NotADirectoryError(f'{hcpEddyDir} does not exist. '
@@ -540,18 +544,15 @@ class HcpPipe(ExternalTask):
 
         
         # determine luigi-pnlpipe outputs
-        
-        # read one unringed dwi
-        _, dwiUn= _glob(self.bids_data_dir, self.dwi_template, self.id, self.ses)
-        
+
         # remove _acq-*
-        eddy_epi_prefix= dwiUn.rsplit('_dwi.nii.gz')[0]
+        eddy_epi_prefix= dwiRaw.rsplit('_dwi.nii.gz')[0]
         eddy_epi_prefix= eddy_epi_prefix.replace('_acq-PA','')
         eddy_epi_prefix= eddy_epi_prefix.replace('_acq-AP','')
-        eddy_epi_prefix+= 'EdEp'
+        eddy_epi_prefix+= '_desc-XcUnEdEp'
 
         # find dir field
-        if '_dir-' in dwiUn:
+        if '_dir-' in dwiRaw:
             dir= load_nifti(dwiHcp).shape[3]
             eddy_epi_prefix= local.path(re.sub('_dir-(.+?)_', f'_dir-{dir}_', eddy_epi_prefix))
 
@@ -559,10 +560,18 @@ class HcpPipe(ExternalTask):
         bval = dwi.with_suffix('.bval', depth=2)
         bvec = dwi.with_suffix('.bvec', depth=2)
 
-        # adding EdEp suffix to be consistent with dwi
         mask_prefix = dwi.rsplit('_desc-')[0]
-        desc= re.search('_desc-(.+?)_mask.nii.gz', basename(mask)).group(1)
-        desc= desc+ 'EdEp'
+        desc= re.search('_desc-(.+?)_dwi.nii.gz', basename(dwi)).group(1)
+        '''
+        value of desc is dwiXcUnEdEp
+        but to be consistent with TopupEddy
+        it should be dwiXcUnCNNEdEp i.e. _desc-dwiXcUnCNNEdEp_mask.nii.gz
+        which can be found as
+        desc= desc.replace('EdEp','CNNEdEp')
+        but keeping it _desc-dwiXcUnEdEp_mask.nii.gz
+        to be consistent with already processed HCP data
+        '''
+        desc= 'dwi'+ desc
         mask_prefix= mask_prefix+ '_desc-'+ desc
         mask = local.path(mask_prefix+ '_mask.nii.gz')
 
