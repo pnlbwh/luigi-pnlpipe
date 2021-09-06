@@ -79,25 +79,30 @@ datadir=`dirname $bids_data_dir`/derivatives/pnlpipe/`dirname $subdir`
 echo "HCP pipe data directory: $datadir"
 
 
+# HCP pipe using GibbsUn data
 if [ ! -f $datadir/$HcpOutDir/Diffusion/eddy/eddy_unwarped_images.nii.gz ]
 then
     echo """
-    Echo spacing for HCP data is 0.689998 milliseconds
-    It is obtained from the key EffectiveEchoSpacing (seconds) in BIDS sidecar yielded by dcm2niix
+    Echo spacing for HCP data is 0.689998 milliseconds.
+    It is obtained from the key EffectiveEchoSpacing (seconds) in BIDS sidecar yielded by dcm2niix.
+    Command being issued to HCP pipeline:
     """
     
     template=($unr_template)
-    # HCP pipe using GibbsUn
-    $HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh --path=$datadir \
+    cmd="$HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh --path=$datadir \
     --subject=$HcpOutDir --cuda-version=9.1 \
     --posData=`ls $datadir/${template[0]}`@`ls $datadir/${template[1]}` \
     --negData=`ls $datadir/${template[2]}`@`ls $datadir/${template[3]}` \
     --echospacing=0.689998 --PEdir=2 --gdcoeffs=NONE \
-    --extra-eddy-arg=--data_is_shelled --extra-eddy-arg=--repol --extra-eddy-arg=--verbose
+    --extra-eddy-arg=--data_is_shelled --extra-eddy-arg=--repol --extra-eddy-arg=--verbose"
+    echo $cmd
+    echo ''
+    $cmd || exit 1
 fi
 
-template=($raw_template)
+
 # create symlinks
+template=($raw_template)
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/ExecuteTask.py \
 --bids-data-dir $bids_data_dir \
 --dwi-template ${template[0]} \
