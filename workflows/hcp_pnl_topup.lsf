@@ -2,11 +2,14 @@
 : << END
 Running this script w/o GPU support would take a long time (>24 hours).
 So always try to use a GPU enabled machine e.g. grx** nodes, eristwo gpu queue.
-Copy this script to your project directory and update the marked variables.
+=> Copy this script to your project directory and update the marked variables.
+=> For execution through LSF, adjust "BSUB -n 4" in a way that no more than
+   "number of gpu" number of jobs run in a node. Otherwise your jobs might crash
+   due to out of memory error.
 END
 
 # ==============================================================================
-bids_data_dir="/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata"
+bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
 
 # write four templates in the following order
 # PA template, PA template
@@ -17,18 +20,12 @@ unr_template="*_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-PA_dir-107_
               *_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
 
 # a single caseid or a text file with list of cases
-caselist="/data/pnl/home/np568/Luigi/caselists/08-25-21_dwi_caselist.txt"
-caselist=1122
+caselist=/path/to/caselist.txt
 
-LUIGI_CONFIG_PATH="/data/pnl/home/np568/Luigi/dwi/parameters/unring_pipe_params.cfg"
+LUIGI_CONFIG_PATH=/data/pnl/home/np568/Luigi/dwi/parameters/unring_pipe_params.cfg
 
 # task is one of {HcpPipe,Ukf,Wma800}
 task=HcpPipe
-# ==============================================================================
-
-: << END
-# adjust "BSUB -n 4" in a way that no more than "number of gpu" number of jobs run in a node
-# otherwise your job might crash due to out of memory error
 
 #BSUB -J hcp-topup[1-4]%4
 #BSUB -q gpu
@@ -36,7 +33,11 @@ task=HcpPipe
 #BSUB -o /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.out
 #BSUB -e /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.err
 #BSUB -n 6
-END
+# ==============================================================================
+
+
+
+
 
 HcpOutDir=hcppipe3
 
