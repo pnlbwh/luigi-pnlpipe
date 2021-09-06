@@ -524,8 +524,8 @@ class HcpPipe(ExternalTask):
         hcpOutDir= pjoin(dirname(dwiRaw), self.HcpOutDir)
         hcpEddyDir= f'{hcpOutDir}/Diffusion/eddy'
         if not isdir(hcpEddyDir):
-            raise NotADirectoryError(f'{hcpEddyDir} does not exist. '
-                                      'Provide HCP pipe output directory via --dwi-template')
+            raise NotADirectoryError(f'{hcpEddyDir} does not exist. Provide HCP pipe output directory '
+                                      'via HcpOutDir parameter in {getenv("LUIGI_CONFIG_PATH")}')
         
         # construct HCP pipe outputs
         '''
