@@ -544,6 +544,8 @@ class HcpPipe(ExternalTask):
 
         
         # determine luigi-pnlpipe outputs
+        # in https://github.com/pnlbwh/luigi-pnlpipe/commit/fc3a1a5319d027e3dad9e6afb393e7399a3d3c62
+        # lines 549-581 nearly replicates lines 480-505 of TopupEddy task
 
         # remove _acq-*
         eddy_epi_prefix= dwiRaw.rsplit('_dwi.nii.gz')[0]
