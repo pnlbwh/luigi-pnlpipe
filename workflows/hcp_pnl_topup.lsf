@@ -11,8 +11,10 @@ bids_data_dir="/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata"
 # write four templates in the following order
 # PA template, PA template
 # AP template, AP template
-dwi_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-107_dwi.nii.gz \
+raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-107_dwi.nii.gz \
               sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-107_dwi.nii.gz"
+unr_template="*_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
+              *_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
 
 # a single caseid or a text file with list of cases
 caselist="/data/pnl/home/np568/Luigi/caselists/08-25-21_dwi_caselist.txt"
@@ -24,17 +26,11 @@ LUIGI_CONFIG_PATH="/data/pnl/home/np568/Luigi/dwi/parameters/unring_pipe_params.
 task=HcpPipe
 # ==============================================================================
 
-HcpOutDir=hcppipe3
-export HCPPIPEDIR=/data/pnl/soft/pnlpipe3/HCPpipelines
-export HCPPIPEDIR_Config=/data/pnl/soft/pnlpipe3/HCPpipelines/global/config
-export HCPPIPEDIR_Global=/data/pnl/soft/pnlpipe3/HCPpipelines/global/scripts
-
-
 : << END
 # adjust "BSUB -n 4" in a way that no more than "number of gpu" number of jobs run in a node
 # otherwise your job might crash due to out of memory error
 
-#BSUB -J hcp-topup[1-13]%9
+#BSUB -J hcp-topup[1-4]%4
 #BSUB -q gpu
 #BSUB -R rusage[mem=12000]
 #BSUB -o /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.out
@@ -42,10 +38,15 @@ export HCPPIPEDIR_Global=/data/pnl/soft/pnlpipe3/HCPpipelines/global/scripts
 #BSUB -n 6
 END
 
+HcpOutDir=hcppipe3
 
-template=($dwi_template)
+export HCPPIPEDIR=/data/pnl/soft/pnlpipe3/HCPpipelines
+export HCPPIPEDIR_Config=/data/pnl/soft/pnlpipe3/HCPpipelines/global/config
+export HCPPIPEDIR_Global=/data/pnl/soft/pnlpipe3/HCPpipelines/global/scripts
+
 export LUIGI_CONFIG_PATH
-#source /data/pnl/soft/pnlpipe3/bashrc3
+source /data/pnl/soft/pnlpipe3/bashrc3
+
 
 if [ -z ${LSB_JOBINDEX} ]
 then
@@ -61,7 +62,7 @@ export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
 
 
 # luigi-pnlpipe upto GibbsUn so data can be organized according to BIDS
-for j in $(echo $dwi_template)
+for j in $(echo $raw_template)
 do
     /data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/ExecuteTask.py \
     --bids-data-dir $bids_data_dir \
@@ -71,25 +72,30 @@ done
 
 
 # determine --path for HCP pipe
+template=($raw_template)
 subdir=`echo ${template[0]} | sed "s+sub-\*+sub-$i+g"`
 datadir=`dirname $bids_data_dir`/derivatives/pnlpipe/`dirname $subdir`
-echo HCP pipe data directory:
-echo $datadir
+echo "HCP pipe data directory: $datadir"
+
 
 if [ ! -f $datadir/$HcpOutDir/Diffusion/eddy/eddy_unwarped_images.nii.gz ]
 then
-    echo "Echo spacing for HCP data is 0.689998 milliseconds"
-    echo "It is obtained from the key EffectiveEchoSpacing (seconds) in BIDS sidecar yielded by dcm2niix"
+    echo """
+    Echo spacing for HCP data is 0.689998 milliseconds
+    It is obtained from the key EffectiveEchoSpacing (seconds) in BIDS sidecar yielded by dcm2niix
+    """
     
+    template=($unr_template)
     # HCP pipe using GibbsUn
     $HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh --path=$datadir \
     --subject=$HcpOutDir --cuda-version=9.1 \
-    --posData=`ls $datadir/${template[0]}`@$`ls datadir/${template[1]}` \
-    --negData=`ls $datadir/${template[2]}`@$`ls datadir/${template[3]}` \
+    --posData=`ls $datadir/${template[0]}`@`ls $datadir/${template[1]}` \
+    --negData=`ls $datadir/${template[2]}`@`ls $datadir/${template[3]}` \
     --echospacing=0.689998 --PEdir=2 --gdcoeffs=NONE \
     --extra-eddy-arg=--data_is_shelled --extra-eddy-arg=--repol --extra-eddy-arg=--verbose
 fi
 
+template=($raw_template)
 # create symlinks
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/ExecuteTask.py \
 --bids-data-dir $bids_data_dir \
