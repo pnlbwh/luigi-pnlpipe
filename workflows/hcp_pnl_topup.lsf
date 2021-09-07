@@ -40,7 +40,7 @@ task=HcpPipe
 
 
 
-HcpOutDir=hcppipe3
+HcpOutDir=hcppipe
 
 export HCPPIPEDIR=/data/pnl/soft/pnlpipe3/HCPpipelines
 export HCPPIPEDIR_Config=/data/pnl/soft/pnlpipe3/HCPpipelines/global/config
