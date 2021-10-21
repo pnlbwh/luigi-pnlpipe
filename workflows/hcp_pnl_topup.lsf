@@ -28,12 +28,12 @@ LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/dwi_pipe_params.c
 # task is one of {HcpPipe,Ukf,Wma800}
 task=HcpPipe
 
-#BSUB -J hcp-topup[1-4]%4
+#BSUB -J hcp-topup[1-N]%4
 #BSUB -q gpu
 #BSUB -R rusage[mem=12000]
 #BSUB -o /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.out
 #BSUB -e /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.err
-#BSUB -n 6
+#BSUB -n 8
 # ==============================================================================
 
 
@@ -50,14 +50,13 @@ export LUIGI_CONFIG_PATH
 source /data/pnl/soft/pnlpipe3/bashrc3
 
 
-if [ -z ${LSB_JOBINDEX} ]
+if [ -f ${caselist} ]
 then
-    # shell script, one subject
-    i=$caselist
-    LSB_JOBINDEX=0
-else
     # LSF script, list of subjects
     i=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
+else
+    # shell script, one subject
+    i=${caselist}
 fi
 
 export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
