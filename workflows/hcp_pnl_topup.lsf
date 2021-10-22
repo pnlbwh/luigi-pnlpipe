@@ -5,8 +5,8 @@ So always try to use a GPU enabled machine e.g. grx** nodes, eristwo gpu queue.
 => Copy this script to your project directory and update the marked variables.
 => Execute within shell as ./hcp_pnl_topup.lsf
 => To execute through LSF, adjust "BSUB -n 4" in a way that no more than
-   "number of gpu" number of jobs run in a node. Otherwise your jobs might crash
-   due to out of memory error.
+   "number of GPU" number of jobs run in a node. This means each GPU device must
+   run only one job. Otherwise your jobs might crash due to out of memory error.
 END
 
 # ==============================================================================
@@ -30,14 +30,21 @@ task=HcpPipe
 
 #BSUB -J hcp-topup[1-N]%4
 #BSUB -q gpu
+#BSUB -m ml001
 #BSUB -R rusage[mem=12000]
 #BSUB -o /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.out
 #BSUB -e /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.err
-#BSUB -n 8
+#BSUB -n 4
 # ==============================================================================
 
+: << END
+Adjust "BSUB -n 4" in a way that each GPU device can run no more than one job.
+You can use the formula "BSUB -n N/G" to ensure that where--
+    N is the maximum number of jobs for that node
+    G is the number of GPUs in that node
 
-
+Example: node ml001 has 8(=N) job slots and 2(=G) GPUs so "BSUB -n 8/2"
+END
 
 
 HcpOutDir=hcppipe
