@@ -514,7 +514,7 @@ exec/ExecuteTask --task Freesurfer \
 --bids-data-dir ~/Downloads/INTRuST_BIDS \
 -c ~/Downloads/INTRuST_BIDS/caselist.txt \
 -s BWH01 \
---t2-template sub-*/anat/*_T2w.nii.gz --t2-template sub-*/anat/*_T2w.nii.gz \ 
+--t1-template sub-*/anat/*_T1w.nii.gz --t2-template sub-*/anat/*_T2w.nii.gz \ 
 --num-workers 3
 
 ```
