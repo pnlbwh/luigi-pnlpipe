@@ -65,11 +65,18 @@ class StructAlign(Task):
 @requires(StructAlign)
 class StructMask(Task):
 
+    # switch between MABS and HD-BET
+    mask_method= Parameter(default= 'MABS')
+
     # for atlas.py
     csvFile= Parameter(default= '')
     debug= BoolParameter(default= False)
     fusion= Parameter(default= '')
     mabs_mask_nproc= IntParameter(default= int(N_PROC))
+
+    # for hd-bet
+    hdbet_mode= Parameter(default= '')
+    hdbet_device= Parameter(default= '')
 
     # for makeAlignedMask.py
     ref_img= Parameter(default= '')
@@ -80,13 +87,26 @@ class StructMask(Task):
     def run(self):
 
         if self.csvFile:
-            cmd = (' ').join(['atlas.py',
-                              '-t', self.input(),
-                              '--train', self.csvFile,
-                              '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
-                              f'-n {self.mabs_mask_nproc}',
-                              '-d' if self.debug else '',
-                              f'--fusion {self.fusion}' if self.fusion else ''])
+
+            if self.mask_method.lower()=='mabs':
+                cmd = (' ').join(['atlas.py',
+                                  '-t', self.input(),
+                                  '--train', self.csvFile,
+                                  '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
+                                  f'-n {self.mabs_mask_nproc}',
+                                  '-d' if self.debug else '',
+                                  f'--fusion {self.fusion}' if self.fusion else ''])
+
+            elif self.mask_method.lower()=='hd-bet':
+                cmd = (' ').join(['hd-bet',
+                                  '-i', self.input(),
+                                  '-o', self.output(),
+                                  f'-device {self.hdbet_device}' if self.hdbet_device else '',
+                                  f'-mode {self.hdbet_mode}' if self.hdbet_mode else ''])
+
+            else:
+                raise ValueError('Supported structural masking methods are MABS and HD-BET only')
+                exit(1)
 
             p = Popen(cmd, shell=True)
             p.wait()
