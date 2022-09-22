@@ -113,9 +113,6 @@ class StructMask(Task):
             p = Popen(cmd, shell=True)
             p.wait()
 
-            # delete the masked image
-            # remove(self.output()['mask'].replace('_mask',''))
-
             # print instruction for quality checking
             _mask_name(self.output()['mask'], False)
 
