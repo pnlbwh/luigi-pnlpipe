@@ -4,7 +4,7 @@ from luigi import Task, ExternalTask, Parameter, BoolParameter, IntParameter
 from luigi.util import inherits, requires
 from glob import glob
 from os.path import join as pjoin, abspath, isfile, basename, dirname
-from os import getenv
+from os import getenv, remove
 import re
 
 from plumbum import local
@@ -100,9 +100,11 @@ class StructMask(Task):
             elif self.mask_method.lower()=='hd-bet':
                 cmd = (' ').join(['hd-bet',
                                   '-i', self.input(),
-                                  '-o', self.output()['mask'],
+                                  '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
                                   f'-mode {self.hdbet_mode}' if self.hdbet_mode else '',
-                                  f'-device {self.hdbet_device}' if self.hdbet_device else ''])
+                                  f'-device {self.hdbet_device}' if self.hdbet_device else '',
+                                  '&& rm', self.output()['mask'].replace('_mask','')])
+                                  # the trailing part removes hd-bet's masked image
 
             else:
                 raise ValueError('Supported structural masking methods are MABS and HD-BET only')
@@ -110,6 +112,9 @@ class StructMask(Task):
 
             p = Popen(cmd, shell=True)
             p.wait()
+
+            # delete the masked image
+            # remove(self.output()['mask'].replace('_mask',''))
 
             # print instruction for quality checking
             _mask_name(self.output()['mask'], False)
