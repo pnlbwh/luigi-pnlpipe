@@ -100,9 +100,9 @@ class StructMask(Task):
             elif self.mask_method.lower()=='hd-bet':
                 cmd = (' ').join(['hd-bet',
                                   '-i', self.input(),
-                                  '-o', self.output(),
-                                  f'-device {self.hdbet_device}' if self.hdbet_device else '',
-                                  f'-mode {self.hdbet_mode}' if self.hdbet_mode else ''])
+                                  '-o', self.output()['mask'],
+                                  f'-mode {self.hdbet_mode}' if self.hdbet_mode else '',
+                                  f'-device {self.hdbet_device}' if self.hdbet_device else ''])
 
             else:
                 raise ValueError('Supported structural masking methods are MABS and HD-BET only')
