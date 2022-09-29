@@ -184,10 +184,9 @@ Recently, we have adopted a better brain masking tool in Luigi pipeline: https:/
 CSV file with a list of training masks used by [MABS](#mabs-mask), it uses a pre-trained deep learning model. To use this
 tool, use the following configuration:
 
-```
+```cfg
 [StructMask]
 mask_method: HD-BET
-
 ```
 
 As simple as that! However, it is advisable to run this program on a GPU enabled device. It can also be
