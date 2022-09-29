@@ -13,6 +13,7 @@ Table of Contents
    * [Structural pipeline](#structural-pipeline)
       * [Create masks](#create-masks)
          * [MABS mask](#mabs-mask)
+         * [HD-BET mask](#hd-bet-mask)
          * [Warped mask](#warped-mask)
       * [Run FreeSurfer](#run-freesurfer)
          * [With T1w only](#with-t1w-only)
@@ -175,6 +176,24 @@ Tips:
 * `lscpu` command will show you the number of processors available. 
 As a rule of thumb, you can choose `--num-workers` to be half the number of available processors on a shared environment. 
 * `vmstat -s -S M` will show you the RAM available
+
+
+### HD-BET mask
+
+Recently, we have adopted a better brain masking tool in Luigi pipeline: https://github.com/MIC-DKFZ/HD-BET. Unlike the
+CSV file with a list of training masks used by [MABS](#mabs-mask), it uses a pre-trained deep learning model. To use this
+tool, use the following configuration:
+
+```
+[StructMask]
+mask_method: HD-BET
+
+```
+
+As simple as that! However, it is advisable to run this program on a GPU enabled device. It can also be
+run on a CPU enabled device but quite slowly. To do that, you need an additional parameter `hdbet_device: cpu` in
+the above configuration.
+
 
 ### Warped mask
 
