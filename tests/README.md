@@ -86,16 +86,14 @@ upload the test logs to GitHub. Yet, you will be able to access them within `pnl
 
 ### Launch container
 
+To set up test environment, we shall mount SlicerDMRI, FreeSurfer license, IITmean_b0_256.nii.gz for CNN-Diffusion-MRIBrain-Segmentation,
+.ssh, .gitconfig, pnlpipe-nightly-tests into the container:
 
     docker run --rm -ti \
-    # mount SlicerDMRI \
     -v ~/Slicer-4.11.20200930-linux-amd64:/Slicer-4.11 \
     -v ~/SlicerDMRI:/SlicerDMRI \
-    # mount FreeSurfer license \
     -v ~/license.txt:/home/pnlbwh/freesurfer-7.1.0/license.txt \
-    # mount IITmean_b0_256.nii.gz for CNN-Diffusion-MRIBrain-Segmentation \
     -v ~/IITmean_b0_256.nii.gz:/home/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation/model_folder/IITmean_b0_256.nii.gz \
-    # mount .ssh, .gitconfig, pnlpipe-nightly-tests \
     -v ~/.ssh:/root/.ssh \
     -v ~/.gitconfig:/home/pnlbwh/.gitconfig \
     -v ~/pnlpipe-nightly-tests:/home/pnlbwh/luigi-pnlpipe/pnlpipe-nightly-tests \
