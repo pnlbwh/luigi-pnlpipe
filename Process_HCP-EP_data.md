@@ -1,3 +1,0 @@
-* Organize according to BIDS
-
-
