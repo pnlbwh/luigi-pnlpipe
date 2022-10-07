@@ -103,9 +103,12 @@ BIDS_example/
 
 * T2w masking
 
-HD-BET
-High Definition Brain Extraction Tool
-Deep learning based
+![](T2w_mask.png)
+
+[HD-BET](https://github.com/MIC-DKFZ/HD-BET) is a deep learning based brain extraction tool.
+It should be run on a GPU device i.e. `grx**` node or `bhosts gpu_hg` cluster.
+
+
 
 
 MABS
