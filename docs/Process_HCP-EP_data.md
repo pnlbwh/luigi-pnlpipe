@@ -4,18 +4,20 @@
 
 * Organize data according to BIDS
 
+> cd /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/
+
 ```python
-BIDS_example/
+BIDS/
 ├── derivatives
 └── rawdata
 
-BIDS_example/
+BIDS/
 ├── derivatives
 └── rawdata
     ├── sub-1003
     └── sub-1004
     
-BIDS_example/
+BIDS/
 ├── derivatives
 └── rawdata
     ├── sub-1003
@@ -23,7 +25,7 @@ BIDS_example/
     └── sub-1004
         └── ses-1
         
-BIDS_example/
+BIDS/
 ├── derivatives
 └── rawdata
     ├── sub-1003
@@ -42,7 +44,7 @@ BIDS_example/
 <details><summary>BIDS_example</summary>
 
 ```python
-BIDS_example/
+BIDS/
 ├── derivatives
 └── rawdata
     ├── sub-1003
@@ -103,17 +105,45 @@ BIDS_example/
 
 * T2w masking
 
-![](T2w_mask.png)
+<img src="T2w_mask.png" width=300>
 
 [HD-BET](https://github.com/MIC-DKFZ/HD-BET) is a deep learning based brain extraction tool.
 It should be run on a GPU device i.e. `grx**` node or `bhosts gpu_hg` cluster.
 
+* Set up environment
+
+```bash
+source /data/pnl/soft/pnlpipe3/HD-BET/env.sh
+export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_mask.cfg
+```
+
+> /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
+--bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
+-c 1003 -s 1 --t2-template sub-*/ses-1/anat/*_T2w.nii.gz
+
+After submitting the job, go to https://pnlservers.bwh.harvard.edu/luigi/ and monitor its status.
+Its username and password are shared privately. You should also monitor logs that are printed in your terminal.
+
+The `-c` flag also accepts a `caselist.txt` argument where each line is a case ID:
+
+```
+1003
+1004
+...
+```
+
+Similarly, the `-s` flag also accepts a `sessions.txt` argument where each line is a session ID:
+
+```
+1
+2
+...
+```
+
+Some of you have access to `bhosts gpu_hg` cluster where HD-BET could be run. We shall teach you
+how to optimize the number of parallel cases you can mask on the cluster at a later date.
 
 
-
-MABS
-Multi Atlas Brain Segmentation
-ANTs registration based
 
 
 * Quality checking T2w mask
