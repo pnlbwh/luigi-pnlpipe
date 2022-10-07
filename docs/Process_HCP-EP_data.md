@@ -206,4 +206,4 @@ derivatives/
 
 * Now run Freesurfer
 
-
+<img src="T1w_Freesurfer.png" width=500>
