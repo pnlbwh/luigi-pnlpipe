@@ -97,4 +97,21 @@ BIDS_example/
                 └── sub-1004_ses-1_task-rest_acq-PA_run-2_bold.nii.gz
 ```
   
-</details>  
+</details>
+
+
+
+* T2w masking
+
+HD-BET
+High Definition Brain Extraction Tool
+Deep learning based
+
+
+MABS
+Multi Atlas Brain Segmentation
+ANTs registration based
+
+
+* Quality checking T2w mask
+
