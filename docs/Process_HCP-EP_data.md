@@ -4,7 +4,7 @@
 
 * Organize data according to BIDS
 
-> cd /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/
+> cd /data/pnl/U01_HCP_Psychosis/data_processing
 
 ```python
 BIDS/
@@ -41,7 +41,7 @@ BIDS/
 
 ```
 
-<details><summary>BIDS_example</summary>
+<details><summary>BIDS/</summary>
 
 ```python
 BIDS/
@@ -146,13 +146,64 @@ how to optimize the number of parallel cases you can mask on the cluster at a la
 
 Output after HD-BET masking completes:
 
-(provide another tree with files upto masks)
+```python
+derivatives/
+└── pnlpipe
+    ├── sub-1003
+    │   └── ses-1
+    │       └── anat
+    └── sub-1004
+        └── ses-1
+            └── anat
+
+```
+
+```python
+derivatives/
+└── pnlpipe
+    ├── sub-1003
+    │   └── ses-1
+    │       └── anat
+    │           ├── sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
+    │           └── sub-1003_ses-1_desc-Xc_T2w.nii.gz
+    └── sub-1004
+        └── ses-1
+            └── anat
+                ├── sub-1004_ses-1_desc-T2wXcMabs_mask.nii.gz
+                └── sub-1004_ses-1_desc-Xc_T2w.nii.gz
+
+```
+
 
 * Quality checking T2w mask
 
-(Save with proper names)
+Quality checked mask must be saved with Qc suffix in the desc field for its integration with later part of the structural pipeline. Example:
+
+```
+    Mabs mask   : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
+Quality checked : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+```
+
+
+```python
+derivatives/
+└── pnlpipe
+    ├── sub-1003
+    │   └── ses-1
+    │       └── anat
+    │           ├── sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
+    |           ├── sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+    │           └── sub-1003_ses-1_desc-Xc_T2w.nii.gz
+    └── sub-1004
+        └── ses-1
+            └── anat
+                ├── sub-1004_ses-1_desc-T2wXcMabs_mask.nii.gz
+                ├── sub-1004_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+                └── sub-1004_ses-1_desc-Xc_T2w.nii.gz
+
+```
 
 
 * Now run Freesurfer
 
-Both single and cluster method
+
