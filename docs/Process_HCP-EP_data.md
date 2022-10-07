@@ -180,7 +180,7 @@ derivatives/
 Quality checked mask must be saved with Qc suffix in the desc field for its integration with later part of the structural pipeline. Example:
 
 ```
-    Mabs mask   : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
+Automated mask  : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
 Quality checked : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
 ```
 
