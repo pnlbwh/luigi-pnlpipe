@@ -144,7 +144,15 @@ Some of you have access to `bhosts gpu_hg` cluster where HD-BET could be run. We
 how to optimize the number of parallel cases you can mask on the cluster at a later date.
 
 
+Output after HD-BET masking completes:
 
+(provide another tree with files upto masks)
 
 * Quality checking T2w mask
 
+(Save with proper names)
+
+
+* Now run Freesurfer
+
+Both single and cluster method
