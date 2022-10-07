@@ -1,3 +1,7 @@
+
+![](hcp_pipeline.png)
+
+
 * Organize data according to BIDS
 
 ```python
