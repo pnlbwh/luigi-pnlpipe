@@ -37,7 +37,7 @@ each Luigi task executes its prerequisite tasks before executing the task itself
 that will not rerun. Progress of the pipelines can be viewed in [http://cmu166.research.partners.org:8082](). 
 
 Another assumption is-- you have [organized your data](#1-organize-data-according-to-bids) according to BIDS convention. 
-In the following, we shall explain how to run pipelines on DIAGNOSE_CTE data.
+In the following, we shall explain how to run pipelines on DIAGNOSE-CTE data.
 
 # Providing input 
 
