@@ -310,6 +310,8 @@ derivatives/
 
 ### Diffusion pipeline
 
+Use [luigi-pnlpipe/workflows/hcp_pnl_topup.lsf](luigi-pnlpipe/workflows/hcp_pnl_topup.lsf) script.
+
 <details><summary>derivatives/pnlpipe/sub-1004/ses-1/dwi/</summary>
     
 ```python
