@@ -305,3 +305,73 @@ derivatives/
 
 </details>
 
+
+
+
+### Diffusion pipeline
+
+<details><summary>derivatives/pnlpipe/sub-1004/ses-1/dwi/</summary>
+    
+```python
+sub-1004
+└── ses-1
+    ├── anat
+    .
+    .
+    └── dwi
+        ├── hcppipe
+        │   ├── Diffusion
+        │   │   ├── data
+        │   │   ├── eddy
+        │   │   ├── reg
+        │   │   └── topup
+        │   └── T1w
+        │       └── Diffusion
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_dir-398_desc-dwiXcUnEdEp_mask.nii.gz -> hcppipe/Diffusion/eddy/nodif_brain_mask.nii.gz
+        ├── sub-1004_ses-1_dir-398_desc-XcUnEdEp_dwi.bval -> hcppipe/Diffusion/eddy/Pos_Neg.bvals
+        ├── sub-1004_ses-1_dir-398_desc-XcUnEdEp_dwi.bvec -> hcppipe/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs
+        └── sub-1004_ses-1_dir-398_desc-XcUnEdEp_dwi.nii.gz -> hcppipe/Diffusion/eddy/eddy_unwarped_images.nii.gz
+
+```
+    
+</details>
