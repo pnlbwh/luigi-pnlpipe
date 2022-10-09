@@ -310,6 +310,8 @@ derivatives/
 
 ### Diffusion pipeline
 
+![](hcp_pnl_topup.png)
+
 * Set up environment
 
 > source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
