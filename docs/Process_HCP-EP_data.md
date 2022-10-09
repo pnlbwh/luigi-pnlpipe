@@ -117,9 +117,12 @@ source /data/pnl/soft/pnlpipe3/HD-BET/env.sh
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_mask.cfg
 ```
 
-> /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
+```bash
+/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
 --bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
--c 1003 -s 1 --t2-template "sub-*/ses-1/anat/*_T2w.nii.gz"
+-c 1003 -s 1 \
+--t2-template "sub-*/ses-1/anat/*_T2w.nii.gz"
+```
 
 After submitting the job, go to https://pnlservers.bwh.harvard.edu/luigi/ and monitor its status.
 Its username and password are shared privately. You should also monitor logs that are printed in your terminal.
@@ -206,6 +209,169 @@ derivatives/
 
 * Now run Freesurfer
 
-Explaning how ref_img and ref_mask fields came (from antsRegistration)
-
 <img src="T1w_Freesurfer.png" width=500>
+
+For HCP-EP data, we have created HD-BET mask for T2w images. Then we have warped them to obtain mask for T1w images.
+Hence there is a line from `QC (Human)` to `StructMask` node in the above diagram.
+This approach minimizes the human effort required to quality check masks for all modalities.
+Nevertheless, you can create HD-BET mask for all modalities and quality check them manually.
+Both T1w and T2w images are necessary for performing FreeSurfer segmentation. For this `Freesurfer` task,
+use the following environment and configuration:
+
+
+```bash
+source /data/pnl/soft/pnlpipe3/bashrc3
+export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/struct_pipe_params.cfg
+```
+
+```bash
+/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
+--bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
+-c 1003 -s 1 \
+--t2-template "sub-*/ses-1/anat/*_T2w.nii.gz" \
+--t1-template "sub-*/ses-1/anat/*_T2w.nii.gz"
+```
+
+A few parameters of the above configuration file demands explanation:
+
+```
+[StructMask]
+reg_method: rigid
+
+[Freesurfer]
+t1_mask_method: registration
+t1_ref_img: *_desc-Xc_T2w.nii.gz
+t1_ref_mask: *_desc-T2wXcMabsQc_mask.nii.gz
+
+t2_mask_method: HD-BET
+```
+
+Notice the difference of values between `t2_mask_method` and `t1_mask_method`. Also notice the values of `ref_img` and `ref_mask` beginning with asterisk (`*`). The asterisk (`*`) is important. These are the patterns with which output directory is searched to obtain T2w image and associated HD-BET mask. The T2w image is used to register to target space, in this case T1w space. Finally, the associated HD-BET mask is warped to target space. Another important parameter is `reg_method`. It takes a value of either `rigid` or `SyN` indicating the type of ANTs registration you would like to perform. `rigid` is quick and sufficient for this setting. `SyN` is time consuming and can be more accurate.
+
+`NOTE` There is a modality mismatch between the parameter name `t1_ref_img` and its value `*_desc-Xc_T2w.nii.gz`. It came from the convention ANTs follows. It means--to create a T1w mask, use the T2w mask as the reference image.
+
+
+After `Freesurfer` task completes, the will look like:
+
+<details><summary>derivatives/</summary>
+
+```python
+derivatives/
+└── pnlpipe
+    ├── sub-1003
+    │   └── ses-1
+    │       └── anat
+    │           ├── fs7.1.0
+    │           │   ├── label
+    │           │   ├── mri
+    │           │   ├── scripts
+    │           │   ├── stats
+    │           │   ├── surf
+    │           │   ├── tmp
+    │           │   ├── touch
+    │           │   ├── trash
+    │           │   └── version.txt
+    │           ├── sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+    │           ├── sub-1003_ses-1_desc-T2wXcMabsQcToT1wXc_mask.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMaN4_T1w.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMaN4_T2w.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMa_T1w.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMa_T2w.nii.gz
+    │           ├── sub-1003_ses-1_desc-Xc_T1w.nii.gz
+    │           └── sub-1003_ses-1_desc-Xc_T2w.nii.gz
+    └── sub-1004
+        └── ses-1
+            └── anat
+                ├── fs7.1.0
+                │   ├── label
+                │   ├── mri
+                │   ├── scripts
+                │   ├── stats
+                │   ├── surf
+                │   ├── tmp
+                │   ├── touch
+                │   ├── trash
+                │   └── version.txt
+                ├── sub-1004_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+                ├── sub-1004_ses-1_desc-T2wXcMabsQcToT1wXc_mask.nii.gz
+                ├── sub-1004_ses-1_desc-XcMaN4_T1w.nii.gz
+                ├── sub-1004_ses-1_desc-XcMaN4_T2w.nii.gz
+                ├── sub-1004_ses-1_desc-XcMa_T1w.nii.gz
+                ├── sub-1004_ses-1_desc-XcMa_T2w.nii.gz
+                ├── sub-1004_ses-1_desc-Xc_T1w.nii.gz
+                └── sub-1004_ses-1_desc-Xc_T2w.nii.gz
+
+```
+
+</details>
+
+
+
+
+### Diffusion pipeline
+
+<details><summary>derivatives/pnlpipe/sub-1004/ses-1/dwi/</summary>
+    
+```python
+sub-1004
+└── ses-1
+    ├── anat
+    .
+    .
+    └── dwi
+        ├── hcppipe
+        │   ├── Diffusion
+        │   │   ├── data
+        │   │   ├── eddy
+        │   │   ├── reg
+        │   │   └── topup
+        │   └── T1w
+        │       └── Diffusion
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_dir-398_desc-dwiXcUnEdEp_mask.nii.gz -> hcppipe/Diffusion/eddy/nodif_brain_mask.nii.gz
+        ├── sub-1004_ses-1_dir-398_desc-XcUnEdEp_dwi.bval -> hcppipe/Diffusion/eddy/Pos_Neg.bvals
+        ├── sub-1004_ses-1_dir-398_desc-XcUnEdEp_dwi.bvec -> hcppipe/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs
+        └── sub-1004_ses-1_dir-398_desc-XcUnEdEp_dwi.nii.gz -> hcppipe/Diffusion/eddy/eddy_unwarped_images.nii.gz
+
+```
+    
+</details>
