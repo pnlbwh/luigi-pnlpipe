@@ -314,11 +314,57 @@ derivatives/
 
 > source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
 
-Copy `/PHShome/tb571/Downloads/luigi-pnlpipe/workflows/hcp_pnl_topup.lsf`, edit it, and `bsub < /path/to/hcp_pnl_topup.lsf`
-(can we bypass the editing a bit?)
+* Copy `/data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/hcp_pnl_topup.lsf` to your preferred directory
+* Edit it for your data
+* **get your edits approved by the PNL engineer in charge**,
+* Run the pipeline as: `bsub < /path/to/hcp_pnl_topup.lsf`
 
+<details><summary>You should need to edit only this segment:</summary>
 
-Use [luigi-pnlpipe/workflows/hcp_pnl_topup.lsf](luigi-pnlpipe/workflows/hcp_pnl_topup.lsf) script.
+```bash
+# ==============================================================================
+bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
+
+# write four templates in the following order
+# PA template, PA template
+# AP template, AP template
+raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-107_dwi.nii.gz \
+              sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-107_dwi.nii.gz"
+unr_template="*_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
+              *_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
+
+# a single caseid or a text file with list of cases
+caselist=/path/to/caselist.txt
+
+LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/dwi_pipe_params.cfg
+
+# task is one of {HcpPipe,Ukf,Wma800}
+task=HcpPipe
+
+#BSUB -J hcp-topup[1-N]%4
+#BSUB -q gpu
+#BSUB -m ml001
+#BSUB -R rusage[mem=12000]
+#BSUB -o /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.out
+#BSUB -e /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.err
+#BSUB -n 4
+# ==============================================================================
+
+```
+
+</details>    
+    
+<details><summary>Way to change BSUB -n 4</summary>
+
+Adjust "BSUB -n 4" in a way that each GPU device can run no more than one job.
+You can use the formula "BSUB -n N/G" to ensure that where--
+    N is the maximum number of jobs for that node
+    G is the number of GPUs in that node
+
+Example: node ml001 has 8(=N) job slots and 2(=G) GPUs so "BSUB -n 8/2"
+
+</details>
+
 
 <details><summary>derivatives/pnlpipe/sub-1004/ses-1/dwi/</summary>
     
