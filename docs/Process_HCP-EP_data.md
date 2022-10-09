@@ -117,9 +117,12 @@ source /data/pnl/soft/pnlpipe3/HD-BET/env.sh
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_mask.cfg
 ```
 
-> /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
+```bash
+/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
 --bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
--c 1003 -s 1 --t2-template "sub-*/ses-1/anat/*_T2w.nii.gz"
+-c 1003 -s 1 \
+--t2-template "sub-*/ses-1/anat/*_T2w.nii.gz"
+```
 
 After submitting the job, go to https://pnlservers.bwh.harvard.edu/luigi/ and monitor its status.
 Its username and password are shared privately. You should also monitor logs that are printed in your terminal.
@@ -221,11 +224,13 @@ source /data/pnl/soft/pnlpipe3/bashrc3
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/struct_pipe_params.cfg
 ```
 
-> /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
+```bash
+/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
 --bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
 -c 1003 -s 1 \
 --t2-template "sub-*/ses-1/anat/*_T2w.nii.gz" \
 --t1-template "sub-*/ses-1/anat/*_T2w.nii.gz"
+```
 
 A few parameters of the above configuration file demands explanation:
 
