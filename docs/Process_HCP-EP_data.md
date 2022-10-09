@@ -310,7 +310,30 @@ derivatives/
 
 ### Diffusion pipeline
 
+Diffusion pipeline is less straightforward to run than structural pipeline because of the `HcpPipe` black box involved.
+The black box uses slightly modified [Washington-University/HCPpipelines](https://github.com/pnlbwh/HCPpipelines).
+To allow preceding and following steps to be run by Luigi pipeline, please use [hcp_pnl_topup.lsf](../workflows/hcp_pnl_topup.lsf) script
+to run the diffusion pipeline:
+
 ![](hcp_pnl_topup.png)
+
+Preceding steps are until Gibb's unringing (`GibsUn`) and following step is soft link creation so all outputs are available at the parent directory:
+
+```python
+dwi
+├── hcppipe
+│   ├── Diffusion
+│   │   ├── data
+│   │   ├── eddy
+│   │   ├── reg
+│   │   └── topup
+│   └── T1w
+│       └── Diffusion
+├── sub-*_ses-1_dir-*_desc-dwiXcUnEdEp_mask.nii.gz -> hcppipe/Diffusion/eddy/nodif_brain_mask.nii.gz
+├── sub-*_ses-1_dir-*_desc-XcUnEdEp_dwi.bval -> hcppipe/Diffusion/eddy/Pos_Neg.bvals
+├── sub-*_ses-1_dir-*_desc-XcUnEdEp_dwi.bvec -> hcppipe/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs
+└── sub-*_ses-1_dir-*_desc-XcUnEdEp_dwi.nii.gz -> hcppipe/Diffusion/eddy/eddy_unwarped_images.nii.gz
+```
 
 * Set up environment
 
@@ -433,3 +456,8 @@ sub-1004
 ```
     
 </details>
+
+
+### Higher level tasks
+
+![](Fs2Dwi_bottom_up.png)
