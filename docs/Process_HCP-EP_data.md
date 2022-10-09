@@ -208,7 +208,8 @@ derivatives/
 
 <img src="T1w_Freesurfer.png" width=500>
 
-For HCP-EP data, we have created HD-BET mask for T2w images. Then we have warped them to obtain mask for T1w image.
+For HCP-EP data, we have created HD-BET mask for T2w images. Then we have warped them to obtain mask for T1w images.
+Hence there is a line from `QC (Human)` to `StructMask` node in the above diagram.
 This approach minimizes the human effort required to quality check masks for all modalities.
 Nevertheless, you can create HD-BET mask for all modalities and quality check them manually.
 Both T1w and T2w images are necessary for performing FreeSurfer segmentation. For this `Freesurfer` task,
