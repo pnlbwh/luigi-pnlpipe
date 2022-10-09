@@ -206,4 +206,6 @@ derivatives/
 
 * Now run Freesurfer
 
+Explaning how ref_img and ref_mask fields came (from antsRegistration)
+
 <img src="T1w_Freesurfer.png" width=500>
