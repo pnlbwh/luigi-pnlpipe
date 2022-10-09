@@ -243,9 +243,60 @@ t2_mask_method: HD-BET
 
 Notice the difference of values between `t2_mask_method` and `t1_mask_method`. Also notice the values of `ref_img` and `ref_mask` beginning with asterisk (`*`). The asterisk (`*`) is important. These are the patterns with which output directory is searched to obtain T2w image and associated HD-BET mask. The T2w image is used to register to target space, in this case T1w space. Finally, the associated HD-BET mask is warped to target space. Another important parameter is `reg_method`. It takes a value of either `rigid` or `SyN` indicating the type of ANTs registration you would like to perform. `rigid` is quick and sufficient for this setting. `SyN` is time consuming and can be more accurate.
 
+`NOTE` There is a modality mismatch between the parameter name `t1_ref_img` and its value `*_desc-Xc_T2w.nii.gz`. It came from the convention ANTs follows. It means--to create a T1w mask, use the T2w mask as the reference image.
 
 
-Explaning how ref_img and ref_mask fields came (from antsRegistration)
+After `Freesurfer` task completes, the will look like:
 
-* Set up environment
+<details><summary>derivatives/</summary>
+
+```python
+derivatives/
+└── pnlpipe
+    ├── sub-1003
+    │   └── ses-1
+    │       └── anat
+    │           ├── fs7.1.0
+    │           │   ├── label
+    │           │   ├── mri
+    │           │   ├── scripts
+    │           │   ├── stats
+    │           │   ├── surf
+    │           │   ├── tmp
+    │           │   ├── touch
+    │           │   ├── trash
+    │           │   └── version.txt
+    │           ├── sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+    │           ├── sub-1003_ses-1_desc-T2wXcMabsQcToT1wXc_mask.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMaN4_T1w.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMaN4_T2w.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMa_T1w.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMa_T2w.nii.gz
+    │           ├── sub-1003_ses-1_desc-Xc_T1w.nii.gz
+    │           └── sub-1003_ses-1_desc-Xc_T2w.nii.gz
+    └── sub-1004
+        └── ses-1
+            └── anat
+                ├── fs7.1.0
+                │   ├── label
+                │   ├── mri
+                │   ├── scripts
+                │   ├── stats
+                │   ├── surf
+                │   ├── tmp
+                │   ├── touch
+                │   ├── trash
+                │   └── version.txt
+                ├── sub-1004_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+                ├── sub-1004_ses-1_desc-T2wXcMabsQcToT1wXc_mask.nii.gz
+                ├── sub-1004_ses-1_desc-XcMaN4_T1w.nii.gz
+                ├── sub-1004_ses-1_desc-XcMaN4_T2w.nii.gz
+                ├── sub-1004_ses-1_desc-XcMa_T1w.nii.gz
+                ├── sub-1004_ses-1_desc-XcMa_T2w.nii.gz
+                ├── sub-1004_ses-1_desc-Xc_T1w.nii.gz
+                └── sub-1004_ses-1_desc-Xc_T2w.nii.gz
+
+```
+
+</details>
 
