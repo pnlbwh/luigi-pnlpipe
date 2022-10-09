@@ -206,6 +206,45 @@ derivatives/
 
 * Now run Freesurfer
 
+<img src="T1w_Freesurfer.png" width=500>
+
+For HCP-EP data, we have created HD-BET mask for T2w images. Then we have warped them to obtain mask for T1w image.
+This approach minimizes the human effort required to quality check masks for all modalities.
+Nevertheless, you can create HD-BET mask for all modalities and quality check them manually.
+Both T1w and T2w images are necessary for performing FreeSurfer segmentation. For this `Freesurfer` task,
+use the following environment and configuration:
+
+
+```bash
+source /data/pnl/soft/pnlpipe3/bashrc3
+export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/struct_pipe_params.cfg
+```
+
+> /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
+--bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
+-c 1003 -s 1 \
+--t2-template "sub-*/ses-1/anat/*_T2w.nii.gz" \
+--t1-template "sub-*/ses-1/anat/*_T2w.nii.gz"
+
+[StructMask]
+mabs_mask_nproc: 8
+fusion:
+debug: False
+reg_method: rigid
+slicer_exec:
+mask_qc: False
+
+csvFile:
+ref_img: *_desc-Xc_T2w.nii.gz
+ref_mask: *_desc-T2wXcMabsQc_mask.nii.gz
+
+Notice the values of ref_img and ref_mask beginning with asterisk (*). The asterisk (*) is important. These are the patterns with which output directory is searched to obtain structural image and associated MABS mask. The structural image is used to register to target space, in this case T1w or AXT2 space. Finally, the associated MABS mask is warped to target space.
+
+Other important parameters are reg_method and mask_qc. reg_method takes a value of either rigid or SyN indicating the type of antsRegistration you would like to perform. On the other hand, since MABS mask was already quality checked, mask_qc is set to False. Notice the csvFile field that must be kept empty otherwise MABS masking procedure will be triggered.
+
+
+
 Explaning how ref_img and ref_mask fields came (from antsRegistration)
 
-<img src="T1w_Freesurfer.png" width=500>
+* Set up environment
+
