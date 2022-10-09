@@ -310,6 +310,14 @@ derivatives/
 
 ### Diffusion pipeline
 
+* Set up environment
+
+> source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
+
+Copy `/PHShome/tb571/Downloads/luigi-pnlpipe/workflows/hcp_pnl_topup.lsf`, edit it, and `bsub < /path/to/hcp_pnl_topup.lsf`
+(can we bypass the editing a bit?)
+
+
 Use [luigi-pnlpipe/workflows/hcp_pnl_topup.lsf](luigi-pnlpipe/workflows/hcp_pnl_topup.lsf) script.
 
 <details><summary>derivatives/pnlpipe/sub-1004/ses-1/dwi/</summary>
