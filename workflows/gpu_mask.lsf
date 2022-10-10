@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#BSUB -J gpu-mask[1-1]%4
+#BSUB -q gpu
+#BSUB -m ml001
+#BSUB -R rusage[mem=12000]
+#BSUB -o /data/pnl/soft/pnlpipe3/tmp/gpu-mask-%J-%I.out
+#BSUB -e /data/pnl/soft/pnlpipe3/tmp/gpu-mask-%J-%I.err
+#BSUB -n 4
+
+# for HD-BET
+/data/pnl/soft/pnlpipe3/HD-BET/env.sh
+
+# for CNN diffusion masking
+/data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
+
+export LUIGI_CONFIG_PATH=/path/to/config.cfg
+
+# write your command below
+
+
