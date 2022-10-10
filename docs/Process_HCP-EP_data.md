@@ -589,3 +589,6 @@ To regain the ability to retry quickly, click the green `Mark as done` (circled)
 Luigi searches the local storage for outputs of a task. If they exist, Luigi assumes that task is complete and will not repeat.
 To repeat a task, you need to show Luigi that outputs of that task do not exist. So you need to delete all outputs associated with that task
 before reissuing your command.
+
+
+# Show running graphs of Freesurfer and EddyEpi
