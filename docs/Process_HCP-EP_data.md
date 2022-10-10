@@ -1,4 +1,12 @@
 
+### Access to gpu_hg cluster
+
+New RAs may not have been added to [eristwo.partners.org]()'s `gpu_hg` cluster. To run diffusion pipeline on mulitple cases parallely, you need access to
+`gpu_hg` cluster. You should email `hpcsupport[at]partners[dot]org` and copy `yogesh[at]bwh[dot]harvard[dot]edu` requesting access.
+
+
+### Structural pipeline
+
 ![](hcp_pipeline.png)
 
 
