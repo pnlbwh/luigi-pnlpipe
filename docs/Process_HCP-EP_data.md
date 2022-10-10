@@ -1,0 +1,471 @@
+
+### Access to gpu_hg cluster
+
+New RAs may not have been added to [eristwo.partners.org]()'s `gpu_hg` cluster. To run diffusion pipeline on mulitple cases parallely, you need access to
+`gpu_hg` cluster. You should email `hpcsupport[at]partners[dot]org` and copy `yogesh[at]bwh[dot]harvard[dot]edu` requesting access.
+
+
+### Structural pipeline
+
+![](hcp_pipeline.png)
+
+
+* Organize data according to BIDS
+
+> cd /data/pnl/U01_HCP_Psychosis/data_processing
+
+```python
+BIDS/
+├── derivatives
+└── rawdata
+
+BIDS/
+├── derivatives
+└── rawdata
+    ├── sub-1003
+    └── sub-1004
+    
+BIDS/
+├── derivatives
+└── rawdata
+    ├── sub-1003
+    │   └── ses-1
+    └── sub-1004
+        └── ses-1
+        
+BIDS/
+├── derivatives
+└── rawdata
+    ├── sub-1003
+    │   └── ses-1
+    │       ├── anat
+    │       ├── dwi
+    │       └── func
+    └── sub-1004
+        └── ses-1
+            ├── anat
+            ├── dwi
+            └── func
+
+```
+
+<details><summary>BIDS/</summary>
+
+```python
+BIDS/
+├── derivatives
+└── rawdata
+    ├── sub-1003
+    │   └── ses-1
+    │       ├── anat
+    │       │   ├── sub-1003_ses-1_T1w.nii.gz
+    │       │   └── sub-1003_ses-1_T2w.nii.gz
+    │       ├── dwi
+    │       │   ├── sub-1003_ses-1_acq-AP_dir-98_dwi.bval
+    │       │   ├── sub-1003_ses-1_acq-AP_dir-98_dwi.bvec
+    │       │   ├── sub-1003_ses-1_acq-AP_dir-98_dwi.nii.gz
+    │       │   ├── sub-1003_ses-1_acq-PA_dir-98_dwi.bval
+    │       │   ├── sub-1003_ses-1_acq-PA_dir-98_dwi.bvec
+    │       │   └── sub-1003_ses-1_acq-PA_dir-98_dwi.nii.gz
+    │       └── func
+    │           ├── sub-1003_ses-1_task-rest_acq-AP_run-1_bold.json
+    │           ├── sub-1003_ses-1_task-rest_acq-AP_run-1_bold.nii.gz
+    │           ├── sub-1003_ses-1_task-rest_acq-AP_run-2_bold.json
+    │           ├── sub-1003_ses-1_task-rest_acq-AP_run-2_bold.nii.gz
+    │           ├── sub-1003_ses-1_task-rest_acq-PA_run-1_bold.json
+    │           ├── sub-1003_ses-1_task-rest_acq-PA_run-1_bold.nii.gz
+    │           ├── sub-1003_ses-1_task-rest_acq-PA_run-2_bold.json
+    │           └── sub-1003_ses-1_task-rest_acq-PA_run-2_bold.nii.gz
+    └── sub-1004
+        └── ses-1
+            ├── anat
+            │   ├── sub-1004_ses-1_T1w.nii.gz
+            │   └── sub-1004_ses-1_T2w.nii.gz
+            ├── dwi
+            │   ├── sub-1004_ses-1_acq-AP_dir-98_dwi.bval
+            │   ├── sub-1004_ses-1_acq-AP_dir-98_dwi.bvec
+            │   ├── sub-1004_ses-1_acq-AP_dir-98_dwi.nii.gz
+            │   ├── sub-1004_ses-1_acq-AP_dir-99_dwi.bval
+            │   ├── sub-1004_ses-1_acq-AP_dir-99_dwi.bvec
+            │   ├── sub-1004_ses-1_acq-AP_dir-99_dwi.json
+            │   ├── sub-1004_ses-1_acq-AP_dir-99_dwi.nii.gz
+            │   ├── sub-1004_ses-1_acq-PA_dir-98_dwi.bval
+            │   ├── sub-1004_ses-1_acq-PA_dir-98_dwi.bvec
+            │   ├── sub-1004_ses-1_acq-PA_dir-98_dwi.nii.gz
+            │   ├── sub-1004_ses-1_acq-PA_dir-99_dwi.bval
+            │   ├── sub-1004_ses-1_acq-PA_dir-99_dwi.bvec
+            │   ├── sub-1004_ses-1_acq-PA_dir-99_dwi.json
+            │   └── sub-1004_ses-1_acq-PA_dir-99_dwi.nii.gz
+            └── func
+                ├── sub-1004_ses-1_task-rest_acq-AP_run-1_bold.json
+                ├── sub-1004_ses-1_task-rest_acq-AP_run-1_bold.nii.gz
+                ├── sub-1004_ses-1_task-rest_acq-AP_run-2_bold.json
+                ├── sub-1004_ses-1_task-rest_acq-AP_run-2_bold.nii.gz
+                ├── sub-1004_ses-1_task-rest_acq-PA_run-1_bold.json
+                ├── sub-1004_ses-1_task-rest_acq-PA_run-1_bold.nii.gz
+                ├── sub-1004_ses-1_task-rest_acq-PA_run-2_bold.json
+                └── sub-1004_ses-1_task-rest_acq-PA_run-2_bold.nii.gz
+```
+  
+</details>
+
+
+
+* T2w masking
+
+<img src="T2w_mask.png" width=300>
+
+[HD-BET](https://github.com/MIC-DKFZ/HD-BET) is a deep learning based brain extraction tool.
+It should be run on a GPU device i.e. `grx**` node or `bhosts gpu_hg` cluster.
+
+* Set up environment
+
+```bash
+source /data/pnl/soft/pnlpipe3/HD-BET/env.sh
+export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_mask.cfg
+```
+
+```bash
+/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
+--bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
+-c 1003 -s 1 \
+--t2-template "sub-*/ses-1/anat/*_T2w.nii.gz"
+```
+
+After submitting the job, go to https://pnlservers.bwh.harvard.edu/luigi/ and monitor its status.
+Its username and password are shared privately. You should also monitor logs that are printed in your terminal.
+
+The `-c` flag also accepts a `caselist.txt` argument where each line is a case ID:
+
+```
+1003
+1004
+...
+```
+
+Similarly, the `-s` flag also accepts a `sessions.txt` argument where each line is a session ID:
+
+```
+1
+2
+...
+```
+
+Some of you have access to `bhosts gpu_hg` cluster where HD-BET could be run. We shall teach you
+how to optimize the number of parallel cases you can mask on the cluster at a later date.
+
+
+Output after HD-BET masking completes:
+
+```python
+derivatives/
+└── pnlpipe
+    ├── sub-1003
+    │   └── ses-1
+    │       └── anat
+    └── sub-1004
+        └── ses-1
+            └── anat
+
+```
+
+```python
+derivatives/
+└── pnlpipe
+    ├── sub-1003
+    │   └── ses-1
+    │       └── anat
+    │           ├── sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
+    │           └── sub-1003_ses-1_desc-Xc_T2w.nii.gz
+    └── sub-1004
+        └── ses-1
+            └── anat
+                ├── sub-1004_ses-1_desc-T2wXcMabs_mask.nii.gz
+                └── sub-1004_ses-1_desc-Xc_T2w.nii.gz
+
+```
+
+
+* Quality checking T2w mask
+
+Quality checked mask must be saved with Qc suffix in the desc field for its integration with later part of the structural pipeline. Example:
+
+```
+Automated mask  : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
+Quality checked : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+```
+
+
+```python
+derivatives/
+└── pnlpipe
+    ├── sub-1003
+    │   └── ses-1
+    │       └── anat
+    │           ├── sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
+    |           ├── sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+    │           └── sub-1003_ses-1_desc-Xc_T2w.nii.gz
+    └── sub-1004
+        └── ses-1
+            └── anat
+                ├── sub-1004_ses-1_desc-T2wXcMabs_mask.nii.gz
+                ├── sub-1004_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+                └── sub-1004_ses-1_desc-Xc_T2w.nii.gz
+
+```
+
+
+* Now run Freesurfer
+
+<img src="T1w_Freesurfer.png" width=500>
+
+For HCP-EP data, we have created HD-BET mask for T2w images. Then we have warped them to obtain mask for T1w images.
+Hence there is a line from `QC (Human)` to `StructMask` node in the above diagram.
+This approach minimizes the human effort required to quality check masks for all modalities.
+Nevertheless, you can create HD-BET mask for all modalities and quality check them manually.
+Both T1w and T2w images are necessary for performing FreeSurfer segmentation. For this `Freesurfer` task,
+use the following environment and configuration:
+
+
+```bash
+source /data/pnl/soft/pnlpipe3/bashrc3
+export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/struct_pipe_params.cfg
+```
+
+```bash
+/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
+--bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
+-c 1003 -s 1 \
+--t2-template "sub-*/ses-1/anat/*_T2w.nii.gz" \
+--t1-template "sub-*/ses-1/anat/*_T2w.nii.gz"
+```
+
+A few parameters of the above configuration file demands explanation:
+
+```
+[StructMask]
+reg_method: rigid
+
+[Freesurfer]
+t1_mask_method: registration
+t1_ref_img: *_desc-Xc_T2w.nii.gz
+t1_ref_mask: *_desc-T2wXcMabsQc_mask.nii.gz
+
+t2_mask_method: HD-BET
+```
+
+Notice the difference of values between `t2_mask_method` and `t1_mask_method`. Also notice the values of `ref_img` and `ref_mask` beginning with asterisk (`*`). The asterisk (`*`) is important. These are the patterns with which output directory is searched to obtain T2w image and associated HD-BET mask. The T2w image is used to register to target space, in this case T1w space. Finally, the associated HD-BET mask is warped to target space. Another important parameter is `reg_method`. It takes a value of either `rigid` or `SyN` indicating the type of ANTs registration you would like to perform. `rigid` is quick and sufficient for this setting. `SyN` is time consuming and can be more accurate.
+
+`NOTE` There is a modality mismatch between the parameter name `t1_ref_img` and its value `*_desc-Xc_T2w.nii.gz`. It came from the convention ANTs follows. It means--to create a T1w mask, use the T2w mask as the reference image.
+
+
+After `Freesurfer` task completes, the will look like:
+
+<details><summary>derivatives/</summary>
+
+```python
+derivatives/
+└── pnlpipe
+    ├── sub-1003
+    │   └── ses-1
+    │       └── anat
+    │           ├── fs7.1.0
+    │           │   ├── label
+    │           │   ├── mri
+    │           │   ├── scripts
+    │           │   ├── stats
+    │           │   ├── surf
+    │           │   ├── tmp
+    │           │   ├── touch
+    │           │   ├── trash
+    │           │   └── version.txt
+    │           ├── sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+    │           ├── sub-1003_ses-1_desc-T2wXcMabsQcToT1wXc_mask.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMaN4_T1w.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMaN4_T2w.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMa_T1w.nii.gz
+    │           ├── sub-1003_ses-1_desc-XcMa_T2w.nii.gz
+    │           ├── sub-1003_ses-1_desc-Xc_T1w.nii.gz
+    │           └── sub-1003_ses-1_desc-Xc_T2w.nii.gz
+    └── sub-1004
+        └── ses-1
+            └── anat
+                ├── fs7.1.0
+                │   ├── label
+                │   ├── mri
+                │   ├── scripts
+                │   ├── stats
+                │   ├── surf
+                │   ├── tmp
+                │   ├── touch
+                │   ├── trash
+                │   └── version.txt
+                ├── sub-1004_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+                ├── sub-1004_ses-1_desc-T2wXcMabsQcToT1wXc_mask.nii.gz
+                ├── sub-1004_ses-1_desc-XcMaN4_T1w.nii.gz
+                ├── sub-1004_ses-1_desc-XcMaN4_T2w.nii.gz
+                ├── sub-1004_ses-1_desc-XcMa_T1w.nii.gz
+                ├── sub-1004_ses-1_desc-XcMa_T2w.nii.gz
+                ├── sub-1004_ses-1_desc-Xc_T1w.nii.gz
+                └── sub-1004_ses-1_desc-Xc_T2w.nii.gz
+
+```
+
+</details>
+
+
+
+
+### Diffusion pipeline
+
+Diffusion pipeline is less straightforward to run than structural pipeline because of the `HcpPipe` black box involved.
+The black box uses slightly modified [Washington-University/HCPpipelines](https://github.com/pnlbwh/HCPpipelines).
+To allow preceding and following steps to be run by Luigi pipeline, please use [hcp_pnl_topup.lsf](../workflows/hcp_pnl_topup.lsf) script
+to run the diffusion pipeline:
+
+![](hcp_pnl_topup.png)
+
+Preceding steps are until Gibb's unringing (`GibsUn`) and following step is soft link creation so all outputs are available at the parent directory:
+
+```python
+dwi
+├── hcppipe
+│   ├── Diffusion
+│   │   ├── data
+│   │   ├── eddy
+│   │   ├── reg
+│   │   └── topup
+│   └── T1w
+│       └── Diffusion
+├── sub-*_ses-1_dir-*_desc-dwiXcUnEdEp_mask.nii.gz -> hcppipe/Diffusion/eddy/nodif_brain_mask.nii.gz
+├── sub-*_ses-1_dir-*_desc-XcUnEdEp_dwi.bval -> hcppipe/Diffusion/eddy/Pos_Neg.bvals
+├── sub-*_ses-1_dir-*_desc-XcUnEdEp_dwi.bvec -> hcppipe/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs
+└── sub-*_ses-1_dir-*_desc-XcUnEdEp_dwi.nii.gz -> hcppipe/Diffusion/eddy/eddy_unwarped_images.nii.gz
+```
+
+* Set up environment
+
+> source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
+
+* Copy `/data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/hcp_pnl_topup.lsf` to your preferred directory
+* Edit it for your data
+* **get your edits approved by the PNL engineer in charge**,
+* Run the pipeline as: `bsub < /path/to/hcp_pnl_topup.lsf`
+
+<details><summary>You should need to edit only this segment:</summary>
+
+```bash
+# ==============================================================================
+bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
+
+# write four templates in the following order
+# PA template, PA template
+# AP template, AP template
+raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-98_dwi.nii.gz \
+              sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-98_dwi.nii.gz"
+unr_template="*_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
+              *_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
+
+# a single caseid or a text file with list of cases
+caselist=/path/to/caselist.txt
+
+LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/dwi_pipe_params.cfg
+
+# task is one of {HcpPipe,Ukf,Wma800}
+task=HcpPipe
+
+#BSUB -J hcp-topup[1-N]%4
+#BSUB -q gpu
+#BSUB -m ml001
+#BSUB -R rusage[mem=12000]
+#BSUB -o /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.out
+#BSUB -e /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.err
+#BSUB -n 4
+# ==============================================================================
+
+```
+
+</details>    
+    
+<details><summary>Way to change BSUB -n 4</summary>
+
+Adjust "BSUB -n 4" in a way that each GPU device can run no more than one job.
+You can use the formula "BSUB -n N/G" to ensure that where--
+    N is the maximum number of jobs for that node
+    G is the number of GPUs in that node
+
+Example: node ml001 has 8(=N) job slots and 2(=G) GPUs so "BSUB -n 8/2"
+
+</details>
+
+
+<details><summary>derivatives/pnlpipe/sub-1004/ses-1/dwi/</summary>
+    
+```python
+sub-1004
+└── ses-1
+    ├── anat
+    .
+    .
+    └── dwi
+        ├── hcppipe
+        │   ├── Diffusion
+        │   │   ├── data
+        │   │   ├── eddy
+        │   │   ├── reg
+        │   │   └── topup
+        │   └── T1w
+        │       └── Diffusion
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-98_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-98_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-Xc_dwi.nii.gz
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.bval
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.bvec
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.log.html
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.log.json
+        ├── sub-1004_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz
+        ├── sub-1004_ses-1_dir-398_desc-dwiXcUnEdEp_mask.nii.gz -> hcppipe/Diffusion/eddy/nodif_brain_mask.nii.gz
+        ├── sub-1004_ses-1_dir-398_desc-XcUnEdEp_dwi.bval -> hcppipe/Diffusion/eddy/Pos_Neg.bvals
+        ├── sub-1004_ses-1_dir-398_desc-XcUnEdEp_dwi.bvec -> hcppipe/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs
+        └── sub-1004_ses-1_dir-398_desc-XcUnEdEp_dwi.nii.gz -> hcppipe/Diffusion/eddy/eddy_unwarped_images.nii.gz
+
+```
+    
+</details>
+
+
+### Higher level tasks
+
+![](Fs2Dwi_bottom_up.png)

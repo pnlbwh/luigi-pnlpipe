@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If this software is useful in your research, please cite as below."
+authors:
+- family-names: "Billah"
+  given-names: "Tashrif"
+- family-names: "Bouix"
+  given-names: "Sylvain"
+title: "A Luigi workflow joining individual modules of an MRI processing pipeline"
+version: 0.0
+doi: 10.5281/zenodo.3666802
+date-released: 2020-02-13
+url: "https://github.com/pnlbwh/luigi-pnlpipe"
