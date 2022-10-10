@@ -243,8 +243,10 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/struct
 A few parameters of the above configuration file demands explanation:
 
 ```
-[StructMask]
+[DEFAULT]
 reg_method: rigid
+
+[StructMask]
 
 [Freesurfer]
 t1_mask_method: registration
