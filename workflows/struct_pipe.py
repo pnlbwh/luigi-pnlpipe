@@ -86,7 +86,7 @@ class StructMask(Task):
 
     def run(self):
 
-        if self.csvFile:
+        if self.mask_method.lower() in ['mabs','hd-bet']:
 
             if self.mask_method.lower()=='mabs':
                 cmd = (' ').join(['atlas.py',
@@ -136,7 +136,7 @@ class StructMask(Task):
 
         prefix= self.input().basename
         
-        if self.csvFile:
+        if self.mask_method.lower() in ['mabs','hd-bet']:
             desc= 'T1wXcMabs' if '_T1w' in prefix else 'T2wXcMabs'
         
         elif self.ref_img:
