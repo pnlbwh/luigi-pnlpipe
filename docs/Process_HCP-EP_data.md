@@ -581,7 +581,7 @@ luigi.worker.TaskException: Task finished running, but complete() is still retur
 
 ![](luigi_mark_complete.png)
 
-To regain the ability to retry quickly, click the green `Mark as done` button to clear it from Luigi server.
+To regain the ability to retry quickly, click the green `Mark as done` (circled) button to clear it from Luigi server.
 
 
 * How to force repeat a pipeline
