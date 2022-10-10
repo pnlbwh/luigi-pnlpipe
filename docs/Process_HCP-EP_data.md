@@ -473,7 +473,42 @@ sub-1004
 ![](Fs2Dwi_bottom_up.png)
 
 
+
 ### Troubleshooting
+
+You should read through your terminal logs to pinpoint the error. If you execute tasks through LSF, you should read through
+both `*out` and `*err` logs. Just `*err` file may not be enough. If Luigi tasks fail, you will see this message in your logs:
+
+> This progress looks :( because there were tasks whose scheduling failed
+
+
+* Incorrect template
+
+```bash
+  File "luigi-pnlpipe/workflows/_glob.py", line 23, in _glob
+    raise FileNotFoundError(f'No file found using the template {template}\n'
+FileNotFoundError: No file found using the template /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata/sub-1003/ses-1/*_T2w.nii.gz
+Correct the bids-data-dir and/or template and try again
+...
+...
+===== Luigi Execution Summary =====
+
+Scheduled 1 tasks of which:
+* 1 failed scheduling:
+    - 1 StructMask(...)
+
+Did not run any tasks
+This progress looks :( because there were tasks whose scheduling failed
+```
+
+Copy the reported template and `ls` directly in your terminal:
+
+```bash
+$ ls /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata/sub-1003/ses-1/*_T2w.nii.gz
+ls: cannot access /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata/sub-1003/ses-1/*_T2w.nii.gz: No such file or directory
+```
+
+As you see, the template was indeed wrong. Instead of `sub-1003/ses-1/*_T2w.nii.gz`, it should have been `sub-1003/ses-1/anat/*_T2w.nii.gz`.
 
 * How to restart a failed pipeline
 * How to mark a job as done on the web interface, and restart
