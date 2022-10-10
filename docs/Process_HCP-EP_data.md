@@ -471,3 +471,13 @@ sub-1004
 ### Higher level tasks
 
 ![](Fs2Dwi_bottom_up.png)
+
+
+### Troubleshooting
+
+* How to restart a failed pipeline
+* How to mark a job as done on the web interface, and restart
+* How to force repeat
+* Common errors:
+    * incorrect template
+    * incorrect QC mask
