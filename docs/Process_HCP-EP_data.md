@@ -134,6 +134,22 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_ma
 
 After submitting the job, go to https://pnlservers.bwh.harvard.edu/luigi/ and monitor its status.
 Its username and password are shared privately. You should also monitor logs that are printed in your terminal.
+If things run successfully, you should see this summary:
+
+```
+===== Luigi Execution Summary =====
+
+Scheduled 3 tasks of which:
+* 1 complete ones were encountered:
+    - 1 SelectStructFiles(id=1003, ses=1, bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata, struct_template=sub-*/ses-1/anat/*_T2w.nii.gz)
+* 2 ran successfully:
+    - 1 StructAlign(id=1003, ses=1, bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata, struct_template=sub-*/ses-1/anat/*_T2w.nii.gz, derivatives_dir=derivatives/pnlpipe)
+    - 1 StructMask(...)
+
+This progress looks :) because there were no failed tasks or missing dependencies
+
+===== Luigi Execution Summary =====
+```
 
 The `-c` flag also accepts a `caselist.txt` argument where each line is a case ID:
 
