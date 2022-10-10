@@ -481,6 +481,7 @@ both `*out` and `*err` logs. Just `*err` file may not be enough. If Luigi tasks 
 
 > This progress looks :( because there were tasks whose scheduling failed
 
+We describe some common errors below:
 
 * Incorrect template
 
