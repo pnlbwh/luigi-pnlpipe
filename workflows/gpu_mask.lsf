@@ -9,10 +9,10 @@
 #BSUB -n 4
 
 # for HD-BET
-/data/pnl/soft/pnlpipe3/HD-BET/env.sh
+# /data/pnl/soft/pnlpipe3/HD-BET/env.sh
 
 # for CNN diffusion masking
-/data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
+# /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
 
 export LUIGI_CONFIG_PATH=/path/to/config.cfg
 
