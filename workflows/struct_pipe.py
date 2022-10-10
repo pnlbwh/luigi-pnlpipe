@@ -4,7 +4,7 @@ from luigi import Task, ExternalTask, Parameter, BoolParameter, IntParameter
 from luigi.util import inherits, requires
 from glob import glob
 from os.path import join as pjoin, abspath, isfile, basename, dirname
-from os import getenv
+from os import getenv, remove
 import re
 
 from plumbum import local
@@ -65,11 +65,18 @@ class StructAlign(Task):
 @requires(StructAlign)
 class StructMask(Task):
 
+    # switch between MABS and HD-BET
+    mask_method= Parameter(default= 'MABS')
+
     # for atlas.py
     csvFile= Parameter(default= '')
     debug= BoolParameter(default= False)
     fusion= Parameter(default= '')
     mabs_mask_nproc= IntParameter(default= int(N_PROC))
+
+    # for hd-bet
+    hdbet_mode= Parameter(default= '')
+    hdbet_device= Parameter(default= '')
 
     # for makeAlignedMask.py
     ref_img= Parameter(default= '')
@@ -80,13 +87,28 @@ class StructMask(Task):
     def run(self):
 
         if self.csvFile:
-            cmd = (' ').join(['atlas.py',
-                              '-t', self.input(),
-                              '--train', self.csvFile,
-                              '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
-                              f'-n {self.mabs_mask_nproc}',
-                              '-d' if self.debug else '',
-                              f'--fusion {self.fusion}' if self.fusion else ''])
+
+            if self.mask_method.lower()=='mabs':
+                cmd = (' ').join(['atlas.py',
+                                  '-t', self.input(),
+                                  '--train', self.csvFile,
+                                  '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
+                                  f'-n {self.mabs_mask_nproc}',
+                                  '-d' if self.debug else '',
+                                  f'--fusion {self.fusion}' if self.fusion else ''])
+
+            elif self.mask_method.lower()=='hd-bet':
+                cmd = (' ').join(['hd-bet',
+                                  '-i', self.input(),
+                                  '-o', self.output()['mask'].rsplit('_mask.nii.gz')[0],
+                                  f'-mode {self.hdbet_mode}' if self.hdbet_mode else '',
+                                  f'-device {self.hdbet_device}' if self.hdbet_device else '',
+                                  '&& rm', self.output()['mask'].replace('_mask','')])
+                                  # the trailing part removes hd-bet's masked image
+
+            else:
+                raise ValueError('Supported structural masking methods are MABS and HD-BET only')
+                exit(1)
 
             p = Popen(cmd, shell=True)
             p.wait()
@@ -174,7 +196,7 @@ class N4BiasCorrect(Task):
         
         # ensure existence of quality checked MABS mask
         # aligned mask won't be quality checked
-        if self.csvFile:
+        if self.mask_method.lower() in ['mabs','hd-bet']:
             qc_mask= _mask_name(self.input()['mask'], self.mask_qc)
         else:
             qc_mask= self.input()['mask']
@@ -184,7 +206,7 @@ class N4BiasCorrect(Task):
         
         cmd = (' ').join(['N4BiasFieldCorrection', '-d', '3', '-i', self.output()['masked'], '-o', self.output()['n4corr']])
         check_call(cmd, shell=True)
-       
+        
         write_provenance(self, self.output()['n4corr'])
 
 
@@ -205,11 +227,13 @@ class N4BiasCorrect(Task):
 class Freesurfer(Task):
 
     t1_template= Parameter()
+    t1_mask_method= Parameter(default='')
     t1_csvFile = Parameter(default='')
     t1_ref_img= Parameter(default='')
     t1_ref_mask= Parameter(default='')
 
     t2_template= Parameter(default='')
+    t2_mask_method= Parameter(default='')
     t2_csvFile = Parameter(default='')
     t2_ref_img= Parameter(default='')
     t2_ref_mask= Parameter(default='')
@@ -228,6 +252,7 @@ class Freesurfer(Task):
     def requires(self):
     
         self.struct_template= self.t1_template
+        self.mask_method= self.t1_mask_method
         self.csvFile= self.t1_csvFile
         self.ref_img= self.t1_ref_img
         self.ref_mask= self.t1_ref_mask
@@ -236,6 +261,7 @@ class Freesurfer(Task):
 
         if self.t2_template:
             self.struct_template = self.t2_template
+            self.mask_method= self.t2_mask_method
             self.csvFile = self.t2_csvFile
             self.ref_img = self.t2_ref_img
             self.ref_mask = self.t2_ref_mask

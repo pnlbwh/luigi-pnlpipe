@@ -10,23 +10,6 @@ So always try to use a GPU enabled machine e.g. grx** nodes, eristwo gpu queue.
 END
 
 # ==============================================================================
-bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
-
-# write four templates in the following order
-# PA template, PA template
-# AP template, AP template
-raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-107_dwi.nii.gz \
-              sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-107_dwi.nii.gz"
-unr_template="*_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
-              *_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
-
-# a single caseid or a text file with list of cases
-caselist=/path/to/caselist.txt
-
-LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/dwi_pipe_params.cfg
-
-# task is one of {HcpPipe,Ukf,Wma800}
-task=HcpPipe
 
 #BSUB -J hcp-topup[1-N]%4
 #BSUB -q gpu
@@ -35,7 +18,6 @@ task=HcpPipe
 #BSUB -o /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.out
 #BSUB -e /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.err
 #BSUB -n 4
-# ==============================================================================
 
 : << END
 Adjust "BSUB -n 4" in a way that each GPU device can run no more than one job.
@@ -47,6 +29,27 @@ Example: node ml001 has 8(=N) job slots and 2(=G) GPUs so "BSUB -n 8/2"
 END
 
 
+bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS_example/rawdata
+
+# write four templates in the following order
+# PA template, PA template
+# AP template, AP template
+raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-107_dwi.nii.gz \
+              sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-107_dwi.nii.gz"
+unr_template="*_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
+              *_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
+
+# a single caseid or a text file with list of cases
+caselist=1004
+
+LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/dwi_pipe_params.cfg
+
+# task is one of {HcpPipe,Ukf,Wma800}
+task=HcpPipe
+
+# ==============================================================================
+
+
 HcpOutDir=hcppipe
 
 export HCPPIPEDIR=/data/pnl/soft/pnlpipe3/HCPpipelines
@@ -54,7 +57,7 @@ export HCPPIPEDIR_Config=/data/pnl/soft/pnlpipe3/HCPpipelines/global/config
 export HCPPIPEDIR_Global=/data/pnl/soft/pnlpipe3/HCPpipelines/global/scripts
 
 export LUIGI_CONFIG_PATH
-source /data/pnl/soft/pnlpipe3/bashrc3
+source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
 
 
 if [ -f ${caselist} ]
