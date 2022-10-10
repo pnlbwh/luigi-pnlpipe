@@ -571,6 +571,17 @@ To run through LSF, just `bsub` the same script as before.
 
 * How to mark a job as done on the web interface, and restart
 
+Luigi server retains a failed task for 10 minutes. If retried earlier, you should see an error message akin to:
+
+```bash
+  File "/data/pnl/soft/pnlpipe3/miniconda3/envs/hd-bet/lib/python3.6/site-packages/luigi/worker.py", line 204, in run
+    raise TaskException("Task finished running, but complete() is still returning false.")
+luigi.worker.TaskException: Task finished running, but complete() is still returning false.
+```
+
+![](luigi_mark_complete.png)
+
+To regain the ability to retry quickly, click the green `Mark as done` button to clear it from Luigi server.
 
 
 * How to force repeat a pipeline
