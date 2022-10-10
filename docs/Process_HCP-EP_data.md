@@ -361,8 +361,8 @@ bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
 # write four templates in the following order
 # PA template, PA template
 # AP template, AP template
-raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-107_dwi.nii.gz \
-              sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-107_dwi.nii.gz"
+raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-98_dwi.nii.gz \
+              sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-98_dwi.nii.gz"
 unr_template="*_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
               *_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
 
