@@ -527,9 +527,52 @@ ls: cannot access /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/
 
 As you see, the template was indeed wrong. Instead of `sub-1003/ses-1/*_T2w.nii.gz`, it should have been `sub-1003/ses-1/anat/*_T2w.nii.gz`.
 
-* How to restart a failed pipeline
+
+
+* Incorrect mask name
+
+```
+Quality checked mask not found
+Check the quality of created mask /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/derivatives/pnlpipe/sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
+Once you are done, save the (edited) mask as /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/derivatives/pnlpipe/sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+```
+
+If you see the above error, you either have not quality checked the mask or saved it with the appropirate name. You can confrm the error just by listing the file in your terminal:
+
+```bash
+$ ls /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/derivatives/pnlpipe/sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+ls: cannot access /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/derivatives/pnlpipe/sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz: No such file or directory
+
+```
+
+Quality checked mask must be saved with `Qc` suffix in the `desc` field for its integration with later part of the structural pipeline. Example:
+
+```
+Automated mask  : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
+Quality checked : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+```
+
+Pay special attention to the string `MabsQc_mask.nii.gz`
+
+
+* How to resume a failed pipeline
+
+A few things might falter your pipeline:
+
+- Luigi server outage: it lives outside ERIS cluster and PNL workstations
+- A typo in your configuration file or template
+- Incorrectly named quality checked mask
+
+Luigi server connection may restore a few minutes after. Meanwhile, you should correct other errors if any.
+Finally, just execute the same command as before. Luigi will resume the pipeline from where it stopped.
+To run through LSF, just `bsub` the same script as before.
+
 * How to mark a job as done on the web interface, and restart
-* How to force repeat
-* Common errors:
-    * incorrect template
-    * incorrect QC mask
+
+
+
+* How to force repeat a pipeline
+
+Luigi searches the local storage for outputs of a task. If they exist, Luigi assumes that task is complete and will not repeat.
+To repeat a task, you need to show Luigi that outputs of that task do not exist. So you need to delete all outputs associated with that task
+before reissuing your command.
