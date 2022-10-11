@@ -630,9 +630,9 @@ To repeat a task, you need to show Luigi that outputs of that task do not exist.
 before reissuing your command.
 
 
-### References
+### More resources
 
-Background of Luigi: [README.md](README.md)
-Advanced documentation: [TUTORIAL.md](TUTORIAL.md)
+* Background of Luigi: [README.md](README.md)
+* Advanced documentation: [TUTORIAL.md](TUTORIAL.md)
 
 
