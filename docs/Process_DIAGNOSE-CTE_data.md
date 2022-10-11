@@ -31,11 +31,6 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/struct
 -c 1004 -s 01
 ```
 
-
-
-/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata --dwi-template "sub-*/ses-01/dwi/*_dwi.nii.gz" --t2-template "sub-*/ses-01/anat/*_AXT2.nii.gz" -c 1004 -s 01 --task StructMask
-```
-
 ### Diffusion pipeline
 
 ![](cte_diffusion_pipeline.png)
