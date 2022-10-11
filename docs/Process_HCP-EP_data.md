@@ -15,7 +15,7 @@
 ### Why do we need Luigi?
 
 * It has streamlined tasks execution
-* It generates logs that can be used in future to reproduce results
+* It generates [logs](https://github.com/pnlbwh/luigi-pnlpipe/blob/hcp/docs/README.md#pnl-luigi-server) that can be used in future to reproduce results
 * It provides a nice dashboard for monitoring tasks' progress
 * It yields organized output
 * Above all, it allows everyone to use one central workflow
