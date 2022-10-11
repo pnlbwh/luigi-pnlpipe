@@ -61,6 +61,7 @@ To run the DWI masking program through `bhosts gpu_hg` cluster, you may use [run
 
 ```
 source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
+export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/cnn_dwi_mask_params.cfg
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata \
 --dwi-template "sub-*/ses-01/dwi/*_dwi.nii.gz" \
@@ -82,6 +83,7 @@ Finally, run EDDY correction followed by EPI correction:
 
 ```
 source /data/pnl/soft/pnlpipe3/bashrc3
+export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/dwi_pipe_params.cfg
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task EddyEpi \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata \
 --dwi-template "sub-*/ses-01/dwi/*_dwi.nii.gz" \
