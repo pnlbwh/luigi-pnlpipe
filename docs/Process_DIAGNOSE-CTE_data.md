@@ -1,3 +1,11 @@
+### Recap
+
+Execution of all Luigi tasks require three things:
+
+1. Source the proper environment e.g. bashrc3, HD-BET, CNN-Diffusion-MRIBrain-Segmentation.
+2. Define the proper configuration `export LUIGI_CONFIG_PATH=/path/to/config.cfg`
+3. Formulate the `/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask` command
+
 
 ![](cte_pipeline.png)
 
