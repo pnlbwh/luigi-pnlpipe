@@ -21,7 +21,7 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_ma
 
 # for CNN diffusion masking
 # source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
-# export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/dwi_mask_params.cfg
+# export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/cnn_dwi_mask_params.cfg
 # /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask \
 # --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata \
 # --dwi-template "sub-*/ses-01/dwi/*_dwi.nii.gz" \
