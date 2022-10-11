@@ -279,11 +279,11 @@ use the following environment and configuration:
 ```bash
 source /data/pnl/soft/pnlpipe3/bashrc3
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/struct_pipe_params.cfg
-/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
+/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task Freesurfer \
 --bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
 -c 1003 -s 1 \
 --t2-template "sub-*/ses-1/anat/*_T2w.nii.gz" \
---t1-template "sub-*/ses-1/anat/*_T2w.nii.gz"
+--t1-template "sub-*/ses-1/anat/*_T1w.nii.gz"
 ```
 
 The above commands are assemblednoted in [run_luigi_pnlpipe.lsf](../workflows/run_luigi_pnlpipe.lsf) for your convenience.
