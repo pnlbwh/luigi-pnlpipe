@@ -154,14 +154,9 @@ BIDS/
 [HD-BET](https://github.com/MIC-DKFZ/HD-BET) is a deep learning based brain extraction tool.
 It should be run on a GPU device i.e. `grx**` node or `bhosts gpu_hg` cluster.
 
-* Set up environment
-
 ```bash
 source /data/pnl/soft/pnlpipe3/HD-BET/env.sh
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_mask.cfg
-```
-
-```bash
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
 --bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
 -c 1003 -s 1 \
@@ -282,9 +277,6 @@ use the following environment and configuration:
 ```bash
 source /data/pnl/soft/pnlpipe3/bashrc3
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/struct_pipe_params.cfg
-```
-
-```bash
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
 --bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
 -c 1003 -s 1 \
