@@ -262,7 +262,7 @@ derivatives/
 ```
 
 
-* Now run Freesurfer
+* FreeSurfer segmentation
 
 <img src="T1w_Freesurfer.png" width=500>
 
@@ -388,10 +388,6 @@ dwi
 ├── sub-*_ses-1_dir-*_desc-XcUnEdEp_dwi.bvec -> hcppipe/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs
 └── sub-*_ses-1_dir-*_desc-XcUnEdEp_dwi.nii.gz -> hcppipe/Diffusion/eddy/eddy_unwarped_images.nii.gz
 ```
-
-* Set up environment
-
-> source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
 
 * Copy `/data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/hcp_pnl_topup.lsf` to your preferred directory
 * Edit it for your data
