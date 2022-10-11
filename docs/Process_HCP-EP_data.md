@@ -163,6 +163,8 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_ma
 --t2-template "sub-*/ses-1/anat/*_T2w.nii.gz"
 ```
 
+The above commands are noted in [run_gpu_mask.lsf](../workflows/run_gpu_mask.lsf) for your convenience.
+
 After submitting the job, go to https://pnlservers.bwh.harvard.edu/luigi/ and monitor its status.
 Its username and password are shared privately. You should also monitor logs that are printed in your terminal.
 If things run successfully, you should see this summary:
