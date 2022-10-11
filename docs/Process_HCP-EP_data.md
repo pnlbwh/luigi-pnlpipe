@@ -4,12 +4,12 @@
 
 ### Table of Contents
 
-    * [Why do we need Luigi?](#why-do-we-need-luigi)
-    * [Prologue](#prologue)
-    * [Structural pipeline](#structural-pipeline)
-    * [Diffusion pipeline](#diffusion-pipeline)
-    * [Higher level tasks](#higher-level-tasks)
-    * [Troubleshooting](#troubleshooting
+ * [Why do we need Luigi?](#why-do-we-need-luigi)
+ * [Prologue](#prologue)
+ * [Structural pipeline](#structural-pipeline)
+ * [Diffusion pipeline](#diffusion-pipeline)
+ * [Higher level tasks](#higher-level-tasks)
+ * [Troubleshooting](#troubleshooting)
 
 
 ### Why do we need Luigi?
@@ -527,10 +527,10 @@ sub-1004
 
 ### Troubleshooting
 
-    * [Incorrect template](#incorrect-template)
-    * [Incorrect mask name](#incorrect-mask-name)
-    * [How to resume a failed pipeline](#how-to-resume-a-failed-pipeline)
-    * [How to force repeat a pipeline](#how-to-force-repeat-a-pipeline)
+* [Incorrect template](#incorrect-template)
+* [Incorrect mask name](#incorrect-mask-name)
+* [How to resume a failed pipeline](#how-to-resume-a-failed-pipeline)
+* [How to force repeat a pipeline](#how-to-force-repeat-a-pipeline)
 
 
 You should read through your terminal logs to pinpoint the error. If you execute tasks through LSF, you should read through
@@ -628,4 +628,11 @@ To regain the ability to retry quickly, click the green `Mark as done` (circled)
 Luigi searches the local storage for outputs of a task. If they exist, Luigi assumes that task is complete and will not repeat.
 To repeat a task, you need to show Luigi that outputs of that task do not exist. So you need to delete all outputs associated with that task
 before reissuing your command.
+
+
+### References
+
+Background of Luigi: [README.md](README.md)
+Advanced documentation: [TUTORIAL.md](TUTORIAL.md)
+
 
