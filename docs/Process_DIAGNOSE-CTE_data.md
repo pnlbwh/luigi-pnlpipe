@@ -1,3 +1,5 @@
+You must read [Process_HCP-EP_data.md](Process_HCP-EP_data.md) before starting off with this tutorial.
+
 ### Recap
 
 Execution of all Luigi tasks require three things:
