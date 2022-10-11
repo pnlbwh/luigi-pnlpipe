@@ -32,10 +32,7 @@ Execution of all Luigi tasks require three things:
 3. Formulate the `/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask` command
 
 
-
-### Structural pipeline
-
-* Organize data according to BIDS
+#### Organize data according to [BIDS](https://bids.neuroimaging.io/)
 
 > cd /data/pnl/U01_HCP_Psychosis/data_processing
 
@@ -135,6 +132,8 @@ BIDS/
 </details>
 
 
+
+### Structural pipeline
 
 * T2w masking
 
@@ -514,7 +513,6 @@ sub-1004
 ![](Fs2Dwi_bottom_up.png)
 
 
-
 ### Troubleshooting
 
 You should read through your terminal logs to pinpoint the error. If you execute tasks through LSF, you should read through
@@ -524,7 +522,7 @@ both `*out` and `*err` logs. Just `*err` file may not be enough. If Luigi tasks 
 
 We describe some common errors below:
 
-* Incorrect template
+#### Incorrect template
 
 ```bash
   File "luigi-pnlpipe/workflows/_glob.py", line 23, in _glob
@@ -554,7 +552,7 @@ As you see, the template was indeed wrong. Instead of `sub-1003/ses-1/*_T2w.nii.
 
 
 
-* Incorrect mask name
+#### Incorrect mask name
 
 ```
 Quality checked mask not found
@@ -580,7 +578,7 @@ Quality checked : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.g
 Pay special attention to the string `MabsQc_mask.nii.gz`
 
 
-* How to resume a failed pipeline
+#### How to resume a failed pipeline
 
 A few things might falter your pipeline:
 
@@ -607,11 +605,9 @@ luigi.worker.TaskException: Task finished running, but complete() is still retur
 To regain the ability to retry quickly, click the green `Mark as done` (circled) button to clear it from Luigi server.
 
 
-* How to force repeat a pipeline
+#### How to force repeat a pipeline
 
 Luigi searches the local storage for outputs of a task. If they exist, Luigi assumes that task is complete and will not repeat.
 To repeat a task, you need to show Luigi that outputs of that task do not exist. So you need to delete all outputs associated with that task
 before reissuing your command.
 
-
-# Show running graphs of Freesurfer and EddyEpi
