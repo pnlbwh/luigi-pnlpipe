@@ -286,6 +286,7 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/struct
 --t1-template "sub-*/ses-1/anat/*_T2w.nii.gz"
 ```
 
+The above commands are assemblednoted in [run_luigi_pnlpipe.lsf](../workflows/run_luigi_pnlpipe.lsf) for your convenience.
 A few parameters of the above configuration file demands explanation:
 
 ```
