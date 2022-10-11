@@ -59,7 +59,7 @@ DWI mask is created using our own [CNN-Diffusion-MRIBrain-Segmentation](https://
 It is a deep learning based brain extraction tool. It should be run on a GPU device i.e. `grx**` node or `bhosts gpu_hg` cluster.
 To run the DWI masking program through `bhosts gpu_hg` cluster, you may use [run_gpu_mask.lsf](../workflows/run_gpu_mask.lsf) as an example.
 
-```
+```bash
 source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/cnn_dwi_mask_params.cfg
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
@@ -81,7 +81,7 @@ Pay special attention to the string `CNNQc_mask.nii.gz`
 
 Finally, run EDDY correction followed by EPI correction:
 
-```
+```bash
 source /data/pnl/soft/pnlpipe3/bashrc3
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/dwi_pipe_params.cfg
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task EddyEpi \
