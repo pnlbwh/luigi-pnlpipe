@@ -2,6 +2,16 @@
 
 ---
 
+### Table of Contents
+
+    * [Why do we need Luigi?](#why-do-we-need-luigi)
+    * [Prologue](#prologue)
+    * [Structural pipeline](#structural-pipeline)
+    * [Diffusion pipeline](#diffusion-pipeline)
+    * [Higher level tasks](#higher-level-tasks)
+    * [Troubleshooting](#troubleshooting
+
+
 ### Why do we need Luigi?
 
 * It has streamlined tasks execution
@@ -32,7 +42,9 @@ Execution of all Luigi tasks require three things:
 3. Formulate the `/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask` command
 
 
-#### Organize data according to [BIDS](https://bids.neuroimaging.io/)
+#### Organize data according to BIDS
+
+[BIDS](https://bids.neuroimaging.io/)
 
 > cd /data/pnl/U01_HCP_Psychosis/data_processing
 
@@ -514,6 +526,12 @@ sub-1004
 
 
 ### Troubleshooting
+
+    * [Incorrect template](#incorrect-template)
+    * [Incorrect mask name](#incorrect-mask-name)
+    * [How to resume a failed pipeline](#how-to-resume-a-failed-pipeline)
+    * [How to force repeat a pipeline](#how-to-force-repeat-a-pipeline)
+
 
 You should read through your terminal logs to pinpoint the error. If you execute tasks through LSF, you should read through
 both `*out` and `*err` logs. Just `*err` file may not be enough. If Luigi tasks fail, you will see this message in your logs:
