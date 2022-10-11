@@ -369,7 +369,7 @@ dwi
 
 * Copy `/data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/hcp_pnl_topup.lsf` to your preferred directory
 * Edit it for your data
-* **get your edits approved by the PNL engineer in charge**,
+* **get your edits approved by the PNL engineer in charge**
 * Run the pipeline as: `bsub < /path/to/hcp_pnl_topup.lsf`
 
 <details><summary>You should need to edit only this segment:</summary>
