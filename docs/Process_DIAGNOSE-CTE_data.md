@@ -38,12 +38,51 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/struct
 
 ### Diffusion pipeline
 
-StructMask needs to be completed first
+![](cte_diffusion_pipeline.png)
 
-Then complete CNN dwi mask
+It is run in three steps--T2w mask creation, DWI mask creation, and FSL eddy correction:
 
-Finally run FslEddy
+![](cte_diffusion_pipeline_stepped.png)
 
-bashrc3
-~/Downloads/luigi-pnlpipe/exec/ExecuteTask --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata --dwi-template "sub-*/ses-01/dwi/*_dwi.nii.gz" --t2-template "sub-*/ses-01/anat/*_AXT2.nii.gz" -c 1004 -s 01 --task EddyEpi
+* Step-1
+
+The T2w mask is created as part of structual pipeline. This mask is warped to the space of an axial-T2 image.
+Hence, there is a line in the above flowchart going from `StructMask` (T2w) node on the left to `StructMask` (AXT2) node on the right.
+The axial-T2 image is used for EPI correction.
+
+* Step-2
+
+DWI mask is created using our own [CNN-Diffusion-MRIBrain-Segmentation](https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation) tool.
+It is a deep learning based brain extraction tool. It should be run on a GPU device i.e. `grx**` node or `bhosts gpu_hg` cluster.
+To run the DWI masking program through `bhosts gpu_hg` cluster, you may use [run_gpu_mask.lsf](../workflows/run_gpu_mask.lsf) as an example.
+
+```
+source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
+/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata \
+--dwi-template "sub-*/ses-01/dwi/*_dwi.nii.gz" \
+-c 1004 -s 01 
+```
+
+After checking quality of the automated mask, it must be saved with `Qc` suffix in the `desc` field for its integration with later part of the diffusion pipeline. Example:
+
+```
+Automated mask  : sub-1004/ses-01/dwi/sub-1004_ses-1_desc-dwiXcUnCNN_mask.nii.gz
+Quality checked : sub-1004/ses-01/dwi/sub-1004_ses-1_desc-dwiXcUnCNNQc_mask.nii.gz
+```
+
+Pay special attention to the string `CNNQc_mask.nii.gz`
+
+* Step-3
+
+Finally, run EDDY correction followed by EPI correction:
+
+```
+source /data/pnl/soft/pnlpipe3/bashrc3
+/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task EddyEpi \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata \
+--dwi-template "sub-*/ses-01/dwi/*_dwi.nii.gz" \
+--t2-template "sub-*/ses-01/anat/*_AXT2.nii.gz" \
+-c 1004 -s 01 
+```
 
