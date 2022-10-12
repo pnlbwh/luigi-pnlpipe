@@ -436,8 +436,9 @@ task=HcpPipe
 
 Adjust `BSUB -n 4` in a way that each GPU device can run no more than one job.
 You can use the formula "BSUB -n N/G" to ensure that where--
-    * N is the maximum number of jobs for that node
-    * G is the number of GPUs in that node
+    
+* N is the maximum number of jobs for that node
+* G is the number of GPUs in that node
 
 Example: node ml001 has 8(=N) job slots and 2(=G) GPUs so "BSUB -n 8/2"
 
