@@ -4,14 +4,14 @@ Running this script w/o GPU support would take a long time (>24 hours).
 So always try to use a GPU enabled machine e.g. grx** nodes, eristwo gpu queue.
 => Copy this script to your project directory and update the marked variables.
 => Execute within shell as ./hcp_pnl_topup.lsf
-=> To execute through LSF, adjust "BSUB -n 4" in a way that no more than
+=> To execute through LSF, adjust "BSUB -n 2" in a way that no more than
    "number of GPU" number of jobs run in a node. This means each GPU device must
    run only one job. Otherwise your jobs might crash due to out of memory error.
 END
 
 # ==============================================================================
 
-#BSUB -J hcp-topup[1-N]%4
+#BSUB -J hcp-topup[1-N]%2
 #BSUB -q gpu
 #BSUB -m ml001
 #BSUB -R rusage[mem=12000]
