@@ -419,13 +419,15 @@ LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/dwi_pipe_para
 # task is one of {HcpPipe,Ukf,Wma800}
 task=HcpPipe
 
-#BSUB -J hcp-topup[1-N]%4
+#BSUB -J hcp-topup[1-N]%2
 #BSUB -q gpu
 #BSUB -m ml001
 #BSUB -R rusage[mem=12000]
 #BSUB -o /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.out
 #BSUB -e /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.err
 #BSUB -n 4
+    
+export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
 # ==============================================================================
 
 ```
@@ -441,6 +443,8 @@ You can use the formula "BSUB -n N/G" to ensure that where--
 * G is the number of GPUs in that node
 
 Example: node ml001 has 8(=N) job slots and 2(=G) GPUs so "BSUB -n 8/2"
+    
+On the other hand, the formula for `CUDA_VISIBLE_DEVICES` is `${LSB_JOBINDEX}%G`
 
 </details>
 
