@@ -21,8 +21,8 @@ COMMENT
 export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
 
 : << COMMENT
-The formula for CUDA_VISIBLE_DEVICES is ${LSB_JOBINDEX}%G
-Which also means the maximum number of parallel cases you can process is G
+The formula for CUDA_VISIBLE_DEVICES is ${LSB_JOBINDEX}%G,
+which also means the maximum number of parallel cases you can process is G
 
 Adjust "BSUB -n 4" in a way that each GPU device can run no more than one job.
 You can use the formula "BSUB -n N/G" to ensure that where--
