@@ -26,8 +26,12 @@ You can use the formula "BSUB -n N/G" to ensure that where--
     G is the number of GPUs in that node
 
 Example: node ml001 has 8(=N) job slots and 2(=G) GPUs so "BSUB -n 8/2"
+
+On the other hand, the formula for CUDA_VISIBLE_DEVICES is ${LSB_JOBINDEX}%G
+
 END
 
+export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
 
 bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS_example/rawdata
 
@@ -68,8 +72,6 @@ else
     # shell script, one subject
     i=${caselist}
 fi
-
-export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
 
 
 # luigi-pnlpipe upto GibbsUn so data can be organized according to BIDS
