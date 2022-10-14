@@ -434,17 +434,18 @@ export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
 
 </details>    
     
-<details><summary>Way to change BSUB -n 4</summary>
+<details><summary>Way to change [1-N]%2 and BSUB -n 4</summary>
 
+The formula for `CUDA_VISIBLE_DEVICES` is `${LSB_JOBINDEX}%G`,
+which also means the maximum number of parallel cases you can process is G
+    
 Adjust `BSUB -n 4` in a way that each GPU device can run no more than one job.
 You can use the formula "BSUB -n N/G" to ensure that where--
     
 * N is the maximum number of jobs for that node
 * G is the number of GPUs in that node
 
-Example: node ml001 has 8(=N) job slots and 2(=G) GPUs so "BSUB -n 8/2"
-    
-On the other hand, the formula for `CUDA_VISIBLE_DEVICES` is `${LSB_JOBINDEX}%G`
+Example: node ml001 has 8(=N) job slots and 2(=G) GPUs so "BSUB -n 8/2" and "BSUB -J hcp-topup[1-N]%2"
 
 </details>
 
