@@ -4,8 +4,8 @@
 #BSUB -q gpu
 #BSUB -m ml001
 #BSUB -R rusage[mem=12000]
-#BSUB -o /data/pnl/soft/pnlpipe3/tmp/gpu-mask-%J-%I.out
-#BSUB -e /data/pnl/soft/pnlpipe3/tmp/gpu-mask-%J-%I.err
+#BSUB -o /data/pnl/projects/tmp/gpu-mask-%J-%I.out
+#BSUB -e /data/pnl/projects/tmp/gpu-mask-%J-%I.err
 #BSUB -n 4
 
 # for HD-BET
