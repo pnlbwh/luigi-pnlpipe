@@ -8,6 +8,18 @@
 #BSUB -e /data/pnl/projects/tmp/gpu-mask-%J-%I.err
 #BSUB -n 4
 
+# a single caseid or a text file with list of cases
+caselist=1004
+
+if [ -f ${caselist} ]
+then
+    # LSF script, list of subjects
+    i=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
+else
+    # shell script, one subject
+    i=${caselist}
+fi
+
 # for HD-BET
 source /data/pnl/soft/pnlpipe3/HD-BET/env.sh
 
@@ -15,7 +27,7 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_ma
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask \
 --bids-data-dir /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata \
 --t2-template "sub-*/ses-1/anat/*_T2w.nii.gz" \
--c 1003 -s 1 \
+-c $i -s 1 \
 --task StructMask
 
 
@@ -25,6 +37,6 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_ma
 # /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask \
 # --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata \
 # --dwi-template "sub-*/ses-01/dwi/*_dwi.nii.gz" \
-# -c 1003 \
+# -c $i -s 01\
 # --task CnnMask
 
