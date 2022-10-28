@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#BSUB -J gpu-mask[1-1]%4
+#BSUB -J gpu-mask[1-N]%2
 #BSUB -q gpu
 #BSUB -m ml001
 #BSUB -R rusage[mem=12000]
@@ -8,8 +8,17 @@
 #BSUB -e /data/pnl/projects/tmp/gpu-mask-%J-%I.err
 #BSUB -n 4
 
+export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
+# the above %2 indicates how many cases you process parallelly
+# it is limited by the number of GPUs in a node
+# ml001 has 2 GPUs, ml004 and ml005 have 4 GPUs
+
 # a single caseid or a text file with list of cases
-caselist=1004
+# use a single caseid when running the below commands directly in a terminal
+# use a caselist when "bsub < run_gpu_mask.lsf"
+# caselist=1234
+# caselist=/path/to/my/caselist.txt
+
 
 if [ -f ${caselist} ]
 then
@@ -19,6 +28,8 @@ else
     # shell script, one subject
     i=${caselist}
 fi
+
+
 
 # for HD-BET
 source /data/pnl/soft/pnlpipe3/HD-BET/env.sh
