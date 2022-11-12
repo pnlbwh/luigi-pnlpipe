@@ -48,6 +48,6 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_ma
 # /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask \
 # --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata \
 # --dwi-template "sub-*/ses-01/dwi/*_dwi.nii.gz" \
-# -c $i -s 01\
+# -c $i -s 01 \
 # --task CnnMask
 
