@@ -24,7 +24,14 @@ sessions=/path/to/sessions.txt
 
 
 # run command
-id=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
+if [ -f ${caselist} ]
+then
+    # LSF script, list of subjects
+    id=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
+else
+    # shell script, one subject
+    id=${caselist}
+fi
 
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task Freesurfer \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata \
