@@ -280,7 +280,7 @@ use the following environment and configuration:
 source /data/pnl/soft/pnlpipe3/bashrc3
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/struct_pipe_params.cfg
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task Freesurfer \
---bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
+--bids-data-dir /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata \
 -c 1003 -s 1 \
 --t2-template "sub-*/ses-1/anat/*_T2w.nii.gz" \
 --t1-template "sub-*/ses-1/anat/*_T1w.nii.gz"
