@@ -160,7 +160,7 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_ma
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task StructMask \
 --bids-data-dir /data/pnl/soft/pnlpipe3/luigi-pnlpipe/BIDS/rawdata \
 -c 1003 -s 1 \
---t2-template "sub-*/ses-1/anat/*_T2w.nii.gz"
+--t2-template "sub-*/ses-*/anat/*_T2w.nii.gz"
 ```
 
 The above commands are noted in [run_gpu_mask.lsf](../workflows/run_gpu_mask.lsf) for your convenience.
@@ -174,9 +174,9 @@ If things run successfully, you should see this summary:
 
 Scheduled 3 tasks of which:
 * 1 complete ones were encountered:
-    - 1 SelectStructFiles(id=1003, ses=1, bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata, struct_template=sub-*/ses-1/anat/*_T2w.nii.gz)
+    - 1 SelectStructFiles(id=1003, ses=1, bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata, struct_template=sub-*/ses-*/anat/*_T2w.nii.gz)
 * 2 ran successfully:
-    - 1 StructAlign(id=1003, ses=1, bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata, struct_template=sub-*/ses-1/anat/*_T2w.nii.gz, derivatives_dir=derivatives/pnlpipe)
+    - 1 StructAlign(id=1003, ses=1, bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata, struct_template=sub-*/ses-*/anat/*_T2w.nii.gz, derivatives_dir=derivatives/pnlpipe)
     - 1 StructMask(...)
 
 This progress looks :) because there were no failed tasks or missing dependencies
@@ -282,8 +282,8 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/struct
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task Freesurfer \
 --bids-data-dir /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata \
 -c 1003 -s 1 \
---t2-template "sub-*/ses-1/anat/*_T2w.nii.gz" \
---t1-template "sub-*/ses-1/anat/*_T1w.nii.gz"
+--t2-template "sub-*/ses-*/anat/*_T2w.nii.gz" \
+--t1-template "sub-*/ses-*/anat/*_T1w.nii.gz"
 ```
 
 The above commands are assemblednoted in [run_luigi_pnlpipe.lsf](../workflows/run_luigi_pnlpipe.lsf) for your convenience.
@@ -386,10 +386,10 @@ dwi
 │   │   └── topup
 │   └── T1w
 │       └── Diffusion
-├── sub-*_ses-1_dir-*_desc-dwiXcUnEdEp_mask.nii.gz -> hcppipe/Diffusion/eddy/nodif_brain_mask.nii.gz
-├── sub-*_ses-1_dir-*_desc-XcUnEdEp_dwi.bval -> hcppipe/Diffusion/eddy/Pos_Neg.bvals
-├── sub-*_ses-1_dir-*_desc-XcUnEdEp_dwi.bvec -> hcppipe/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs
-└── sub-*_ses-1_dir-*_desc-XcUnEdEp_dwi.nii.gz -> hcppipe/Diffusion/eddy/eddy_unwarped_images.nii.gz
+├── sub-*_ses-*_dir-*_desc-dwiXcUnEdEp_mask.nii.gz -> hcppipe/Diffusion/eddy/nodif_brain_mask.nii.gz
+├── sub-*_ses-*_dir-*_desc-XcUnEdEp_dwi.bval -> hcppipe/Diffusion/eddy/Pos_Neg.bvals
+├── sub-*_ses-*_dir-*_desc-XcUnEdEp_dwi.bvec -> hcppipe/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs
+└── sub-*_ses-*_dir-*_desc-XcUnEdEp_dwi.nii.gz -> hcppipe/Diffusion/eddy/eddy_unwarped_images.nii.gz
 ```
 
 * Copy `/data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/hcp_pnl_topup.lsf` to your preferred directory
@@ -406,10 +406,10 @@ bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
 # write four templates in the following order
 # PA template, PA template
 # AP template, AP template
-raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-98_dwi.nii.gz \
-              sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-98_dwi.nii.gz"
-unr_template="*_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
-              *_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
+raw_template="sub-*/ses-*/dwi/*_ses-*_acq-PA_dir-99_dwi.nii.gz sub-*/ses-*/dwi/*_ses-*_acq-PA_dir-98_dwi.nii.gz \
+              sub-*/ses-*/dwi/*_ses-*_acq-AP_dir-99_dwi.nii.gz sub-*/ses-*/dwi/*_ses-*_acq-AP_dir-98_dwi.nii.gz"
+unr_template="*_ses-*_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_ses-*_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
+              *_ses-*_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_ses-*_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
 
 # a single caseid or a text file with list of cases
 caselist=/path/to/caselist.txt
@@ -544,7 +544,7 @@ We describe some common errors below:
 ```bash
   File "luigi-pnlpipe/workflows/_glob.py", line 23, in _glob
     raise FileNotFoundError(f'No file found using the template {template}\n'
-FileNotFoundError: No file found using the template /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata/sub-1003/ses-1/*_T2w.nii.gz
+FileNotFoundError: No file found using the template /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata/sub-1003/ses-*/*_T2w.nii.gz
 Correct the bids-data-dir and/or template and try again
 ...
 ...
@@ -561,11 +561,11 @@ This progress looks :( because there were tasks whose scheduling failed
 Copy the reported template and `ls` directly in your terminal:
 
 ```bash
-$ ls /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata/sub-1003/ses-1/*_T2w.nii.gz
-ls: cannot access /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata/sub-1003/ses-1/*_T2w.nii.gz: No such file or directory
+$ ls /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata/sub-1003/ses-*/*_T2w.nii.gz
+ls: cannot access /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/BIDS_example/rawdata/sub-1003/ses-*/*_T2w.nii.gz: No such file or directory
 ```
 
-As you see, the template was indeed wrong. Instead of `sub-1003/ses-1/*_T2w.nii.gz`, it should have been `sub-1003/ses-1/anat/*_T2w.nii.gz`.
+As you see, the template was indeed wrong. Instead of `sub-1003/ses-*/*_T2w.nii.gz`, it should have been `sub-1003/ses-*/anat/*_T2w.nii.gz`.
 
 
 
