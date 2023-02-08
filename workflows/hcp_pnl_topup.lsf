@@ -71,10 +71,10 @@ source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
 if [ -f ${caselist} ]
 then
     # LSF script, list of subjects
-    i=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
+    id=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
 else
     # shell script, one subject
-    i=${caselist}
+    id=${caselist}
 fi
 
 
