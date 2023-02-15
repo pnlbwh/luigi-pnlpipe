@@ -39,7 +39,7 @@ COMMENT
 bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
 
 # write four templates in the following order
-# change sessions to be precise in template instead of using sessionlist with * in template
+# change ses-1 in template to the session you are processing
 # PA template, PA template
 # AP template, AP template
 raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-107_dwi.nii.gz \
