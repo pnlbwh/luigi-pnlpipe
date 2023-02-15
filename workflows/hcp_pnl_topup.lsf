@@ -39,6 +39,7 @@ COMMENT
 bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
 
 # write four templates in the following order
+# change ses-1 in templates to the session you are processing
 # PA template, PA template
 # AP template, AP template
 raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-107_dwi.nii.gz \
@@ -70,10 +71,10 @@ source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
 if [ -f ${caselist} ]
 then
     # LSF script, list of subjects
-    i=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
+    id=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
 else
     # shell script, one subject
-    i=${caselist}
+    id=${caselist}
 fi
 
 
@@ -82,14 +83,14 @@ for j in $(echo $raw_template)
 do
     /data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/ExecuteTask.py \
     --bids-data-dir $bids_data_dir \
-    --task GibbsUn -c $i \
+    --task GibbsUn -c $id \
     --dwi-template $j
 done
 
 
 # determine --path for HCP pipe
 template=($raw_template)
-subdir=`echo ${template[0]} | sed "s+sub-\*+sub-$i+g"`
+subdir=`echo ${template[0]} | sed "s+sub-\*+sub-$id+g"`
 datadir=`dirname $bids_data_dir`/derivatives/pnlpipe/`dirname $subdir`
 echo "HCP pipe data directory: $datadir"
 
@@ -121,5 +122,5 @@ template=($raw_template)
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/ExecuteTask.py \
 --bids-data-dir $bids_data_dir \
 --dwi-template ${template[0]} \
---task $task -c $i
+--task $task -c $id
 
