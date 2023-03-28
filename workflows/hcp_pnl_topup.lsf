@@ -18,7 +18,11 @@ COMMENT
 #BSUB -e /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.err
 #BSUB -n 4
 
-export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
+# check LSB_JOBINDEX because it won't exist in /rfanfs/
+if [ ! -z ${LSB_JOBINDEX} ]
+then
+    export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
+fi
 
 : << COMMENT
 The formula for CUDA_VISIBLE_DEVICES is ${LSB_JOBINDEX}%G,
@@ -64,8 +68,14 @@ export HCPPIPEDIR_Config=/data/pnl/soft/pnlpipe3/HCPpipelines/global/config
 export HCPPIPEDIR_Global=/data/pnl/soft/pnlpipe3/HCPpipelines/global/scripts
 
 export LUIGI_CONFIG_PATH
-source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
 
+cluster=`hostname | grep pnl-.*.partners.org`
+if [ -z $cluster ]
+then
+    source /data/pnl/soft/pnlpipe3/bashrc3-gpu
+else
+    source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu
+fi
 
 if [ -f ${caselist} ]
 then
