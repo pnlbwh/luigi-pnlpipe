@@ -8,7 +8,12 @@
 #BSUB -e /data/pnl/projects/tmp/gpu-mask-%J-%I.err
 #BSUB -n 4
 
-export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
+# check LSB_JOBINDEX because it won't exist in /rfanfs/
+if [ ! -z ${LSB_JOBINDEX} ]
+then
+    export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
+fi
+
 # the above %2 indicates how many cases you process parallelly
 # it is limited by the number of GPUs in a node
 # ml001 has 2 GPUs, ml004 and ml005 have 4 GPUs
@@ -30,10 +35,16 @@ else
 fi
 
 
+cluster=`hostname | grep pnl-.*.partners.org`
+if [ -z $cluster ]
+then
+    source /data/pnl/soft/pnlpipe3/bashrc3-gpu
+else
+    source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu
+fi
 
-# for HD-BET
-source /data/pnl/soft/pnlpipe3/HD-BET/env.sh
 
+# for HD-BET structural masking
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_mask_params.cfg
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask \
 --bids-data-dir /data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata \
@@ -43,7 +54,6 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/T2w_ma
 
 
 # for CNN diffusion masking
-# source /data/pnl/soft/pnlpipe3/CNN-Diffusion-MRIBrain-Segmentation/train_env
 # export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/cnn_dwi_mask_params.cfg
 # /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask \
 # --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata \
