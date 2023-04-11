@@ -1,5 +1,8 @@
 #!/usr/bin/bash
 
+# Useful wiki for executing this in PNL GPU machines
+# https://github.com/pnlbwh/luigi-pnlpipe/wiki/Run-HCP-pipeline-on-PNL-GPU-machines-in-a-parallel-manner
+
 : << COMMENT
 Running this script w/o GPU support would take a long time (>24 hours).
 So always try to use a GPU enabled machine e.g. grx** nodes, eristwo gpu queue.
