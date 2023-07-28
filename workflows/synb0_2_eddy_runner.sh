@@ -39,7 +39,7 @@ while (( "$#" )); do
       show_help
       exit 0
       ;;
-    -i|--id)
+    -c|--case)
       c=$2
       shift 2
       ;;
