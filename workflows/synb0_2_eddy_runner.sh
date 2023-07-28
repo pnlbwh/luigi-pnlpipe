@@ -114,10 +114,10 @@ echo "Root path: $ROOT_PATH"
 SES_FOLDER="$ROOT_PATH/sub-$SUB_ID/ses-${s}"
 
 # print the session folder
-echo "Session folder: $SES_FOLDER"
+echo "Session folder: ${SES_FOLDER}"
 
 # Change the working directory to the session folder
-cd "$SES_FOLDER" || { echo "Error: Unable to change directory."; exit 1; }
+cd "${SES_FOLDER}" || { echo "Error: Unable to change directory."; exit 1; }
 
 ## Create INPUTS and OUTPUTS directories
 mkdir -p INPUTS OUTPUTS || { echo "Error: Unable to create directories."; exit 1; }
