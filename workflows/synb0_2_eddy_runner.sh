@@ -111,7 +111,7 @@ ROOT_PATH="${ROOT_PATH%/}"
 echo "Root path: $ROOT_PATH"
 
 # Construct the subject's session folder
-SES_FOLDER="$ROOT_PATH/sub-$s/ses-${s}"
+SES_FOLDER="$ROOT_PATH/sub-$c/ses-${s}"
 
 # print the session folder
 echo "Session folder: ${SES_FOLDER}"
