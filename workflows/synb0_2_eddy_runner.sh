@@ -17,7 +17,7 @@ show_help() {
     echo "./synb0_2_eddy_runner.sh [options]"
     echo
     echo "Options:"
-    echo "   -c, --case             Specify subject ID (required)"
+    echo "   -c, --case           Specify subject ID (required)"
     echo "   -r, --root           Specify root path"
     echo "                        Default: /data/pnl/Collaborators/CMA/mtsintou/Emotion/derivatives/pnlpipe"
     echo "   -s, --session        Specify session. Default: 01"
@@ -40,7 +40,7 @@ while (( "$#" )); do
       exit 0
       ;;
     -i|--id)
-      C=$2
+      c=$2
       shift 2
       ;;
     -r|--root)
@@ -48,7 +48,7 @@ while (( "$#" )); do
       shift 2
       ;;
     -s|--session)
-      S=$2
+      s=$2
       shift 2
       ;;
     -d|--dwi-identifier)
@@ -97,7 +97,7 @@ fi
 #  THROUGH THE TERMINAL AND WISH FOR THEM TO BE DIFFERENT.                                    #
 ###############################################################################################
 ROOT_PATH=${ROOT_PATH:-"/data/pnl/Collaborators/CMA/mtsintou/Emotion/derivatives/pnlpipe"}
-s=${S:-"01"}
+s=${s:-"01"}
 DWI_IDENTIFIER=${DWI_IDENTIFIER:-"acq-AP_dir-80_desc-XcUn_dwi"}
 DWI_TEMPLATE=${DWI_TEMPLATE:-"sub-*/ses-*/dwi/*_${DWI_IDENTIFIER}.nii.gz"}
 INDEX_PATH=${INDEX_PATH:-"/data/pnl/Collaborators/CMA/mtsintou/Emotion/derivatives/index.txt"}
