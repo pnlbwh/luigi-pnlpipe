@@ -5,8 +5,8 @@ OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
 # Initialize our own variables to empty strings
 ROOT_PATH=""
-SUB_ID=""
-SES=""
+c=""
+s=""
 DWI_IDENTIFIER=""
 DWI_TEMPLATE=""
 INDEX_PATH=""
@@ -17,7 +17,7 @@ show_help() {
     echo "./synb0_2_eddy_runner.sh [options]"
     echo
     echo "Options:"
-    echo "   -i, --id             Specify subject ID (required)"
+    echo "   -c, --case             Specify subject ID (required)"
     echo "   -r, --root           Specify root path"
     echo "                        Default: /data/pnl/Collaborators/CMA/mtsintou/Emotion/derivatives/pnlpipe"
     echo "   -s, --session        Specify session. Default: 01"
@@ -40,7 +40,7 @@ while (( "$#" )); do
       exit 0
       ;;
     -i|--id)
-      SUB_ID=$2
+      C=$2
       shift 2
       ;;
     -r|--root)
@@ -48,7 +48,7 @@ while (( "$#" )); do
       shift 2
       ;;
     -s|--session)
-      SES=$2
+      S=$2
       shift 2
       ;;
     -d|--dwi-identifier)
@@ -85,7 +85,7 @@ done
 
 
 # Check if SUB_ID is not empty, if it is, show help and exit
-if [ -z "$SUB_ID" ]; then
+if [ -z "$c" ]; then
     show_help
     exit 1
 fi
@@ -97,7 +97,7 @@ fi
 #  THROUGH THE TERMINAL AND WISH FOR THEM TO BE DIFFERENT.                                    #
 ###############################################################################################
 ROOT_PATH=${ROOT_PATH:-"/data/pnl/Collaborators/CMA/mtsintou/Emotion/derivatives/pnlpipe"}
-SES=${SES:-"01"}
+s=${S:-"01"}
 DWI_IDENTIFIER=${DWI_IDENTIFIER:-"acq-AP_dir-80_desc-XcUn_dwi"}
 DWI_TEMPLATE=${DWI_TEMPLATE:-"sub-*/ses-*/dwi/*_${DWI_IDENTIFIER}.nii.gz"}
 INDEX_PATH=${INDEX_PATH:-"/data/pnl/Collaborators/CMA/mtsintou/Emotion/derivatives/index.txt"}
@@ -111,7 +111,7 @@ ROOT_PATH="${ROOT_PATH%/}"
 echo "Root path: $ROOT_PATH"
 
 # Construct the subject's session folder
-SES_FOLDER="$ROOT_PATH/sub-$SUB_ID/ses-${SES}"
+SES_FOLDER="$ROOT_PATH/sub-$SUB_ID/ses-${s}"
 
 # print the session folder
 echo "Session folder: $SES_FOLDER"
@@ -139,10 +139,10 @@ if ! command -v bse.py >/dev/null 2>&1; then
 fi
 
 # Check for Qc mask file exists in the dwi directory
-qc_mask_path="dwi/sub-${SUB_ID}_ses-${SES}_acq-AP_dir-80_desc-dwiXcUn_desc-XcUnCNNQc_mask.nii.gz"
+qc_mask_path="dwi/sub-${c}_ses-${s}_acq-AP_dir-80_desc-dwiXcUn_desc-XcUnCNNQc_mask.nii.gz"
 
 # Check if non Qc mask file exists in the dwi directory
-mask_path="dwi/sub-${SUB_ID}_ses-${SES}_acq-AP_dir-80_desc-dwiXcUn_desc-XcUnCNN_mask.nii.gz"
+mask_path="dwi/sub-${c}_ses-${s}_acq-AP_dir-80_desc-dwiXcUn_desc-XcUnCNN_mask.nii.gz"
 
 if [ -f $qc_mask_path ]; then
     mask_path=$qc_mask_path
@@ -157,13 +157,13 @@ elif [ ! -f $mask_path ]; then
     /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
     --bids-data-dir $ROOT_PATH \
     --dwi-template "$DWI_TEMPLATE" \
-    -c $SUB_ID -s $SES
+    -c ${c} -s ${s}
 else
     echo "Non Qc Mask found."
 fi
 
 # Run bse.py on the specific dwi file and save the output to INPUTS folder
-bse.py -i "dwi/sub-${SUB_ID}_ses-${SES}_${DWI_IDENTIFIER}.nii.gz" -o INPUTS/b0.nii.gz \
+bse.py -i "dwi/sub-${c}_ses-${s}_${DWI_IDENTIFIER}.nii.gz" -o INPUTS/b0.nii.gz \
 || { echo "Error: bse.py failed."; exit 1; }
 
 # Copy acqparams.txt to INPUTS folder
@@ -171,7 +171,7 @@ bse.py -i "dwi/sub-${SUB_ID}_ses-${SES}_${DWI_IDENTIFIER}.nii.gz" -o INPUTS/b0.n
 cp -f ${ACQPARAMS_PATH} INPUTS/ || { echo "Error: Unable to copy acqparams.txt."; exit 1; }
 
 # Copy T1 image to INPUTS folder and rename
-cp -f "anat/sub-${SUB_ID}_ses-${SES}_desc-XcMaN4_T1w.nii.gz" INPUTS/T1.nii.gz \
+cp -f "anat/sub-${c}_ses-${s}_desc-XcMaN4_T1w.nii.gz" INPUTS/T1.nii.gz \
 || { echo "Error: Unable to copy T1 image."; exit 1; }
 
 # Run the singularity container (removed the -e flag)
@@ -188,22 +188,22 @@ echo "Running eddy_cuda10.2..."
 export CUDA_VISIBLE_DEVICES=1
 # Continue with the eddy_cuda processing
 eddy_cuda10.2 \
-  --imain="dwi/sub-${SUB_ID}_ses-${SES}_${DWI_IDENTIFIER}.nii.gz" \
-  --bvecs="dwi/sub-${SUB_ID}_ses-${SES}_${DWI_IDENTIFIER}.bvec" \
-  --bvals="dwi/sub-${SUB_ID}_ses-${SES}_${DWI_IDENTIFIER}.bval" \
+  --imain="dwi/sub-${c}_ses-${s}_${DWI_IDENTIFIER}.nii.gz" \
+  --bvecs="dwi/sub-${c}_ses-${s}_${DWI_IDENTIFIER}.bvec" \
+  --bvals="dwi/sub-${c}_ses-${s}_${DWI_IDENTIFIER}.bval" \
   --mask=$mask_path \
   --topup="OUTPUTS/topup" \
   --acqp="INPUTS/acqparams.txt" \
   --index="INPUTS/index.txt" \
   --repol --data_is_shelled --verbose \
-  --out="OUTPUTS/sub-${SUB_ID}_ses-${SES}_dir-80_desc-XcUnEdEp_dwi"
+  --out="OUTPUTS/sub-${c}_ses-${s}_dir-80_desc-XcUnEdEp_dwi"
 
 
 # organize outputs
 cd dwi/ || { echo "Error: Unable to change to the dwi directory."; exit 1; }
-mv ${SES_FOLDER}/OUTPUTS/sub-${SUB_ID}_ses-${SES}_dir-80_desc-XcUnEdEp_dwi.nii.gz .
-mv ${SES_FOLDER}/OUTPUTS/sub-${SUB_ID}_ses-${SES}_dir-80_desc-XcUnEdEp_dwi.eddy_rotated_bvecs sub-${SUB_ID}_ses-${SES}_dir-80_desc-XcUnEdEp_dwi.bvec
-ln -s sub-${SUB_ID}_ses-${SES}_${DWI_IDENTIFIER}.bval sub-${SUB_ID}_ses-${SES}_dir-80_desc-XcUnEdEp_dwi.bval
-ln -s sub-${SUB_ID}_ses-${SES}_dir-80_desc-dwiXcUnEdEp_mask.nii.gz sub-${SUB_ID}_ses-${SES}_dir-80_desc-dwiXcUn_mask.nii.gz
+mv ${SES_FOLDER}/OUTPUTS/sub-${c}_ses-${s}_dir-80_desc-XcUnEdEp_dwi.nii.gz .
+mv ${SES_FOLDER}/OUTPUTS/sub-${c}_ses-${s}_dir-80_desc-XcUnEdEp_dwi.eddy_rotated_bvecs sub-${c}_ses-${s}_dir-80_desc-XcUnEdEp_dwi.bvec
+ln -s sub-${c}_ses-${s}_${DWI_IDENTIFIER}.bval sub-${c}_ses-${s}_dir-80_desc-XcUnEdEp_dwi.bval
+ln -s sub-${c}_ses-${s}_dir-80_desc-dwiXcUnEdEp_mask.nii.gz sub-${c}_ses-${s}_dir-80_desc-dwiXcUn_mask.nii.gz
 
 echo "synb0 to eddy pipeline has finished running."
