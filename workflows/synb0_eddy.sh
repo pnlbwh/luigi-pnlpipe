@@ -2,8 +2,9 @@
 
 
 # User will edit only this block =========================================================
+# caselist=/data/pnl/Collaborators/CMA/mtsintou/Emotion/derivatives/all_80_and_01_cases.txt
+caselist=B15915
 s=01
-c=B10690
 dir=80
 acq=AP
 BIDS_DATA_DIR=/data/pnl/Collaborators/CMA/mtsintou/Emotion/rawdata
@@ -12,6 +13,18 @@ INDEX=/data/pnl/Collaborators/CMA/mtsintou/Emotion/derivatives/index.txt
 ACQPARAMS=/data/pnl/Collaborators/CMA/mtsintou/Emotion/derivatives/acqparams.txt
 LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/cnn_dwi_mask_params.cfg
 # ========================================================================================
+
+
+
+# for a caselist, this script must be run in a for loop
+# https://github.com/pnlbwh/luigi-pnlpipe/wiki/Run-HCP-pipeline-on-PNL-GPU-machines-in-a-parallel-manner
+if [ -f $caselist ]
+then
+    c=`head -${LSB_JOBINDEX} $caselist | tail -1`
+    export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
+else
+    c=$caselist
+fi
 
 
 
@@ -59,7 +72,9 @@ cp $INDEX INPUTS/
 
 
 echo "3. run synb0 container"
-TMPDIR=$HOME/tmp/ \
+TMPDIR=$HOME/tmp/
+mkdir -p $TMPDIR
+TMPDIR=$TMPDIR \
 singularity run -B INPUTS/:/INPUTS -B OUTPUTS/:/OUTPUTS \
 -B ${NEW_SOFT_DIR}/fs7.1.0/license.txt:/extra/freesurfer/license.txt \
 ${NEW_SOFT_DIR}/containers/synb0-disco_v3.0.sif --stripped
