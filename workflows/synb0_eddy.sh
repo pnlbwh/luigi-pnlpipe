@@ -100,6 +100,8 @@ cd ..
 
 
 eddy_out=OUTPUTS/sub-${c}_ses-${s}_dir-${dir}_desc-XcUnEdEp_dwi
+# mask the --imain, otherwise eddy_corrected image inherits large numbers and is not really viewable on FSLeyes
+fslmaths ${unring_prefix}.nii.gz -mul $mask ${unring_prefix}.nii.gz
 echo "5. run eddy_cuda10.2"
 eddy_cuda10.2 \
   --imain=${unring_prefix}.nii.gz \
