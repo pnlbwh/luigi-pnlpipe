@@ -125,8 +125,8 @@ mv $mask dwi/sub-${c}_ses-${s}_dir-${dir}_desc-dwiXcUnEdEp_mask.nii.gz
 
 
 
-popd
 echo "Luigi-SynB0-Eddy pipeline has completed"
 echo "See outputs at $PWD/dwi/"
 
+popd
 
