@@ -2,8 +2,7 @@
 
 
 # User will edit only this block =========================================================
-# caselist=/data/pnl/Collaborators/CMA/mtsintou/Emotion/derivatives/all_80_and_01_cases.txt
-caselist=B15915
+caselist=/path/to/caselist.txt
 s=01
 dir=80
 acq=AP
@@ -34,7 +33,7 @@ source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu-cuda-10.2
 
 echo "1. run Luigi pipeline and prepare DWI for synb0 container"
 export LUIGI_CONFIG_PATH
-/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task GibbsUn \
+/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
 --bids-data-dir $BIDS_DATA_DIR \
 --dwi-template "$DWI_TEMPLATE" \
 -c ${c} -s ${s}
@@ -52,6 +51,8 @@ mkdir -p INPUTS OUTPUTS
 
 echo "2. prepare b0 and T1 for synb0 container"
 unring_prefix=dwi/sub-${c}_ses-${s}_acq-${acq}_dir-${dir}_desc-XcUn_dwi
+unring_mask=dwi/sub-${c}_ses-${s}_acq-${acq}_dir-${dir}_desc-dwiXcUnCNN_mask.nii.gz
+fslmaths ${unring_prefix}.nii.gz -mul $unring_mask ${unring_prefix}.nii.gz
 if [ ! -f INPUTS/b0.nii.gz ]
 then
     bse.py -i ${unring_prefix}.nii.gz -o INPUTS/b0.nii.gz
