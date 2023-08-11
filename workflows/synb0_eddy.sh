@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# for time profiling
+date
 
 # User will edit only this block =========================================================
 caselist=/path/to/caselist.txt
@@ -27,12 +29,9 @@ fi
 
 
 
-source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu-cuda-10.2
-
-
-
 echo "1. run Luigi pipeline and prepare DWI for synb0 container"
 export LUIGI_CONFIG_PATH
+source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3 && \
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
 --bids-data-dir $BIDS_DATA_DIR \
 --dwi-template "$DWI_TEMPLATE" \
@@ -47,6 +46,8 @@ pushd .
 cd $SES_FOLDER
 mkdir -p INPUTS OUTPUTS
 
+
+source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu-cuda-10.2
 
 
 echo "2. prepare b0 and T1 for synb0 container"
@@ -83,20 +84,20 @@ ${NEW_SOFT_DIR}/containers/synb0-disco_v3.0.sif --stripped
 
 
 echo "4. create mask of topup (synb0) corrected b0"
-# _caselist=$(mktemp --suffix=.txt)
-# realpath OUTPUTS/b0_all_topup.nii.gz > $_caselist
-# echo "0 0" > OUTPUTS/b0_all_topup.bval
-# dwi_masking.py -i $_caselist -f ${NEW_SOFT_DIR}/CNN-Diffusion-MRIBrain-Segmentation/model_folder
-# mask=`ls OUTPUTS/*-multi_BrainMask.nii.gz`
-# rm $_caselist
+_caselist=$(mktemp --suffix=.txt)
+realpath OUTPUTS/b0_all_topup.nii.gz > $_caselist
+echo "0 0" > OUTPUTS/b0_all_topup.bval
+dwi_masking.py -i $_caselist -f ${NEW_SOFT_DIR}/CNN-Diffusion-MRIBrain-Segmentation/model_folder
+mask=`ls OUTPUTS/*-multi_BrainMask.nii.gz`
+rm $_caselist
 # CNN brain masking program fails for the above b0_all_topup.nii.gz
 # we believe because the CNN was not trained to predict on such low quality b0
 # so falling back to bet
-cd OUTPUTS/
-fslroi b0_all_topup.nii.gz _b0.nii.gz 0 1
-bet _b0.nii.gz b0_all_topup -m -n
-mask=`realpath b0_all_topup_mask.nii.gz`
-cd ..
+# cd OUTPUTS/
+# fslroi b0_all_topup.nii.gz _b0.nii.gz 0 1
+# bet _b0.nii.gz b0_all_topup -m -n
+# mask=`realpath b0_all_topup_mask.nii.gz`
+# cd ..
 
 
 
@@ -130,4 +131,7 @@ echo "Luigi-SynB0-Eddy pipeline has completed"
 echo "See outputs at $PWD/dwi/"
 
 popd
+
+# for time profiling
+date
 
