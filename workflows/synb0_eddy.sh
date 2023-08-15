@@ -16,6 +16,8 @@ LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/cnn_dwi_mask_
 # ========================================================================================
 
 
+NEW_SOFT_DIR=/rfanfs/pnl-zorro/software/pnlpipe3/
+
 
 # for a caselist, this script must be run in a for loop
 # https://github.com/pnlbwh/luigi-pnlpipe/wiki/Run-HCP-pipeline-on-PNL-GPU-machines-in-a-parallel-manner
@@ -32,7 +34,7 @@ fi
 
 echo "1. run Luigi pipeline and prepare DWI for synb0 container"
 export LUIGI_CONFIG_PATH
-source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3 && \
+source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu && \
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
 --bids-data-dir $BIDS_DATA_DIR \
 --dwi-template "$DWI_TEMPLATE" \
@@ -48,15 +50,14 @@ cd $SES_FOLDER
 mkdir -p INPUTS OUTPUTS
 
 
-source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu-cuda-10.2
-
 
 echo "2. prepare b0 and T1 for synb0 container"
 unring_prefix=dwi/sub-${c}_ses-${s}_acq-${acq}_dir-${dir}_desc-XcUn_dwi
 unring_mask=dwi/sub-${c}_ses-${s}_acq-${acq}_dir-${dir}_desc-dwiXcUnCNN_mask.nii.gz
-fslmaths ${unring_prefix}.nii.gz -mul $unring_mask ${unring_prefix}.nii.gz
 if [ ! -f INPUTS/b0.nii.gz ]
 then
+    source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu && \
+    fslmaths ${unring_prefix}.nii.gz -mul $unring_mask ${unring_prefix}.nii.gz && \
     bse.py -i ${unring_prefix}.nii.gz -o INPUTS/b0.nii.gz
 fi
 
@@ -89,6 +90,7 @@ echo "4. create mask of topup (synb0) corrected b0"
 _caselist=$(mktemp --suffix=.txt)
 realpath OUTPUTS/b0_all_topup.nii.gz > $_caselist
 echo "0 0" > OUTPUTS/b0_all_topup.bval
+source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu && \
 dwi_masking.py -i $_caselist -f ${NEW_SOFT_DIR}/CNN-Diffusion-MRIBrain-Segmentation/model_folder
 mask=`ls OUTPUTS/*-multi_BrainMask.nii.gz`
 rm $_caselist
@@ -111,6 +113,7 @@ eddy_out=OUTPUTS/sub-${c}_ses-${s}_dir-${dir}_desc-XcUnEdEp_dwi
 # mask the --imain, otherwise eddy_corrected image inherits large numbers and is not really viewable on FSLeyes
 # fslmaths ${unring_prefix}.nii.gz -mul $mask ${unring_prefix}.nii.gz
 echo "5. run eddy_cuda10.2"
+source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu-cuda-10.2 && \
 eddy_cuda10.2 \
   --imain=${unring_prefix}.nii.gz \
   --bvecs=${unring_prefix}.bvec \
@@ -120,7 +123,7 @@ eddy_cuda10.2 \
   --acqp=INPUTS/acqparams.txt \
   --index=INPUTS/index.txt \
   --repol --data_is_shelled --verbose \
-  --out=$eddy_out || { exit 1 }
+  --out=$eddy_out || { exit 1; }
 
 
 
