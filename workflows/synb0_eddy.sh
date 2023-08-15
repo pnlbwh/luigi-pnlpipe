@@ -22,11 +22,12 @@ LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/cnn_dwi_mask_
 if [ -f $caselist ]
 then
     c=`head -${LSB_JOBINDEX} $caselist | tail -1`
-    export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%4 ))
+
+    NUM_GPUS=`nvidia-smi -L | wc -l`
+    export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%${NUM_GPUS} ))
 else
     c=$caselist
 fi
-
 
 
 echo "1. run Luigi pipeline and prepare DWI for synb0 container"
