@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# for time profiling
+date
 
 # User will edit only this block =========================================================
 caselist=/path/to/caselist.txt
@@ -20,19 +22,17 @@ LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/cnn_dwi_mask_
 if [ -f $caselist ]
 then
     c=`head -${LSB_JOBINDEX} $caselist | tail -1`
-    export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
+
+    NUM_GPUS=`nvidia-smi -L | wc -l`
+    export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%${NUM_GPUS} ))
 else
     c=$caselist
 fi
 
 
-
-source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu-cuda-10.2
-
-
-
 echo "1. run Luigi pipeline and prepare DWI for synb0 container"
 export LUIGI_CONFIG_PATH
+source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3 && \
 /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
 --bids-data-dir $BIDS_DATA_DIR \
 --dwi-template "$DWI_TEMPLATE" \
@@ -47,6 +47,8 @@ pushd .
 cd $SES_FOLDER
 mkdir -p INPUTS OUTPUTS
 
+
+source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu-cuda-10.2
 
 
 echo "2. prepare b0 and T1 for synb0 container"
@@ -71,38 +73,43 @@ cp $ACQPARAMS INPUTS/
 cp $INDEX INPUTS/
 
 
-
 echo "3. run synb0 container"
 TMPDIR=$HOME/tmp/
 mkdir -p $TMPDIR
-TMPDIR=$TMPDIR \
-singularity run -B INPUTS/:/INPUTS -B OUTPUTS/:/OUTPUTS \
--B ${NEW_SOFT_DIR}/fs7.1.0/license.txt:/extra/freesurfer/license.txt \
-${NEW_SOFT_DIR}/containers/synb0-disco_v3.0.sif --stripped
-
-
+if [ ! -f OUTPUTS/b0_all_topup.nii.gz ]
+then
+    TMPDIR=$TMPDIR \
+    singularity run -B INPUTS/:/INPUTS -B OUTPUTS/:/OUTPUTS \
+    -B ${NEW_SOFT_DIR}/fs7.1.0/license.txt:/extra/freesurfer/license.txt \
+    ${NEW_SOFT_DIR}/containers/synb0-disco_v3.0.sif --stripped
+fi
 
 echo "4. create mask of topup (synb0) corrected b0"
-# _caselist=$(mktemp --suffix=.txt)
-# realpath OUTPUTS/b0_all_topup.nii.gz > $_caselist
-# echo "0 0" > OUTPUTS/b0_all_topup.bval
-# dwi_masking.py -i $_caselist -f ${NEW_SOFT_DIR}/CNN-Diffusion-MRIBrain-Segmentation/model_folder
-# mask=`ls OUTPUTS/*-multi_BrainMask.nii.gz`
-# rm $_caselist
-# CNN brain masking program fails for the above b0_all_topup.nii.gz
-# we believe because the CNN was not trained to predict on such low quality b0
-# so falling back to bet
-cd OUTPUTS/
-fslroi b0_all_topup.nii.gz _b0.nii.gz 0 1
-bet _b0.nii.gz b0_all_topup -m -n
-mask=`realpath b0_all_topup_mask.nii.gz`
-cd ..
+# CNN method
+_caselist=$(mktemp --suffix=.txt)
+realpath OUTPUTS/b0_all_topup.nii.gz > $_caselist
+echo "0 0" > OUTPUTS/b0_all_topup.bval
+dwi_masking.py -i $_caselist -f ${NEW_SOFT_DIR}/CNN-Diffusion-MRIBrain-Segmentation/model_folder
+mask=`ls OUTPUTS/*-multi_BrainMask.nii.gz`
+rm $_caselist
 
+# BET method
+# cd OUTPUTS/
+# fslroi b0_all_topup.nii.gz _b0.nii.gz 0 1
+# bet _b0.nii.gz b0_all_topup -m -n
+# mask=`realpath b0_all_topup_mask.nii.gz`
+# cd ..
+
+if [ -z $mask ]
+then
+    echo topup mask creation failed
+    exit 1
+fi
 
 
 eddy_out=OUTPUTS/sub-${c}_ses-${s}_dir-${dir}_desc-XcUnEdEp_dwi
 # mask the --imain, otherwise eddy_corrected image inherits large numbers and is not really viewable on FSLeyes
-fslmaths ${unring_prefix}.nii.gz -mul $mask ${unring_prefix}.nii.gz
+# fslmaths ${unring_prefix}.nii.gz -mul $mask ${unring_prefix}.nii.gz
 echo "5. run eddy_cuda10.2"
 eddy_cuda10.2 \
   --imain=${unring_prefix}.nii.gz \
@@ -113,7 +120,7 @@ eddy_cuda10.2 \
   --acqp=INPUTS/acqparams.txt \
   --index=INPUTS/index.txt \
   --repol --data_is_shelled --verbose \
-  --out=$eddy_out
+  --out=$eddy_out || { exit 1 }
 
 
 
@@ -130,4 +137,7 @@ echo "Luigi-SynB0-Eddy pipeline has completed"
 echo "See outputs at $PWD/dwi/"
 
 popd
+
+# for time profiling
+date
 
