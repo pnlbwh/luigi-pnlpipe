@@ -1,8 +1,10 @@
 #!/bin/bash
 
+# for time profiling
+date
 
 # User will edit only this block =========================================================
-caselist=/path/to/caselist.txt
+caselist=/rfanfs/pnl-zorro/home/rez3/bin/caselist.txt
 s=01
 dir=80
 acq=AP
@@ -27,18 +29,20 @@ fi
 
 
 
-source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu-cuda-10.2
+source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu
 
-
-
-echo "1. run Luigi pipeline and prepare DWI for synb0 container"
-export LUIGI_CONFIG_PATH
-/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
---bids-data-dir $BIDS_DATA_DIR \
---dwi-template "$DWI_TEMPLATE" \
--c ${c} -s ${s}
-# double quotes around $DWI_TEMPLATE are mandatory
-
+# check if mask exists, if so then move on with next step if not create it
+mask_path="dwi/sub-${c}_ses-${s}_acq-AP_dir-80_desc-dwiXcUn_desc-XcUnCNN_mask.nii.gz"
+if [ ! -f $mask_path ]
+then
+    echo "0. run Luigi pipeline and prepare DWI for synb0 container"
+    export LUIGI_CONFIG_PATH
+    /data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
+    --bids-data-dir $BIDS_DATA_DIR \
+    --dwi-template "$DWI_TEMPLATE" \
+    -c ${c} -s ${s}
+    # double quotes around $DWI_TEMPLATE are mandatory
+fi
 
 
 DERIVATIVES=$(dirname $BIDS_DATA_DIR)/derivatives/pnlpipe/
@@ -70,7 +74,7 @@ fi
 cp $ACQPARAMS INPUTS/
 cp $INDEX INPUTS/
 
-
+source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu-cuda-10.2
 
 echo "3. run synb0 container"
 TMPDIR=$HOME/tmp/
@@ -130,4 +134,7 @@ echo "Luigi-SynB0-Eddy pipeline has completed"
 echo "See outputs at $PWD/dwi/"
 
 popd
+
+# for time profiling
+date
 
