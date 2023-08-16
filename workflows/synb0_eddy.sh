@@ -131,13 +131,15 @@ eddy_cuda10.2 \
 
 
 echo "6. organize outputs"
+# provide masked eddy_out for clarity, quality, and convenience
+fslmaths ${eddy_out}.nii.gz -mul $mask ${eddy_out}.nii.gz
+
 bids_prefix=dwi/sub-${c}_ses-${s}_dir-${dir}_desc-XcUnEdEp_dwi
 mv ${eddy_out}.nii.gz ${bids_prefix}.nii.gz
 mv ${eddy_out}.eddy_rotated_bvecs ${bids_prefix}.bvec
 cp ${unring_prefix}.bval ${bids_prefix}.bval
 mv $mask dwi/sub-${c}_ses-${s}_dir-${dir}_desc-dwiXcUnEdEp_mask.nii.gz
-# provide masked eddy_out for clarity, quality, and convenience
-fslmaths ${eddy_out}.nii.gz -mul $mask ${eddy_out}.nii.gz
+
 
 
 echo "Luigi-SynB0-Eddy pipeline has completed"
