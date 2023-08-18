@@ -4,7 +4,7 @@
 date
 
 # User will edit only this block =========================================================
-caselist=/path/to/caselist.txt
+caselist=$1
 s=01
 dir=80
 acq=AP
