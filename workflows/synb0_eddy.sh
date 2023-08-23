@@ -59,8 +59,9 @@ fi
 
 
 echo "2. prepare b0 and T1 for synb0 container"
-unring_prefix=dwi/sub-${c}_ses-${s}_acq-${acq}_dir-${dir}_desc-XcUn_dwi
-unring_mask=dwi/sub-${c}_ses-${s}_acq-${acq}_dir-${dir}_desc-dwiXcUnCNN_mask.nii.gz
+_unring_prefix=`ls dwi/sub-${c}_ses-${s}_*desc-XcUn_dwi.nii.gz`
+unring_prefix=${_unring_prefix//.nii.gz}
+unring_mask=`ls dwi/sub-${c}_ses-${s}_*desc-dwiXcUnCNN_mask.nii.gz`
 if [ ! -f INPUTS/b0.nii.gz ]
 then
     # source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu && \
@@ -101,7 +102,6 @@ echo "0 0" > OUTPUTS/b0_all_topup.bval
 dwi_masking.py -i $_caselist -f ${NEW_SOFT_DIR}/CNN-Diffusion-MRIBrain-Segmentation/model_folder
 mask=`ls OUTPUTS/*-multi_BrainMask.nii.gz`
 rm $_caselist
-
 # BET method
 # cd OUTPUTS/
 # fslroi b0_all_topup.nii.gz _b0.nii.gz 0 1
