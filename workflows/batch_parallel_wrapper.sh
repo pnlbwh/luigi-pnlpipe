@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Define the path for the list of cases.
-CASELIST_PATH="/data/pnl/Collaborators/CMA/mtsintou/Emotion/caselist.txt"
+CASELIST_PATH="/data/pnl/Collaborators/EDCRP/1110/1110_ses-002_T1_nii/caselist_all_dwi_t1.txt"
 
 # Define the directory where the output logs for each job will be saved.
-OUTPUT_DIR="/data/pnl/Collaborators/CMA/mtsintou/Emotion/Output/"
+OUTPUT_DIR="/data/pnl/Collaborators/EDCRP/1110/1110_ses-002_T1_nii/Output"
 
 # Define the path to the script that will be run for each case.
-SCRIPT_PATH="/rfanfs/pnl-zorro/software/pnlpipe3/luigi-pnlpipe/workflows/synb0_eddy.sh"
+SCRIPT_PATH="/data/pnl/Collaborators/EDCRP/1110/1110_ses-002_T1_nii/synb0_eddy.sh"
 
 # Define the maximum number of parallel jobs you want to run at a time.
 MAX_PARALLEL_JOBS=$(nvidia-smi -L | wc -l)
@@ -15,8 +15,6 @@ MAX_PARALLEL_JOBS=$(nvidia-smi -L | wc -l)
 # set the start time for time profiling
 START_TIME=$(date +%s)
 
-# Export CASELIST_PATH so it can be accessed by any scripts or programs we run.
-export CASELIST_PATH
 
 # Count the total number of cases.
 # 'wc -l' counts the number of lines in the file.
@@ -40,7 +38,7 @@ run_batch() {
 
         # Run the script in the background (& at the end).
         # Any output (both stdout and stderr) will be redirected to a file named after the current index.
-        "$SCRIPT_PATH" > "${OUTPUT_DIR}/${LSB_JOBINDEX}.txt" 2>&1 &
+        $SCRIPT_PATH $CASELIST_PATH > "${OUTPUT_DIR}/${LSB_JOBINDEX}.txt" 2>&1 &
 
         # Save the PID (process ID) of the background job we just started in our array.
         local_jobs+=("$!")
@@ -75,6 +73,5 @@ ELAPSED_TIME=$(($(date +%s) - $START_TIME))
 
 # Once all batches have been processed, print a completion message.
 echo "All jobs completed!"
-
 # Print the elapsed time.
 echo "Elapsed time: $(($ELAPSED_TIME/60)) min $(($ELAPSED_TIME%60)) sec"

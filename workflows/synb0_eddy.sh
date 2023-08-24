@@ -4,7 +4,7 @@
 date
 
 # User will edit only this block =========================================================
-caselist=B19926
+caselist=$1
 s=01
 dir=80
 acq=AP
@@ -16,6 +16,7 @@ LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/cte/cnn_dwi_mask_
 # ========================================================================================
 
 
+source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu
 NEW_SOFT_DIR=/rfanfs/pnl-zorro/software/pnlpipe3/
 
 
@@ -34,8 +35,8 @@ fi
 
 echo "1. run Luigi pipeline and prepare DWI for synb0 container"
 export LUIGI_CONFIG_PATH
-source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu && \
-/data/pnl/soft/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
+# source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu \
+/rfanfs/pnl-zorro/software/pnlpipe3/luigi-pnlpipe/exec/ExecuteTask --task CnnMask \
 --bids-data-dir $BIDS_DATA_DIR \
 --dwi-template "$DWI_TEMPLATE" \
 -c ${c} -s ${s}
@@ -50,13 +51,20 @@ cd $SES_FOLDER
 mkdir -p INPUTS OUTPUTS
 
 
+if [ ! -z `ls $SES_FOLDER/dwi/*_desc-XcUnEdEp_dwi.nii.gz` ]
+then
+    echo $c was processed before
+    exit
+fi
+
 
 echo "2. prepare b0 and T1 for synb0 container"
-unring_prefix=dwi/sub-${c}_ses-${s}_acq-${acq}_dir-${dir}_desc-XcUn_dwi
-unring_mask=dwi/sub-${c}_ses-${s}_acq-${acq}_dir-${dir}_desc-dwiXcUnCNN_mask.nii.gz
+_unring_prefix=`ls dwi/sub-${c}_ses-${s}_*desc-XcUn_dwi.nii.gz`
+unring_prefix=${_unring_prefix//.nii.gz}
+unring_mask=`ls dwi/sub-${c}_ses-${s}_*desc-dwiXcUnCNN_mask.nii.gz`
 if [ ! -f INPUTS/b0.nii.gz ]
 then
-    source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu && \
+    # source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu && \
     fslmaths ${unring_prefix}.nii.gz -mul $unring_mask ${unring_prefix}.nii.gz && \
     bse.py -i ${unring_prefix}.nii.gz -o INPUTS/b0.nii.gz
 fi
@@ -90,11 +98,10 @@ echo "4. create mask of topup (synb0) corrected b0"
 _caselist=$(mktemp --suffix=.txt)
 realpath OUTPUTS/b0_all_topup.nii.gz > $_caselist
 echo "0 0" > OUTPUTS/b0_all_topup.bval
-source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu && \
+# source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu && \
 dwi_masking.py -i $_caselist -f ${NEW_SOFT_DIR}/CNN-Diffusion-MRIBrain-Segmentation/model_folder
 mask=`ls OUTPUTS/*-multi_BrainMask.nii.gz`
 rm $_caselist
-
 # BET method
 # cd OUTPUTS/
 # fslroi b0_all_topup.nii.gz _b0.nii.gz 0 1
@@ -115,9 +122,9 @@ eddy_out=OUTPUTS/sub-${c}_ses-${s}_dir-${dir}_desc-XcUnEdEp_dwi
 # so it only crops off the frontal distortion
 # so omit masking at this step
 # fslmaths ${unring_prefix}.nii.gz -mul $mask ${unring_prefix}.nii.gz
-echo "5. run eddy_cuda10.2"
-source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu-cuda-10.2 && \
-eddy_cuda10.2 \
+echo "5. run eddy_cuda"
+# source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu-cuda-10.2 && \
+eddy_cuda \
   --imain=${unring_prefix}.nii.gz \
   --bvecs=${unring_prefix}.bvec \
   --bvals=${unring_prefix}.bval \
@@ -149,3 +156,4 @@ popd
 
 # for time profiling
 date
+
