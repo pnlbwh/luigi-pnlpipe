@@ -87,7 +87,7 @@ class GibbsUn(Task):
         dwi = local.path(re.sub('_desc-Xc_', '_desc-XcUn_', self.input()['dwi']))
         bval = dwi.with_suffix('.bval', depth=2)
         bvec = dwi.with_suffix('.bvec', depth=2)
-
+        
         return dict(dwi=dwi, bval=bval, bvec=bvec)
 
 
@@ -320,6 +320,78 @@ class FslEddy(Task):
         mask= _mask_name(self.input()[1]['mask'], self.mask_qc)
         
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=self.input()[1]['bse'], mask=mask)
+
+
+
+@requires(GibbsUn,CnnMask,StructMask)
+class SynB0(Task):
+    
+    mask_qc= BoolParameter(default=False)
+    acqp = Parameter()
+    index = Parameter()
+    
+    
+    def run(self):
+        
+        pass
+        # synb0 wrapper
+        # cmd = (' ').join(['fsl_eddy.py',
+        #                   '--dwi', self.input()[0]['dwi'],
+        #                   '--bvals', self.input()[0]['bval'],
+        #                   '--bvecs', self.input()[0]['bvec'],
+        #                   '--mask', self.output()['mask'],
+        #                   '--acqp', self.acqp,
+        #                   '--index', self.index,
+        #                   '--config', self.config,
+        #                   '--eddy-cuda' if self.useGpu else '',
+        #                   '--out', outDir])
+        # p = Popen(cmd, shell=True)
+        # p.wait()
+        # 
+        # version_file= outDir.join('fsl_version.txt')
+        # check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell= True)
+        # 
+        # # fsl_eddy.py writes with this outPrefix
+        # outPrefix= outDir.join(self.input()[0]['dwi'].stem)+'_Ed'
+        # move(outPrefix+'.nii.gz',self.output()['dwi'])
+        # move(outPrefix+'.bval',self.output()['bval'])
+        # move(outPrefix+'.bvec',self.output()['bvec'])
+
+        # break
+
+
+        write_provenance(self, self.output()['dwi'])
+
+
+        # self.dwi= self.output()['dwi']
+        # yield self.clone(BseExtract)
+
+
+    def output(self):
+    
+        eddy_epi_prefix= self.input()[0]['dwi'].rsplit('_dwi.nii.gz')[0]
+        eddy_epi_prefix= eddy_epi_prefix.replace('_acq-PA','')
+        eddy_epi_prefix= eddy_epi_prefix.replace('_acq-AP','')
+        eddy_epi_prefix+= 'EdEp'
+        
+        dwi = local.path(eddy_epi_prefix+ '_dwi.nii.gz')
+        bval = dwi.with_suffix('.bval', depth= 2)
+        bvec = dwi.with_suffix('.bvec', depth= 2)
+
+
+        mask_prefix = dwi.rsplit('_desc-')[0]
+        desc= re.search('_desc-(.+?)_dwi.nii.gz', basename(dwi)).group(1)
+        desc= 'dwi'+ desc
+        mask_prefix= mask_prefix+ '_desc-'+ desc
+        mask = local.path(mask_prefix+ '_mask.nii.gz')
+
+        bse_prefix= dwi._path
+        desc= re.search('_desc-(.+?)_dwi.nii.gz', bse_prefix).group(1)
+        desc= 'dwi'+ desc
+        bse= local.path(bse_prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
+
+
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
 
 
 
@@ -595,7 +667,7 @@ class HcpPipe(ExternalTask):
 
 
 
-@inherits(PnlEddy, FslEddy, EddyEpi, TopupEddy, HcpPipe)
+@inherits(PnlEddy, FslEddy, SynB0, EddyEpi, TopupEddy, HcpPipe)
 class Ukf(Task):
 
     ukf_params = Parameter(default='')
@@ -609,6 +681,8 @@ class Ukf(Task):
             return self.clone(PnlEddy)
         elif self.eddy_epi_task=='fsleddy':
             return self.clone(FslEddy)
+        elif self.eddy_epi_task=='synb0':
+            return self.clone(SynB0)
         elif self.eddy_epi_task=='eddyepi':
             return self.clone(EddyEpi)
         elif self.eddy_epi_task=='topupeddy':
