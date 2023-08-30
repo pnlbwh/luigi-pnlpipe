@@ -334,7 +334,8 @@ class SynB0(Task):
     def run(self):
         
         # synb0 wrapper
-        cmd = (' ').join(['_synb0_eddy.sh',
+        DIR= abspath(dirname(__file__))
+        cmd = (' ').join([f'{DIR}/_synb0_eddy.sh',
                           self.input()[0]['dwi'].strip('.nii.gz'),
                           self.input()[1]['bse']._path,
                           self.input()[2]['n4corr']._path,
