@@ -333,38 +333,28 @@ class SynB0(Task):
     
     def run(self):
         
-        pass
         # synb0 wrapper
-        # cmd = (' ').join(['fsl_eddy.py',
-        #                   '--dwi', self.input()[0]['dwi'],
-        #                   '--bvals', self.input()[0]['bval'],
-        #                   '--bvecs', self.input()[0]['bvec'],
-        #                   '--mask', self.output()['mask'],
-        #                   '--acqp', self.acqp,
-        #                   '--index', self.index,
-        #                   '--config', self.config,
-        #                   '--eddy-cuda' if self.useGpu else '',
-        #                   '--out', outDir])
-        # p = Popen(cmd, shell=True)
-        # p.wait()
-        # 
-        # version_file= outDir.join('fsl_version.txt')
-        # check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell= True)
-        # 
-        # # fsl_eddy.py writes with this outPrefix
-        # outPrefix= outDir.join(self.input()[0]['dwi'].stem)+'_Ed'
-        # move(outPrefix+'.nii.gz',self.output()['dwi'])
-        # move(outPrefix+'.bval',self.output()['bval'])
-        # move(outPrefix+'.bvec',self.output()['bvec'])
-
-        # break
+        cmd = (' ').join(['_synb0_eddy.sh',
+                          self.input()[0]['dwi'].strip('.nii.gz'),
+                          self.input()[1]['bse']._path,
+                          self.input()[2]['n4corr']._path,
+                          self.output()['dwi'].strip('.nii.gz'),
+                          self.output()['mask'],
+                          self.output()['bse'],
+                          self.acqp,
+                          self.index])
+        p = Popen(cmd, shell=True)
+        p.wait()
+        
+        version_file= outDir.join('fsl_version.txt')
+        check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell= True)
 
 
         write_provenance(self, self.output()['dwi'])
 
-
         # self.dwi= self.output()['dwi']
         # yield self.clone(BseExtract)
+
 
 
     def output(self):
