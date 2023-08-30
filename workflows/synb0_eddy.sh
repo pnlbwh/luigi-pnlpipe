@@ -2,6 +2,7 @@
 
 # for time profiling
 date
+START_TIME=$(date +%s)
 
 # User will edit only this block =========================================================
 caselist=$1
@@ -156,4 +157,5 @@ popd
 
 # for time profiling
 date
-
+ELAPSED_TIME=$(($(date +%s) - $START_TIME))
+echo "Elapsed time: $(($ELAPSED_TIME/60)) min $(($ELAPSED_TIME%60)) sec"
