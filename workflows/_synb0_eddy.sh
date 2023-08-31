@@ -14,7 +14,7 @@ INDEX=$8
 
 
 pushd .
-SES_FOLDER=$(dirname $(dirname dwi))
+SES_FOLDER=$(dirname $(dirname $unring_prefix))
 cd $SES_FOLDER
 mkdir -p INPUTS OUTPUTS
 
