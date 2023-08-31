@@ -76,7 +76,7 @@ mv ${_eddy_out}.eddy_rotated_bvecs ${eddy_prefix}.bvec
 cp ${unring_prefix}.bval ${eddy_prefix}.bval
 
 mv $mask $eddy_mask
-mv OUTPUTS/b0_all_toupup_bse.nii.gz $eddy_bse
+mv OUTPUTS/b0_all_topup_bse.nii.gz $eddy_bse
 
 
 
