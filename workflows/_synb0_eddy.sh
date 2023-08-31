@@ -52,7 +52,7 @@ then
 fi
 
 
-_eddy_out=OUTPUTS/$(basename $eddy_out)
+_eddy_out=OUTPUTS/$(basename $eddy_prefix)
 echo "5. run eddy_cuda"
 eddy_cuda \
   --imain=${unring_prefix}.nii.gz \
