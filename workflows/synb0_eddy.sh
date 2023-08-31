@@ -137,7 +137,7 @@ mv ${eddy_out}.nii.gz ${bids_prefix}.nii.gz
 mv ${eddy_out}.eddy_rotated_bvecs ${bids_prefix}.bvec
 cp ${unring_prefix}.bval ${bids_prefix}.bval
 
-mask_prefix=${unring_prefix//_dwi/}
+mask_prefix=${bids_prefix//_dwi/}
 mask_prefix=${mask_prefix//XcUn/dwiXcUn}
 mv $mask ${mask_prefix}_mask.nii.gz
 mv OUTPUTS/b0_all_topup_bse.nii.gz ${mask_prefix}_bse.nii.gz
