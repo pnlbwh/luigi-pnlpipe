@@ -3,10 +3,10 @@
 # for time profiling
 date
 
-unring_prefix=$1
+unring_prefix=${1//.nii.gz/}
 b0=$2
 T1=$3
-eddy_prefix=$4
+eddy_prefix=${4//.nii.gz/}
 eddy_mask=$5
 eddy_bse=$6
 ACQPARAMS=$7
