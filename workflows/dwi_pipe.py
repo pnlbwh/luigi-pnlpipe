@@ -12,7 +12,7 @@ from subprocess import Popen, check_call
 from time import sleep
 import re
 
-from struct_pipe import StructMask
+from struct_pipe import StructMask, N4BiasCorrect
 from _task_util import _mask_name
 
 from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, LIBDIR, \
@@ -323,7 +323,7 @@ class FslEddy(Task):
 
 
 
-@requires(GibbsUn,CnnMask,StructMask)
+@requires(GibbsUn,CnnMask,N4BiasCorrect)
 class SynB0(Task):
     
     mask_qc= BoolParameter(default=False)
@@ -336,10 +336,10 @@ class SynB0(Task):
         # synb0 wrapper
         DIR= abspath(dirname(__file__))
         cmd = (' ').join([f'{DIR}/_synb0_eddy.sh',
-                          self.input()[0]['dwi'].strip('.nii.gz'),
+                          self.input()[0]['dwi']._path,
                           self.input()[1]['bse']._path,
                           self.input()[2]['n4corr']._path,
-                          self.output()['dwi'].strip('.nii.gz'),
+                          self.output()['dwi']._path,
                           self.output()['mask'],
                           self.output()['bse'],
                           self.acqp,
@@ -347,7 +347,7 @@ class SynB0(Task):
         p = Popen(cmd, shell=True)
         p.wait()
         
-        version_file= outDir.join('fsl_version.txt')
+        version_file= self.output()['dwi'].dirname.join('fsl_version.txt')
         check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell= True)
 
 
