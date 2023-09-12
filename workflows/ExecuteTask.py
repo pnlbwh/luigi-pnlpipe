@@ -6,7 +6,7 @@ from luigi import build, configuration
 from _define_outputs import IO
 from struct_pipe import StructMask, Freesurfer
 from dwi_pipe import DwiAlign, GibbsUn, CnnMask, \
-    PnlEddy, FslEddy, TopupEddy, HcpPipe, EddyEpi, Ukf
+    PnlEddy, FslEddy, SynB0, TopupEddy, HcpPipe, EddyEpi, Ukf, Wma800
 from fs2dwi_pipe import Fs2Dwi, Wmql, Wmqlqc, TractMeasures
 from scripts.util import abspath, isfile, pjoin, LIBDIR
 from os import getenv, stat, remove
@@ -56,9 +56,9 @@ if __name__ == '__main__':
                         default= argparse.SUPPRESS,
                         choices=['StructMask', 'Freesurfer',
                                  'DwiAlign', 'GibbsUn', 'CnnMask',
-                                 'PnlEddy', 'FslEddy', 'TopupEddy', 'HcpPipe',
+                                 'PnlEddy', 'FslEddy', 'SynB0', 'TopupEddy', 'HcpPipe',
                                  'EddyEpi',
-                                 'Ukf',
+                                 'Ukf', 'Wma800',
                                  'Fs2Dwi', 'Wmql', 'Wmqlqc', 'TractMeasures'])
 
     parser.add_argument('--num-workers', type=int, default=1, help='number of Luigi workers')
@@ -191,6 +191,15 @@ if __name__ == '__main__':
                                                 dwi_template=args.dwi_template))
 
 
+                elif args.task=='SynB0':
+                    jobs.append(SynB0(bids_data_dir=args.bids_data_dir,
+                                      derivatives_dir=derivatives_dir,
+                                      id=id,
+                                      ses=ses,
+                                      dwi_template=args.dwi_template,
+                                      struct_template=args.t1_template))
+
+
                 elif args.task=='TopupEddy':
                     jobs.append(TopupEddy(bids_data_dir=args.bids_data_dir,
                                           derivatives_dir=derivatives_dir,
@@ -206,7 +215,8 @@ if __name__ == '__main__':
                                     id=id,
                                     ses=ses,
                                     dwi_template=args.dwi_template,
-                                    pa_ap_template=args.dwi_template))
+                                    pa_ap_template=args.dwi_template,
+                                    struct_template=args.t1_template))
 
 
                 elif args.task=='Fs2Dwi':
@@ -244,7 +254,7 @@ if __name__ == '__main__':
     build(jobs, workers=args.num_workers)
     
     
-    print('Removing temporary provenance files')
+    # print('Removing temporary provenance files')
     _rm_tempfiles(glob(pjoin(gettempdir(), 'hashes-*.txt')))
     _rm_tempfiles(glob(pjoin(gettempdir(), 'env-*.yml')))
     
