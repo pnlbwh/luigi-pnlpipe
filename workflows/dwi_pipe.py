@@ -468,9 +468,9 @@ class TopupEddy(Task):
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
 
     useGpu = BoolParameter(default=False)
-    numb0 = Parameter(default=1)
+    numb0 = Parameter(default='1')
     whichVol = Parameter(default='1')
-    scale = Parameter(default=2)
+    scale = Parameter(default='2')
     
     TopupOutDir= Parameter(default='fsl_eddy')
 
@@ -719,7 +719,6 @@ class Wma800(Task):
     wma_cleanup= IntParameter(default=0)
 
     def run(self):
-
         cmd = (' ').join(['wm_apply_ORG_atlas_to_subject.sh',
                           '-i', self.input(),
                           '-a', self.atlas,
@@ -729,12 +728,19 @@ class Wma800(Task):
                           f'-n {self.wma_nproc}',
                           f'-c {self.wma_cleanup}',
                           '-d 1',
-                          '-o', self.output()])
+                          '-o', self.input().dirname.join('wma800')])
         p = Popen(cmd, shell=True)
         p.wait()
 
         write_provenance(self)
 
     def output(self):
-        return self.input().dirname.join('wma800')
+        prefix= self.input().dirname.join('wma800',self.input().basename.split('.vtk')[0],
+            'FiberClustering/SeparatedClusters')
+        
+        clusters=[]
+        for region in 'commissural left_hemisphere right_hemisphere'.split():
+            clusters.append( local.path(f'{prefix}/diffusion_measurements_{region}.csv') )
 
+        
+        return clusters
