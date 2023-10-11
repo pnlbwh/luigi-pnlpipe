@@ -583,12 +583,48 @@ Consult `wm_apply_ORG_atlas_to_subject.sh --help` to know the details of these p
 
 Run it:
 
+##### Through Luigi pipeline
+
 ```bash
 export LUIGI_CONFIG_PATH=/path/to/dwi_pipe_params.cfg
 
 exec/ExecuteTask --task Wma800 \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --dwi-template sub-*/ses-01/dwi/*_dwi.nii.gz
 ```
+
+##### On a PNL workstation physically or through NoMachine
+
+```
+NEW_SOFT_DIR=/rfanfs/pnl-zorro/software/pnlpipe3/
+source ${NEW_SOFT_DIR}/bashrc3
+
+wm_apply_ORG_atlas_to_subject.sh \
+-i /path/to/your.vtk \
+-o /path/to/output/dir/ \
+-a ${NEW_SOFT_DIR}/ORG-Atlases-1.2 \
+-s ${NEW_SOFT_DIR}/Slicer-4.10.2-linux-amd64/SlicerWithExtensions.sh \
+-m "${NEW_SOFT_DIR}/Slicer-4.10.2-linux-amd64/SlicerWithExtensions.sh --launch FiberTractMeasurements" \
+-n 8 -c 2 -d 1
+```
+
+The same command applies for running it on PNL's GRX node: `dna007.partners.org` except a change in the software directory:
+
+> NEW_SOFT_DIR=/data/pnl/soft/pnlpipe3/
+
+
+##### Through SSH
+
+Just append the `-x 1` flag to the above command to enable virtual X server:
+
+```
+wm_apply_ORG_atlas_to_subject.sh \
+...
+-n 8 -c 2 -d 1 -x 1
+```
+
+However, running it through SSH requires availability of `xvfb-run` on that server--may it be a PNL workstation or a GRX node.
+The good news is that we have already installed `xorg-x11-server-Xvfb` in most servers. So you should be all set. 
+But if you find `xvfb-run`'s absence, reach out to PNL engineers for help.
 
 
 
