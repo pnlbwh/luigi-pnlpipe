@@ -540,6 +540,29 @@ for performing whole-brain tractography parcellation. The outputs of that script
 * a parcellation of the entire white matter into 800 fiber clusters
 * a parcellation of anatomical fiber tracts organized according to the brain lobes they connect
 
+Here is an abridged snapshot of the output directory (you should examine the `*csv` files):
+
+```python
+wma800/
+└── sub-1122_ses-1_dir-416
+    ├── AnatomicalTracts
+    │   └── diffusion_measurements_anatomical_tracts.csv
+    ├── FiberClustering
+    │   ├── InitialClusters
+    │   ├── OutlierRemovedClusters
+    │   ├── SeparatedClusters
+    │   │   ├── diffusion_measurements_commissural.csv
+    │   │   ├── diffusion_measurements_left_hemisphere.csv
+    │   │   ├── diffusion_measurements_right_hemisphere.csv
+    │   │   ├── tracts_commissural
+    │   │   ├── tracts_left_hemisphere
+    │   │   └── tracts_right_hemisphere
+    │   └── TransformedClusters
+    └── TractRegistration
+        └── sub-1122_ses-1_dir-416
+            └── output_tractography
+```
+
 
 Configuration:
 
