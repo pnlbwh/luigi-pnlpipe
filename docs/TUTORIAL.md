@@ -611,6 +611,8 @@ The same command applies for running it on PNL's GRX node: `dna007.partners.org`
 
 > NEW_SOFT_DIR=/data/pnl/soft/pnlpipe3/
 
+You should consult [SlicerDMRI/whitematteranalysis](https://github.com/SlicerDMRI/whitematteranalysis) repository
+for meaning of the above arguments.
 
 ##### Through SSH
 
@@ -625,6 +627,7 @@ wm_apply_ORG_atlas_to_subject.sh \
 However, running it through SSH requires availability of `xvfb-run` on that server--may it be a PNL workstation or a GRX node.
 The good news is that we have already installed `xorg-x11-server-Xvfb` in most servers. So you should be all set. 
 But if you find `xvfb-run`'s absence, reach out to PNL engineers for help.
+Lastly, you can use the same `-x 1` flag to run it through `bsub` on `pri_pnl` queue in ERIS cluster.
 
 
 
