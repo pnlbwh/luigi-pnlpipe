@@ -130,6 +130,15 @@ if __name__ == '__main__':
                                     struct_template=args.t2_template))
 
 
+                elif args.task=='Wma800':
+                    jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
+                                    derivatives_dir=derivatives_dir,
+                                    id=id,
+                                    ses=ses,
+                                    dwi_template=args.dwi_template,
+                                    struct_template=args.t2_template))
+
+
                 elif args.task=='Fs2Dwi':
                     jobs.append(Fs2Dwi(bids_data_dir=args.bids_data_dir,
                                        derivatives_dir=derivatives_dir,
@@ -210,6 +219,16 @@ if __name__ == '__main__':
                 # Ukf task has both dwi_template and pa_ap_template
                 # because a user may want to run {PnlEddy,FslEddy} or TopupEddy
                 elif args.task=='Ukf':
+                    jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
+                                    derivatives_dir=derivatives_dir,
+                                    id=id,
+                                    ses=ses,
+                                    dwi_template=args.dwi_template,
+                                    pa_ap_template=args.dwi_template,
+                                    struct_template=args.t1_template))
+
+
+                elif args.task=='Wma800':
                     jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
                                     derivatives_dir=derivatives_dir,
                                     id=id,
