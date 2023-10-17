@@ -109,12 +109,12 @@ if __name__ == '__main__':
 
                 
                 elif args.task=='EddyEpi':
-                    jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
-                                                derivatives_dir=derivatives_dir,
-                                                id=id,
-                                                ses=ses,
-                                                dwi_template=args.dwi_template,
-                                                struct_template=args.t2_template))
+                    jobs.append(EddyEpi(bids_data_dir=args.bids_data_dir,
+                                        derivatives_dir=derivatives_dir,
+                                        id=id,
+                                        ses=ses,
+                                        dwi_template=args.dwi_template,
+                                        struct_template=args.t2_template))
 
 
 
