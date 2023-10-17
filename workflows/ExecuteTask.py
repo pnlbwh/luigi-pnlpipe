@@ -93,181 +93,119 @@ if __name__ == '__main__':
             if args.t2_template:
 
                 if args.task=='StructMask':
-                    jobs.append(StructMask(bids_data_dir=args.bids_data_dir,
-                                           derivatives_dir=derivatives_dir,
-                                           id=id,
-                                           ses=ses,
-                                           struct_template=args.t2_template))
+                    jobs.append(StructMask(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        struct_template=args.t2_template))
 
                 elif args.task=='Freesurfer':
-                    jobs.append(Freesurfer(bids_data_dir=args.bids_data_dir,
-                                           derivatives_dir=derivatives_dir, 
-                                           id=id,
-                                           ses=ses,
-                                           t1_template=args.t1_template,
-                                           t2_template=args.t2_template))
+                    jobs.append(Freesurfer(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        t1_template=args.t1_template,
+                        t2_template=args.t2_template))
 
-                
                 elif args.task=='EddyEpi':
-                    jobs.append(EddyEpi(bids_data_dir=args.bids_data_dir,
-                                        derivatives_dir=derivatives_dir,
-                                        id=id,
-                                        ses=ses,
-                                        dwi_template=args.dwi_template,
-                                        struct_template=args.t2_template))
+                    jobs.append(EddyEpi(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        dwi_template=args.dwi_template,
+                        struct_template=args.t2_template))
 
 
+                # This Ukf task does not have pa_ap_template because
+                # when AXT2 is available, pa_ap acquisition should be unavailable.
+                # In other words, PnlEpi and TopupEddy are mutually exclusive
+                elif args.task in ['Ukf','Wma800']:
+                    jobs.append(eval(args.task)(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        dwi_template=args.dwi_template,
+                        struct_template=args.t2_template))
 
-                # Ukf task does not have pa_ap_template because
-                # when axt2 is available, pa_ap acquisition should be unavailable
-                # in other words, PnlEpi and TopupEddy are mutually exclusive
-                elif args.task=='Ukf':
-                    jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
-                                    derivatives_dir=derivatives_dir,
-                                    id=id,
-                                    ses=ses,
-                                    dwi_template=args.dwi_template,
-                                    struct_template=args.t2_template))
+                elif args.task in ['Fs2Dwi','Wmql','TractMeasures','Wmqlqc']:
+                    jobs.append(eval(args.task)(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        dwi_template=args.dwi_template,
+                        struct_template=args.t2_template))
 
-
-                elif args.task=='Wma800':
-                    jobs.append(Wma800(bids_data_dir=args.bids_data_dir,
-                                       derivatives_dir=derivatives_dir,
-                                       id=id,
-                                       ses=ses,
-                                       dwi_template=args.dwi_template,
-                                       struct_template=args.t2_template))
-
-
-                elif args.task=='Fs2Dwi':
-                    jobs.append(Fs2Dwi(bids_data_dir=args.bids_data_dir,
-                                       derivatives_dir=derivatives_dir,
-                                       id=id,
-                                       ses=ses,
-                                       dwi_template=args.dwi_template,
-                                       struct_template=args.t2_template))
-
-                elif args.task=='Wmql':
-                    jobs.append(Wmql(bids_data_dir=args.bids_data_dir,
-                                     derivatives_dir=derivatives_dir,
-                                     id=id,
-                                     ses=ses,
-                                     dwi_template=args.dwi_template,
-                                     struct_template=args.t2_template))
-                                     
-                elif args.task=='TractMeasures':
-                    jobs.append(TractMeasures(bids_data_dir=args.bids_data_dir,
-                                              derivatives_dir=derivatives_dir,
-                                              id=id,
-                                              ses=ses,
-                                              dwi_template=args.dwi_template,
-                                              struct_template=args.t2_template))
-
-
-
-                elif args.task=='Wmqlqc':
-                    jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
-                                       derivatives_dir=derivatives_dir,
-                                       id=id,
-                                       ses=ses,
-                                       dwi_template=args.dwi_template,
-                                       struct_template=args.t2_template))
-
+                        
 
             # just t1_template
             else:
                 if args.task=='StructMask':
-                    jobs.append(StructMask(bids_data_dir=args.bids_data_dir,
-                                           derivatives_dir=derivatives_dir,
-                                           id=id,
-                                           ses=ses,
-                                           struct_template=args.t1_template))
+                    jobs.append(StructMask(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        struct_template=args.t1_template))
 
                 elif args.task=='Freesurfer':
-                    jobs.append(Freesurfer(bids_data_dir=args.bids_data_dir,
-                                           derivatives_dir=derivatives_dir,
-                                           id=id,
-                                           ses=ses,
-                                           t1_template=args.t1_template))
-
-                
+                    jobs.append(Freesurfer(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        t1_template=args.t1_template))
                 
                 elif args.task in ['DwiAlign','GibbsUn','CnnMask','PnlEddy','FslEddy','HcpPipe']:
-                    jobs.append(eval(args.task)(bids_data_dir=args.bids_data_dir,
-                                                derivatives_dir=derivatives_dir,
-                                                id=id,
-                                                ses=ses,
-                                                dwi_template=args.dwi_template))
-
+                    jobs.append(eval(args.task)(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        dwi_template=args.dwi_template))
 
                 elif args.task=='SynB0':
-                    jobs.append(SynB0(bids_data_dir=args.bids_data_dir,
-                                      derivatives_dir=derivatives_dir,
-                                      id=id,
-                                      ses=ses,
-                                      dwi_template=args.dwi_template,
-                                      struct_template=args.t1_template))
-
+                    jobs.append(SynB0(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        dwi_template=args.dwi_template,
+                        struct_template=args.t1_template))
 
                 elif args.task=='TopupEddy':
-                    jobs.append(TopupEddy(bids_data_dir=args.bids_data_dir,
-                                          derivatives_dir=derivatives_dir,
-                                          id=id,
-                                          ses=ses,
-                                          pa_ap_template=args.dwi_template))
-
-                # Ukf task has both dwi_template and pa_ap_template
-                # because a user may want to run {PnlEddy,FslEddy} or TopupEddy
-                elif args.task=='Ukf':
-                    jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
-                                    derivatives_dir=derivatives_dir,
-                                    id=id,
-                                    ses=ses,
-                                    dwi_template=args.dwi_template,
-                                    pa_ap_template=args.dwi_template,
-                                    struct_template=args.t1_template))
+                    jobs.append(TopupEddy(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        pa_ap_template=args.dwi_template))
 
 
-                elif args.task=='Wma800':
-                    jobs.append(Wma800(bids_data_dir=args.bids_data_dir,
-                                       derivatives_dir=derivatives_dir,
-                                       id=id,
-                                       ses=ses,
-                                       dwi_template=args.dwi_template,
-                                       pa_ap_template=args.dwi_template,
-                                       struct_template=args.t1_template))
+                # This Ukf task has both dwi_template and pa_ap_template
+                # because a user may want to run {PnlEddy,FslEddy,HcpPipe} or TopupEddy
+                elif args.task in ['Ukf','Wma800']:
+                    jobs.append(eval(args.task)(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        dwi_template=args.dwi_template,
+                        pa_ap_template=args.dwi_template,
+                        struct_template=args.t1_template))
 
+                elif args.task in ['Fs2Dwi','Wmql','TractMeasures','Wmqlqc']:
+                    jobs.append(eval(args.task)(
+                        bids_data_dir=args.bids_data_dir,
+                        derivatives_dir=derivatives_dir,
+                        id=id,
+                        ses=ses,
+                        dwi_template=args.dwi_template))
 
-                elif args.task=='Fs2Dwi':
-                    jobs.append(Fs2Dwi(bids_data_dir=args.bids_data_dir,
-                                       derivatives_dir=derivatives_dir,
-                                       id=id,
-                                       ses=ses,
-                                       dwi_template=args.dwi_template))
-
-
-                elif args.task == 'Wmql':
-                    jobs.append(Wmql(bids_data_dir=args.bids_data_dir,
-                                     derivatives_dir=derivatives_dir,
-                                     id=id,
-                                     ses=ses,
-                                     dwi_template=args.dwi_template))
-
-
-                elif args.task=='Wmqlqc':
-                    jobs.append(Wmqlqc(bids_data_dir=args.bids_data_dir,
-                                       derivatives_dir=derivatives_dir,
-                                       id=id,
-                                       ses=ses,
-                                       dwi_template=args.dwi_template))
-                                       
-                                       
-                elif args.task=='TractMeasures':
-                    jobs.append(TractMeasures(bids_data_dir=args.bids_data_dir,
-                                              derivatives_dir=derivatives_dir,
-                                              id=id,
-                                              ses=ses,
-                                              dwi_template=args.dwi_template))
 
 
     build(jobs, workers=args.num_workers)
