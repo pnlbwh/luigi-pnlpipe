@@ -131,12 +131,12 @@ if __name__ == '__main__':
 
 
                 elif args.task=='Wma800':
-                    jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
-                                    derivatives_dir=derivatives_dir,
-                                    id=id,
-                                    ses=ses,
-                                    dwi_template=args.dwi_template,
-                                    struct_template=args.t2_template))
+                    jobs.append(Wma800(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir,
+                                       id=id,
+                                       ses=ses,
+                                       dwi_template=args.dwi_template,
+                                       struct_template=args.t2_template))
 
 
                 elif args.task=='Fs2Dwi':
@@ -229,13 +229,13 @@ if __name__ == '__main__':
 
 
                 elif args.task=='Wma800':
-                    jobs.append(Ukf(bids_data_dir=args.bids_data_dir,
-                                    derivatives_dir=derivatives_dir,
-                                    id=id,
-                                    ses=ses,
-                                    dwi_template=args.dwi_template,
-                                    pa_ap_template=args.dwi_template,
-                                    struct_template=args.t1_template))
+                    jobs.append(Wma800(bids_data_dir=args.bids_data_dir,
+                                       derivatives_dir=derivatives_dir,
+                                       id=id,
+                                       ses=ses,
+                                       dwi_template=args.dwi_template,
+                                       pa_ap_template=args.dwi_template,
+                                       struct_template=args.t1_template))
 
 
                 elif args.task=='Fs2Dwi':
