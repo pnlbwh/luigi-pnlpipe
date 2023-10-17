@@ -384,7 +384,9 @@ Different methods for eddy and epi corrections are described below:
 
 * PnlEddy + PnlEpi (EddyEpi)
 * FslEddy + PnlEpi (EddyEpi)
+* SynB0
 * TopupEddy
+* HcpPipe
 
 
 ### EddyEpi
