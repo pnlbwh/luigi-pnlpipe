@@ -508,6 +508,22 @@ for corrected data is determined as follows:
     *_dir-214_*
 
 
+### HcpPipe
+
+This task supersedes *TopupEddy* task. The *HcpPipe* way of processing opposing pair of DWIs is inherited 
+from [Washington-University/HCPpipelines](https://github.com/Washington-University/HCPpipelines).
+PNL introduced some improvements in that pipeline including:
+
+  * Use [CNN brain masking](https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation) program to generate topup mask
+  * Replace outliers (`--repol` flag) for >500 b-shells
+
+Since external processing is involved in this task, it is run via a [separate script](https://github.com/pnlbwh/luigi-pnlpipe/blob/b311000073047b40db9b7b8c1752cdbba883aa6c/workflows/hcp_pnl_topup.lsf) in three steps:
+
+  * Gibbs unringing of opposing pair of DWIs via Luigi
+  * HCP pipeline via shell scripts
+  * Creation of soft links in `sub-*/ses-*/dwi/` directory according to BIDS convention via Luigi
+
+This *HcpPipe* task has been used to process *HCP-EP* data.
 
 
 ## UKFTractography
