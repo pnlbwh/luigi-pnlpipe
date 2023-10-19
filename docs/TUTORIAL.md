@@ -461,6 +461,47 @@ The mask and baseline image provided to `FslEddy` are approximated as eddy corre
 be fed into later task FslEddyEpi.
 
 
+### SynB0
+
+When an axial T2w image is absent and there is only AP or PA acquisition, we make use of [Synb0-DISCO](https://github.com/MASILab/Synb0-DISCO)
+program to perform EPI distortion correction. The Synb0-DISCO program is a replacement of topup. It creates a distortion corrected B0 from a single
+AP or PA acquisition. It also provides the usual topup correction parameters that are used to perform eddy correction later.
+However, Synb0-DISCO requires a T1w image.
+
+![](https://github.com/pnlbwh/luigi-pnlpipe/blob/0d2229e1f27fcc6b02825e9a147c0146924eae43/docs/SynB0-Wma800.png)
+
+
+The configuration file used for `SynB0` task is same as the above [dwi_pipe_params.cfg](../params/dwi_pipe_params.cfg). Specifically, `SynB0` requires
+the following parameters definition:
+
+```cfg
+## [SynB0] ##
+acqp: /path/to/acqp.txt
+index: /path/to/index.txt
+```
+
+Where `acqp.txt` just:
+
+```
+0 1 0 0.05
+0 1 0 0
+```
+
+Run it:
+
+```bash
+export LUIGI_CONFIG_PATH=/path/to/dwi_pipe_params.cfg
+
+exec/ExecuteTask --task SynB0 \
+--bids-data-dir /data/pnl/Collaborators/EDCRP/1110/1110_ses-002_T1_nii/rawdata/ \
+-c ne00181 -s 002 \
+--dwi-template sub-*/ses-*/dwi/*_dwi.nii.gz \
+--t1-template sub-*/ses-*/anat/*_T1w.nii.gz
+```
+
+Note that, `SynB0` task is run in coordination with [_synb0_eddy.sh](_synb0_eddy.sh) .
+
+
 ### TopupEddy
 
 When two opposing acquisitions--AP and PA are available such as in Human Connectom Project (HCP), 
