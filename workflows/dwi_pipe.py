@@ -12,7 +12,7 @@ from subprocess import Popen, check_call
 from time import sleep
 import re
 
-from struct_pipe import StructMask
+from struct_pipe import StructMask, N4BiasCorrect
 from _task_util import _mask_name
 
 from scripts.util import N_PROC, B0_THRESHOLD, BET_THRESHOLD, QC_POLL, LIBDIR, \
@@ -87,7 +87,7 @@ class GibbsUn(Task):
         dwi = local.path(re.sub('_desc-Xc_', '_desc-XcUn_', self.input()['dwi']))
         bval = dwi.with_suffix('.bval', depth=2)
         bvec = dwi.with_suffix('.bvec', depth=2)
-
+        
         return dict(dwi=dwi, bval=bval, bvec=bvec)
 
 
@@ -323,6 +323,69 @@ class FslEddy(Task):
 
 
 
+@requires(GibbsUn,CnnMask,N4BiasCorrect)
+class SynB0(Task):
+    
+    mask_qc= BoolParameter(default=False)
+    acqp = Parameter()
+    index = Parameter()
+    
+    
+    def run(self):
+        
+        # synb0 wrapper
+        DIR= abspath(dirname(__file__))
+        cmd = (' ').join([f'{DIR}/_synb0_eddy.sh',
+                          self.input()[0]['dwi']._path,
+                          self.input()[1]['bse']._path,
+                          self.input()[2]['n4corr']._path,
+                          self.output()['dwi']._path,
+                          self.output()['mask'],
+                          self.output()['bse'],
+                          self.acqp,
+                          self.index])
+        p = Popen(cmd, shell=True)
+        p.wait()
+        
+        version_file= self.output()['dwi'].dirname.join('fsl_version.txt')
+        check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell= True)
+
+
+        write_provenance(self, self.output()['dwi'])
+
+        # self.dwi= self.output()['dwi']
+        # yield self.clone(BseExtract)
+
+
+
+    def output(self):
+    
+        eddy_epi_prefix= self.input()[0]['dwi'].rsplit('_dwi.nii.gz')[0]
+        eddy_epi_prefix= eddy_epi_prefix.replace('_acq-PA','')
+        eddy_epi_prefix= eddy_epi_prefix.replace('_acq-AP','')
+        eddy_epi_prefix+= 'EdEp'
+        
+        dwi = local.path(eddy_epi_prefix+ '_dwi.nii.gz')
+        bval = dwi.with_suffix('.bval', depth= 2)
+        bvec = dwi.with_suffix('.bvec', depth= 2)
+
+
+        mask_prefix = dwi.rsplit('_desc-')[0]
+        desc= re.search('_desc-(.+?)_dwi.nii.gz', basename(dwi)).group(1)
+        desc= 'dwi'+ desc
+        mask_prefix= mask_prefix+ '_desc-'+ desc
+        mask = local.path(mask_prefix+ '_mask.nii.gz')
+
+        bse_prefix= dwi._path
+        desc= re.search('_desc-(.+?)_dwi.nii.gz', bse_prefix).group(1)
+        desc= 'dwi'+ desc
+        bse= local.path(bse_prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
+
+
+        return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
+
+
+
 @inherits(FslEddy, PnlEddy, StructMask, BseExtract)
 class EddyEpi(Task):
     debug = BoolParameter(default=False)
@@ -405,9 +468,9 @@ class TopupEddy(Task):
     config = Parameter(default=pjoin(LIBDIR, 'scripts', 'eddy_config.txt'))
 
     useGpu = BoolParameter(default=False)
-    numb0 = Parameter(default=1)
+    numb0 = Parameter(default='1')
     whichVol = Parameter(default='1')
-    scale = Parameter(default=2)
+    scale = Parameter(default='2')
     
     TopupOutDir= Parameter(default='fsl_eddy')
 
@@ -595,7 +658,7 @@ class HcpPipe(ExternalTask):
 
 
 
-@inherits(PnlEddy, FslEddy, EddyEpi, TopupEddy, HcpPipe)
+@inherits(PnlEddy, FslEddy, SynB0, EddyEpi, TopupEddy, HcpPipe)
 class Ukf(Task):
 
     ukf_params = Parameter(default='')
@@ -609,6 +672,8 @@ class Ukf(Task):
             return self.clone(PnlEddy)
         elif self.eddy_epi_task=='fsleddy':
             return self.clone(FslEddy)
+        elif self.eddy_epi_task=='synb0':
+            return self.clone(SynB0)
         elif self.eddy_epi_task=='eddyepi':
             return self.clone(EddyEpi)
         elif self.eddy_epi_task=='topupeddy':
@@ -654,7 +719,7 @@ class Wma800(Task):
     wma_cleanup= IntParameter(default=0)
 
     def run(self):
-
+        outDir = self.input().dirname.join('wma800')
         cmd = (' ').join(['wm_apply_ORG_atlas_to_subject.sh',
                           '-i', self.input(),
                           '-a', self.atlas,
@@ -664,12 +729,19 @@ class Wma800(Task):
                           f'-n {self.wma_nproc}',
                           f'-c {self.wma_cleanup}',
                           '-d 1',
-                          '-o', self.output()])
+                          '-o', outDir])
         p = Popen(cmd, shell=True)
         p.wait()
-
-        write_provenance(self)
+        
+        write_provenance(self, outDir)
 
     def output(self):
-        return self.input().dirname.join('wma800')
+        prefix= self.input().dirname.join('wma800',self.input().basename.split('.vtk')[0],
+            'FiberClustering/SeparatedClusters')
+        
+        clusters=[]
+        for region in 'commissural left_hemisphere right_hemisphere'.split():
+            clusters.append( local.path(f'{prefix}/diffusion_measurements_{region}.csv') )
 
+        
+        return clusters
