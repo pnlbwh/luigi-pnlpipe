@@ -1,5 +1,3 @@
----
-
 There are many tasks in our Luigi pipeline defined in [different modules](../workflows):
 
 * struct_pipe.py
@@ -7,6 +5,8 @@ There are many tasks in our Luigi pipeline defined in [different modules](../wor
 * fs2dwi_pipe.py
 
 Some of them can be run standalone. Others require a task to be run beforehand. Such various routes are outlined below:
+
+---
 
 #### T1 + T2 templates
 
@@ -16,10 +16,11 @@ Some of them can be run standalone. Others require a task to be run beforehand. 
 
     EddyEpi, Ukf, Wma800
     
-Provided that Freesurfer pipeline was run:
+Provided that `Freesurfer` task was run:
 
-    Fs2Dwi, Wmql, Wmqlqc, TractMeasures
-            
+    EddyEpi, Ukf, Fs2Dwi, Wmql, Wmqlqc, TractMeasures
+    
+---
 
 #### Only T1 template
 
@@ -32,16 +33,18 @@ Provided that Freesurfer pipeline was run:
 #### ap_pa_template
 
     TopupEddy, Ukf, Wma800
+
+---
     
 #### Only dwi template
 
     DwiAlign, GibbsUn, CnnMask, PnlEddy, FslEddy, Ukf, Wma800
     
-Provided that Freesurfer task was run:
+Provided that `Freesurfer` task was run:
 
     DwiAlign, GibbsUn, CnnMask, PnlEddy, FslEddy, Ukf, Fs2Dwi, Wmql, Wmqlqc, TractMeasures
 
-Provided that GibbsUn was run:
+Provided that `GibbsUn` task was run:
 
     HcpPipe, Ukf, Wma800
 
