@@ -18,7 +18,7 @@ Some of them can be run standalone. Others require a task to be run beforehand. 
     
 Provided that Freesurfer pipeline was run:
 
-    EddyEpi, Ukf, Fs2Dwi, Wmql, Wmqlqc, TractMeasures
+    Fs2Dwi, Wmql, Wmqlqc, TractMeasures
             
 
 #### Only T1 template
