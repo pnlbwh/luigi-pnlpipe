@@ -44,6 +44,9 @@ Provided that `Freesurfer` task was run:
 
     DwiAlign, GibbsUn, CnnMask, PnlEddy, FslEddy, Ukf, Fs2Dwi, Wmql, Wmqlqc, TractMeasures
 
+However, note that `Ukf` is interfaced to both `PnlEddy, FslEddy` via `EddyEpi` task.
+    
+
 Provided that `GibbsUn` task was run:
 
     HcpPipe, Ukf, Wma800
