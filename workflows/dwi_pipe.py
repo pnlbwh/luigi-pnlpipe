@@ -719,6 +719,7 @@ class Wma800(Task):
     wma_cleanup= IntParameter(default=0)
 
     def run(self):
+        outDir = self.input().dirname.join('wma800')
         cmd = (' ').join(['wm_apply_ORG_atlas_to_subject.sh',
                           '-i', self.input(),
                           '-a', self.atlas,
@@ -728,11 +729,11 @@ class Wma800(Task):
                           f'-n {self.wma_nproc}',
                           f'-c {self.wma_cleanup}',
                           '-d 1',
-                          '-o', self.input().dirname.join('wma800')])
+                          '-o', outDir])
         p = Popen(cmd, shell=True)
         p.wait()
-
-        write_provenance(self)
+        
+        write_provenance(self, outDir)
 
     def output(self):
         prefix= self.input().dirname.join('wma800',self.input().basename.split('.vtk')[0],
