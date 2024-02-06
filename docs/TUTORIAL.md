@@ -501,7 +501,7 @@ exec/ExecuteTask --task SynB0 \
 --t1-template sub-*/ses-*/anat/*_T1w.nii.gz
 ```
 
-Note that, `SynB0` task is run in coordination with [_synb0_eddy.sh](_synb0_eddy.sh) .
+Note that, `SynB0` task is run in coordination with [_synb0_eddy.sh](../workflows/_synb0_eddy.sh) .
 
 
 ### TopupEddy
