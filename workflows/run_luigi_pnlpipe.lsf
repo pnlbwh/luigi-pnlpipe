@@ -18,8 +18,8 @@ sessions=/path/to/sessions.txt
 #BSUB -J luigi-pnlpipe[1-NUM_CASES]%NUM_PARALLEL
 #BSUB -o ~/luigi-pnlpipe-%J-%I.out
 #BSUB -e ~/luigi-pnlpipe-%J-%I.err
-#BSUB -q big-multi
-#BSUB -R rusage[mem=16000]
+#BSUB -q pri_pnl
+#BSUB -R rusage[mem=8000]
 #BSUB -n NUM_CORES
 
 
