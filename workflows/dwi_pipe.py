@@ -292,8 +292,7 @@ class FslEddy(Task):
                 p = Popen(cmd, shell=True)
                 p.wait()
                 
-                version_file= outDir.join('fsl_version.txt')
-                check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell= True)
+                check_call('cp $FSLDIR/etc/fslversion {}'.format(self.output()['dwi'].dirname), shell= True)
                 
                 # fsl_eddy.py writes with this outPrefix
                 outPrefix= outDir.join(self.input()[0]['dwi'].stem)+'_Ed'
@@ -333,6 +332,7 @@ class SynB0(Task):
     
     def run(self):
         
+
         # synb0 wrapper
         DIR= abspath(dirname(__file__))
         cmd = (' ').join([f'{DIR}/_synb0_eddy.sh',
@@ -347,9 +347,7 @@ class SynB0(Task):
         p = Popen(cmd, shell=True)
         p.wait()
         
-        version_file= self.output()['dwi'].dirname.join('fsl_version.txt')
-        check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell= True)
-
+        check_call('cp $FSLDIR/etc/fslversion {}'.format(self.output()['dwi'].dirname), shell= True)
 
         write_provenance(self, self.output()['dwi'])
 
@@ -519,8 +517,7 @@ class TopupEddy(Task):
                 p = Popen(cmd, shell=True)
                 p.wait()
 
-                version_file = outDir.join('fsl_version.txt')
-                check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell=True)
+                check_call('cp $FSLDIR/etc/fslversion {}'.format(self.output()['dwi'].dirname), shell=True)
 
 
                 with open(outDir.join('.outPrefix.txt')) as f:
@@ -653,7 +650,9 @@ class HcpPipe(ExternalTask):
             symlink(bvecHcp, bvec)
             symlink(maskHcp, mask)
             symlink(bseHcp, bse)
-        
+       
+        check_call('cp $FSLDIR/etc/fslversion {}'.format(self.output()['dwi'].dirname), shell=True)
+
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
 
 
