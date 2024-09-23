@@ -651,7 +651,7 @@ class HcpPipe(ExternalTask):
             symlink(maskHcp, mask)
             symlink(bseHcp, bse)
        
-        check_call('cp $FSLDIR/etc/fslversion {}'.format(self.output()['dwi'].dirname), shell=True)
+        check_call('cp $FSLDIR/etc/fslversion {}'.format(dwi.dirname), shell=True)
 
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
 
