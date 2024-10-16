@@ -46,18 +46,20 @@ COMMENT
 bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
 
 # write four templates in the following order
-# change ses-1 in templates to the session you are processing
 # PA template, PA template
 # AP template, AP template
-raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-107_dwi.nii.gz \
-              sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-107_dwi.nii.gz"
-unr_template="*_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
-              *_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
+raw_template="sub-*/ses-*/dwi/*_acq-PA_dir-99_dwi.nii.gz sub-*/ses-*/dwi/*_acq-PA_dir-107_dwi.nii.gz \
+              sub-*/ses-*/dwi/*_acq-AP_dir-99_dwi.nii.gz sub-*/ses-*/dwi/*_acq-AP_dir-107_dwi.nii.gz"
+unr_template="*_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
+              *_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
 
-# a single caseid or a text file with list of cases
+# a single case id or a text file with list of cases
 caselist=1004
+# a single session id
+s=01
 
 LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/dwi_pipe_params.cfg
+CUDA_VERSION=10.2
 
 # task is one of {HcpPipe,Ukf,Wma800}
 task=HcpPipe
@@ -67,9 +69,9 @@ task=HcpPipe
 
 HcpOutDir=hcppipe
 
-export HCPPIPEDIR=/data/pnl/soft/pnlpipe3/HCPpipelines
-export HCPPIPEDIR_Config=/data/pnl/soft/pnlpipe3/HCPpipelines/global/config
-export HCPPIPEDIR_Global=/data/pnl/soft/pnlpipe3/HCPpipelines/global/scripts
+export HCPPIPEDIR=/software/rocky9/HCPpipelines
+export HCPPIPEDIR_Config=/software/rocky9/HCPpipelines/global/config
+export HCPPIPEDIR_Global=/software/rocky9/HCPpipelines/global/scripts
 
 export LUIGI_CONFIG_PATH
 
@@ -78,7 +80,7 @@ if [ -z $cluster ]
 then
     source /data/pnl/soft/pnlpipe3/bashrc3-gpu
 else
-    source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu
+    source /software/rocky9/bashrc9
 fi
 
 if [ -f ${caselist} ]
@@ -90,21 +92,21 @@ else
     id=${caselist}
 fi
 
-
 # luigi-pnlpipe upto GibbsUn so data can be organized according to BIDS
 for j in $(echo $raw_template)
 do
-    /data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/ExecuteTask.py \
+    /software/rocky9/luigi-pnlpipe/workflows/ExecuteTask.py \
     --bids-data-dir $bids_data_dir \
-    --task GibbsUn -c $id \
+    --task GibbsUn -c $id -s $s \
     --dwi-template $j
 done
 
 
 # determine --path for HCP pipe
 template=($raw_template)
-subdir=`echo ${template[0]} | sed "s+sub-\*+sub-$id+g"`
-datadir=`dirname $bids_data_dir`/derivatives/pnlpipe/`dirname $subdir`
+_subdir=`echo ${template[0]} | sed "s+sub-\*+sub-$id+g"`
+subdir=`echo ${_subdir} | sed "s+ses-\*+ses-$s+g"`
+datadir=`dirname $bids_data_dir`/derivatives/$USER-pnlpipe/`dirname $subdir`
 echo "HCP pipe data directory: $datadir"
 
 
@@ -119,7 +121,7 @@ then
     
     template=($unr_template)
     cmd="$HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh --path=$datadir \
-    --subject=$HcpOutDir --cuda-version=9.1 \
+    --subject=$HcpOutDir --cuda-version=$CUDA_VERSION \
     --posData=`ls $datadir/${template[0]}`@`ls $datadir/${template[1]}` \
     --negData=`ls $datadir/${template[2]}`@`ls $datadir/${template[3]}` \
     --echospacing=0.689998 --PEdir=2 --gdcoeffs=NONE \
@@ -132,8 +134,8 @@ fi
 
 # create symlinks
 template=($raw_template)
-/data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/ExecuteTask.py \
+/software/rocky9/luigi-pnlpipe/workflows/ExecuteTask.py \
 --bids-data-dir $bids_data_dir \
 --dwi-template ${template[0]} \
---task $task -c $id
+--task $task -c $id -s $s
 
