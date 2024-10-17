@@ -47,21 +47,24 @@ task=HcpPipe
 
 
 
-HcpOutDir=hcppipe
-
-export HCPPIPEDIR=/software/rocky9/HCPpipelines
-export HCPPIPEDIR_Config=/software/rocky9/HCPpipelines/global/config
-export HCPPIPEDIR_Global=/software/rocky9/HCPpipelines/global/scripts
-
-export LUIGI_CONFIG_PATH
-
 cluster=`hostname | grep pnl-.*.partners.org`
 if [ -z $cluster ]
 then
-    source /data/pnl/soft/pnlpipe3/bashrc3-gpu
+    SOFTDIR=/data/pnl/soft/pnlpipe3
+    source ${SOFTDIR}/bashrc3-gpu
 else
-    source /software/rocky9/bashrc9
+    SOFTDIR=/software/rocky9/
+    source ${SOFTDIR}/bashrc9
 fi
+
+
+HcpOutDir=hcppipe
+
+export HCPPIPEDIR=${SOFTDIR}/HCPpipelines
+export HCPPIPEDIR_Config=${SOFTDIR}/HCPpipelines/global/config
+export HCPPIPEDIR_Global=${SOFTDIR}/HCPpipelines/global/scripts
+
+export LUIGI_CONFIG_PATH
 
 # check LSB_JOBINDEX because it won't exist in /rfanfs/
 if [ ! -z ${LSB_JOBINDEX} ]
@@ -81,7 +84,7 @@ fi
 # luigi-pnlpipe upto GibbsUn so data can be organized according to BIDS
 for j in $(echo $raw_template)
 do
-    /software/rocky9/luigi-pnlpipe/workflows/ExecuteTask.py \
+    ${SOFTDIR}/luigi-pnlpipe/workflows/ExecuteTask.py \
     --bids-data-dir $bids_data_dir \
     --task GibbsUn -c $id -s $s \
     --dwi-template $j
@@ -144,7 +147,7 @@ fi
 
 
 template=($raw_template)
-/software/rocky9/luigi-pnlpipe/workflows/ExecuteTask.py \
+${SOFTDIR}/luigi-pnlpipe/workflows/ExecuteTask.py \
 --bids-data-dir $bids_data_dir \
 --dwi-template ${template[0]} \
 --task $task -c $id -s $s
