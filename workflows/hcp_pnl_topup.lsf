@@ -17,8 +17,6 @@ bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
 # AP template, AP template
 raw_template="sub-*/ses-*/dwi/*_acq-PA_dir-99_dwi.nii.gz sub-*/ses-*/dwi/*_acq-PA_dir-107_dwi.nii.gz \
               sub-*/ses-*/dwi/*_acq-AP_dir-99_dwi.nii.gz sub-*/ses-*/dwi/*_acq-AP_dir-107_dwi.nii.gz"
-unr_template="*_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
-              *_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
 
 # a single case id or a text file with list of cases
 caselist=1004
@@ -77,6 +75,14 @@ datadir=`dirname $bids_data_dir`/derivatives/$USER-pnlpipe/`dirname $subdir`
 echo "HCP pipe data directory: $datadir"
 
 
+template=()
+for t in $(echo $raw_template)
+do
+    base=`basename $t`
+    template+=(${base//_dwi/_desc-XcUn_dwi})
+done
+
+
 # HCP pipe using GibbsUn data
 if [ ! -f $datadir/$HcpOutDir/Diffusion/eddy/eddy_unwarped_images.nii.gz ]
 then
@@ -86,16 +92,33 @@ then
     Command being issued to HCP pipeline:
     """
     
-    template=($unr_template)
-    cmd="$HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh --path=$datadir \
-    --subject=$HcpOutDir --cuda-version=$CUDA_VERSION \
-    --posData=`ls $datadir/${template[0]}`@`ls $datadir/${template[1]}` \
-    --negData=`ls $datadir/${template[2]}`@`ls $datadir/${template[3]}` \
-    --echospacing=0.689998 --PEdir=2 --gdcoeffs=NONE \
-    --extra-eddy-arg=--data_is_shelled --extra-eddy-arg=--repol --extra-eddy-arg=--verbose"
+
+    if [ ${#template[@]} == 4 ]
+    then
+        cmd="$HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh --path=$datadir \
+        --subject=$HcpOutDir --cuda-version=$CUDA_VERSION \
+        --posData=`ls $datadir/${template[0]}`@`ls $datadir/${template[1]}` \
+        --negData=`ls $datadir/${template[2]}`@`ls $datadir/${template[3]}` \
+        --echospacing=0.689998 --PEdir=2 --gdcoeffs=NONE \
+        --extra-eddy-arg=--data_is_shelled --extra-eddy-arg=--repol --extra-eddy-arg=--verbose"
+     elif [ ${#template[@]} == 2 ]
+     then
+        cmd="$HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh --path=$datadir \
+        --subject=$HcpOutDir --cuda-version=$CUDA_VERSION \
+        --posData=`ls $datadir/${template[0]}` \
+        --negData=`ls $datadir/${template[1]}` \
+        --echospacing=0.689998 --PEdir=2 --gdcoeffs=NONE \
+        --extra-eddy-arg=--data_is_shelled --extra-eddy-arg=--repol --extra-eddy-arg=--verbose"
+     else
+         echo Unknown number of --posData, --negData.
+         echo Execute $HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh manually.
+         exit 1
+     fi
+
     echo $cmd
     echo ''
     $cmd || exit 1
+
 fi
 
 
