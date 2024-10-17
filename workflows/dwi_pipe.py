@@ -5,7 +5,7 @@ from luigi.util import inherits, requires
 from glob import glob
 from os.path import join as pjoin, abspath, isfile, basename, dirname, isdir
 from os import symlink, getenv
-from shutil import move, rmtree
+from shutil import move, rmtree, copyfile
 
 from plumbum import local
 from subprocess import Popen, check_call
@@ -102,9 +102,9 @@ class CnnMask(Task):
     def run(self):
         
         with TemporaryDirectory() as tmpdir, local.cwd(tmpdir):
-            symlink(self.input()['dwi'],self.input()['dwi'].basename)
-            symlink(self.input()['bval'],self.input()['bval'].basename)
-            symlink(self.input()['bvec'],self.input()['bvec'].basename)
+            copyfile(self.input()['dwi'],self.input()['dwi'].basename)
+            copyfile(self.input()['bval'],self.input()['bval'].basename)
+            copyfile(self.input()['bvec'],self.input()['bvec'].basename)
             
             
             dwi_list= 'dwi_list.txt'
@@ -643,13 +643,12 @@ class HcpPipe(ExternalTask):
         bse= local.path(bse_prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
         
         
-        # create symlinks
         if not isfile(dwi):
-            symlink(dwiHcp, dwi)
-            symlink(bvalHcp, bval)
-            symlink(bvecHcp, bvec)
-            symlink(maskHcp, mask)
-            symlink(bseHcp, bse)
+            move(dwiHcp, dwi)
+            move(bvalHcp, bval)
+            move(bvecHcp, bvec)
+            move(maskHcp, mask)
+            move(bseHcp, bse)
        
         check_call('cp $FSLDIR/etc/fslversion {}'.format(dwi.dirname), shell=True)
 
