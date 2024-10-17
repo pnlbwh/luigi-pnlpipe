@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 
 # Copy this script to your project directory and edit as needed
+# There are no arguments to this script. Execute it as ./hcp_pnl_topup.lsf
 
 # Useful wiki for executing this script in PNL GPU machines
 # https://github.com/pnlbwh/luigi-pnlpipe/wiki/Run-HCP-pipeline-on-PNL-GPU-machines
@@ -16,7 +17,12 @@ Or two templates in the following order:
 
     PA template AP template
 
+Notes:
+    * Even if one of the templates is a single b0, name it like DWI with _dwi.nii.gz suffix.
+    * All b0 volumes need to be accompanied by .bval and .bvec files. Usually, the .bvec file is in 3xN format.
+
 COMMENT
+
 
 bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
 
