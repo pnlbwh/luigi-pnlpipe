@@ -1,20 +1,25 @@
 #!/usr/bin/bash
 
-# Useful wiki for executing this in PNL GPU machines
-# https://github.com/pnlbwh/luigi-pnlpipe/wiki/Run-HCP-pipeline-on-PNL-GPU-machines-in-a-parallel-manner
+# Copy this script to your project directory and edit as needed
 
+# Useful wiki for executing this script in PNL GPU machines
+# https://github.com/pnlbwh/luigi-pnlpipe/wiki/Run-HCP-pipeline-on-PNL-GPU-machines
 
-# check LSB_JOBINDEX because it won't exist in /rfanfs/
-if [ ! -z ${LSB_JOBINDEX} ]
-then
-    export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
-fi
+: << COMMENT
+HCP toolbox accepts an even number (2 or 4) of opposing templates.
+You can write four templates in the following order:
+
+    PA template PA template
+    AP template AP template
+
+Or two templates in the following order:
+
+    PA template AP template
+
+COMMENT
 
 bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
 
-# write four templates in the following order
-# PA template, PA template
-# AP template, AP template
 raw_template="sub-*/ses-*/dwi/*_acq-PA_dir-99_dwi.nii.gz sub-*/ses-*/dwi/*_acq-PA_dir-107_dwi.nii.gz \
               sub-*/ses-*/dwi/*_acq-AP_dir-99_dwi.nii.gz sub-*/ses-*/dwi/*_acq-AP_dir-107_dwi.nii.gz"
 
@@ -29,7 +34,11 @@ CUDA_VERSION=10.2
 # task is one of {HcpPipe,Ukf,Wma800}
 task=HcpPipe
 
+
+
+# You should not edit anything beyond this line
 # ==============================================================================
+
 
 
 HcpOutDir=hcppipe
@@ -46,6 +55,12 @@ then
     source /data/pnl/soft/pnlpipe3/bashrc3-gpu
 else
     source /software/rocky9/bashrc9
+fi
+
+# check LSB_JOBINDEX because it won't exist in /rfanfs/
+if [ ! -z ${LSB_JOBINDEX} ]
+then
+    export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
 fi
 
 if [ -f ${caselist} ]
