@@ -137,7 +137,6 @@ then
 fi
 
 
-# create symlinks
 template=($raw_template)
 /software/rocky9/luigi-pnlpipe/workflows/ExecuteTask.py \
 --bids-data-dir $bids_data_dir \
