@@ -1,84 +1,75 @@
 #!/usr/bin/bash
 
-# Useful wiki for executing this in PNL GPU machines
-# https://github.com/pnlbwh/luigi-pnlpipe/wiki/Run-HCP-pipeline-on-PNL-GPU-machines-in-a-parallel-manner
+# Copy this script to your project directory and edit as needed
+# There are no arguments to this script. Execute it as ./hcp_pnl_topup.lsf
+
+# Useful wiki for executing this script in PNL GPU machines
+# https://github.com/pnlbwh/luigi-pnlpipe/wiki/Run-HCP-pipeline-on-PNL-GPU-machines
 
 : << COMMENT
-Running this script w/o GPU support would take a long time (>24 hours).
-So always try to use a GPU enabled machine e.g. grx** nodes, eristwo gpu queue.
-=> Copy this script to your project directory and update the marked variables.
-=> Execute within shell as ./hcp_pnl_topup.lsf
-=> To execute through LSF, adjust [1-N]%2 and "BSUB -n 4" as explained below.
+HCP toolbox accepts an even number (2 or 4) of opposing templates.
+You can write four templates in the following order:
+
+    PA template PA template
+    AP template AP template
+
+Or two templates in the following order:
+
+    PA template AP template
+
+Notes:
+    * Even if one of the templates is a single b0, name it like DWI with _dwi.nii.gz suffix.
+    * All b0 volumes need to be accompanied by .bval and .bvec files. Usually, the .bvec file is in 3xN format.
+
 COMMENT
 
+
+bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
+
+raw_template="sub-*/ses-*/dwi/*_acq-PA_dir-99_dwi.nii.gz sub-*/ses-*/dwi/*_acq-PA_dir-107_dwi.nii.gz \
+              sub-*/ses-*/dwi/*_acq-AP_dir-99_dwi.nii.gz sub-*/ses-*/dwi/*_acq-AP_dir-107_dwi.nii.gz"
+
+# a single case id or a text file with list of cases
+caselist=1004
+# a single session id
+s=01
+
+LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/dwi_pipe_params.cfg
+CUDA_VERSION=10.2
+
+# task is one of {HcpPipe,Ukf,Wma800}
+task=HcpPipe
+
+
+
+# You should not edit anything beyond this line
 # ==============================================================================
 
-#BSUB -J hcp-topup[1-N]%2
-#BSUB -q gpu
-#BSUB -m ml001
-#BSUB -R rusage[mem=12000]
-#BSUB -o /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.out
-#BSUB -e /data/pnl/U01_HCP_Psychosis/data_processing/output/hcp-topup-%J-%I.err
-#BSUB -n 4
+
+
+cluster=`hostname | grep pnl-.*.partners.org`
+if [ -z $cluster ]
+then
+    SOFTDIR=/data/pnl/soft/pnlpipe3
+    source ${SOFTDIR}/bashrc3-gpu
+else
+    SOFTDIR=/software/rocky9/
+    source ${SOFTDIR}/bashrc9
+fi
+
+
+HcpOutDir=hcppipe
+
+export HCPPIPEDIR=${SOFTDIR}/HCPpipelines
+export HCPPIPEDIR_Config=${SOFTDIR}/HCPpipelines/global/config
+export HCPPIPEDIR_Global=${SOFTDIR}/HCPpipelines/global/scripts
+
+export LUIGI_CONFIG_PATH
 
 # check LSB_JOBINDEX because it won't exist in /rfanfs/
 if [ ! -z ${LSB_JOBINDEX} ]
 then
     export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
-fi
-
-: << COMMENT
-The formula for CUDA_VISIBLE_DEVICES is ${LSB_JOBINDEX}%G,
-which also means the maximum number of parallel cases you can process is G
-
-Adjust "BSUB -n 4" in a way that each GPU device can run no more than one job.
-You can use the formula "BSUB -n N/G" to ensure that where--
-    - N is the maximum number of jobs for that node
-    - G is the number of GPUs in that node
-Otherwise your jobs might crash due to out of memory error.
-
-Example: node ml001 has 8(=N) job slots and 2(=G) GPUs so "BSUB -n 8/2" and "BSUB -J hcp-topup[1-N]%2"
-
-COMMENT
-
-
-
-bids_data_dir=/data/pnl/U01_HCP_Psychosis/data_processing/BIDS/rawdata
-
-# write four templates in the following order
-# change ses-1 in templates to the session you are processing
-# PA template, PA template
-# AP template, AP template
-raw_template="sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-PA_dir-107_dwi.nii.gz \
-              sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-99_dwi.nii.gz sub-*/ses-1/dwi/*_ses-1_acq-AP_dir-107_dwi.nii.gz"
-unr_template="*_ses-1_acq-PA_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-PA_dir-107_desc-XcUn_dwi.nii.gz \
-              *_ses-1_acq-AP_dir-99_desc-XcUn_dwi.nii.gz *_ses-1_acq-AP_dir-107_desc-XcUn_dwi.nii.gz"
-
-# a single caseid or a text file with list of cases
-caselist=1004
-
-LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe3/luigi-pnlpipe/params/hcp/dwi_pipe_params.cfg
-
-# task is one of {HcpPipe,Ukf,Wma800}
-task=HcpPipe
-
-# ==============================================================================
-
-
-HcpOutDir=hcppipe
-
-export HCPPIPEDIR=/data/pnl/soft/pnlpipe3/HCPpipelines
-export HCPPIPEDIR_Config=/data/pnl/soft/pnlpipe3/HCPpipelines/global/config
-export HCPPIPEDIR_Global=/data/pnl/soft/pnlpipe3/HCPpipelines/global/scripts
-
-export LUIGI_CONFIG_PATH
-
-cluster=`hostname | grep pnl-.*.partners.org`
-if [ -z $cluster ]
-then
-    source /data/pnl/soft/pnlpipe3/bashrc3-gpu
-else
-    source /rfanfs/pnl-zorro/software/pnlpipe3/bashrc3-gpu
 fi
 
 if [ -f ${caselist} ]
@@ -90,22 +81,30 @@ else
     id=${caselist}
 fi
 
-
 # luigi-pnlpipe upto GibbsUn so data can be organized according to BIDS
 for j in $(echo $raw_template)
 do
-    /data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/ExecuteTask.py \
+    ${SOFTDIR}/luigi-pnlpipe/workflows/ExecuteTask.py \
     --bids-data-dir $bids_data_dir \
-    --task GibbsUn -c $id \
+    --task GibbsUn -c $id -s $s \
     --dwi-template $j
 done
 
 
 # determine --path for HCP pipe
 template=($raw_template)
-subdir=`echo ${template[0]} | sed "s+sub-\*+sub-$id+g"`
-datadir=`dirname $bids_data_dir`/derivatives/pnlpipe/`dirname $subdir`
+_subdir=`echo ${template[0]} | sed "s+sub-\*+sub-$id+g"`
+subdir=`echo ${_subdir} | sed "s+ses-\*+ses-$s+g"`
+datadir=`dirname $bids_data_dir`/derivatives/$USER-pnlpipe/`dirname $subdir`
 echo "HCP pipe data directory: $datadir"
+
+
+template=()
+for t in $(echo $raw_template)
+do
+    base=`basename $t`
+    template+=(${base//_dwi/_desc-XcUn_dwi})
+done
 
 
 # HCP pipe using GibbsUn data
@@ -117,23 +116,39 @@ then
     Command being issued to HCP pipeline:
     """
     
-    template=($unr_template)
-    cmd="$HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh --path=$datadir \
-    --subject=$HcpOutDir --cuda-version=9.1 \
-    --posData=`ls $datadir/${template[0]}`@`ls $datadir/${template[1]}` \
-    --negData=`ls $datadir/${template[2]}`@`ls $datadir/${template[3]}` \
-    --echospacing=0.689998 --PEdir=2 --gdcoeffs=NONE \
-    --extra-eddy-arg=--data_is_shelled --extra-eddy-arg=--repol --extra-eddy-arg=--verbose"
+
+    if [ ${#template[@]} == 4 ]
+    then
+        cmd="$HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh --path=$datadir \
+        --subject=$HcpOutDir --cuda-version=$CUDA_VERSION \
+        --posData=`ls $datadir/${template[0]}`@`ls $datadir/${template[1]}` \
+        --negData=`ls $datadir/${template[2]}`@`ls $datadir/${template[3]}` \
+        --echospacing=0.689998 --PEdir=2 --gdcoeffs=NONE \
+        --extra-eddy-arg=--data_is_shelled --extra-eddy-arg=--repol --extra-eddy-arg=--verbose"
+     elif [ ${#template[@]} == 2 ]
+     then
+        cmd="$HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh --path=$datadir \
+        --subject=$HcpOutDir --cuda-version=$CUDA_VERSION \
+        --posData=`ls $datadir/${template[0]}` \
+        --negData=`ls $datadir/${template[1]}` \
+        --echospacing=0.689998 --PEdir=2 --gdcoeffs=NONE \
+        --extra-eddy-arg=--data_is_shelled --extra-eddy-arg=--repol --extra-eddy-arg=--verbose"
+     else
+         echo Unknown number of --posData, --negData.
+         echo Execute $HCPPIPEDIR/DiffusionPreprocessing/DiffPreprocPipeline.sh manually.
+         exit 1
+     fi
+
     echo $cmd
     echo ''
     $cmd || exit 1
+
 fi
 
 
-# create symlinks
 template=($raw_template)
-/data/pnl/soft/pnlpipe3/luigi-pnlpipe/workflows/ExecuteTask.py \
+${SOFTDIR}/luigi-pnlpipe/workflows/ExecuteTask.py \
 --bids-data-dir $bids_data_dir \
 --dwi-template ${template[0]} \
---task $task -c $id
+--task $task -c $id -s $s
 
