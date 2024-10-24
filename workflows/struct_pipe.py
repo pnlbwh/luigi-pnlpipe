@@ -50,7 +50,7 @@ class StructAlign(Task):
     def output(self):
 
         subject_dir= dirname(self.input().replace('rawdata', self.derivatives_dir))
-        prefix= self.input().basename
+        prefix= self.input().name
         
         if '_T1w' in prefix:
             return local.path(pjoin(subject_dir, prefix.split('_T1w.nii')[0]+ '_desc-Xc_T1w.nii.gz'))
@@ -134,7 +134,7 @@ class StructMask(Task):
 
     def output(self):
 
-        prefix= self.input().basename
+        prefix= self.input().name
         
         if self.mask_method.lower() in ['mabs','hd-bet']:
             desc= 'T1wXcMabs' if '_T1w' in prefix else 'T2wXcMabs'

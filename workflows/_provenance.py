@@ -66,7 +66,7 @@ def write_provenance(obj, output=None):
     
     logfile= output.dirname.join(output.stem)+'.log.html'
     with open(logfile,'w') as f:
-        template= template.replace('{{output}}',output.basename)
+        template= template.replace('{{output}}',output.name)
         template= template.replace('{{textHistory}}',tree)
         template= template.replace('{{htmlHistory}}',history_tree)
         f.write(template)

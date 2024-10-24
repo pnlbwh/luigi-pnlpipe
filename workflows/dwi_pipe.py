@@ -734,7 +734,7 @@ class Wma800(Task):
         write_provenance(self, outDir)
 
     def output(self):
-        prefix= self.input().dirname.join('wma800',self.input().basename.split('.vtk')[0],
+        prefix= self.input().dirname.join('wma800',self.input().name.split('.vtk')[0],
             'FiberClustering/SeparatedClusters')
         
         clusters=[]
