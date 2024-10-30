@@ -14,27 +14,23 @@ echo luigi-pnlpipe,`$cmd` > $log_file
 cd ../pnlNipype
 echo pnlNipype,`$cmd` >> $log_file
 
-# pnlpipe hash
-cd ../pnlpipe
-echo pnlpipe,`$cmd` >> $log_file
-
-# ANTs, UKFTractography, dcm2niix, tract_querier hashes
-cd pnlpipe_software
-for s in ANTs UKFTractography dcm2niix tract_querier
-do
-    hash_line=`grep "DEFAULT_HASH = " $s.py`
-    IFS=" = ", read -ra tmp <<< $hash_line
-    hash=`echo ${tmp[1]} | sed "s/'//g"`
-    echo $s,$hash >> $log_file
-done
-
+# ANTs, UKFTractography, dcm2niix hashes
+antsRegistration --version | head -n 1 | sed 's/ Version: /,/' >> $log_file
+echo UKFTractography,$(cd $(dirname `which UKFTractography`) && git rev-parse --short=7 HEAD) >> $log_file
+echo dcm2niix,`dcm2niix --version | tail -n 1` >> $log_file
 
 # FSL version
-hash_line=`eddy_openmp --help 2>&1 | grep "Part of FSL"`
-IFS=:, read -ra tmp <<< $hash_line
-hash=`echo ${tmp[1]} | sed "s/)//"`
-echo FSL,$hash >> $log_file
+echo FSL,`cat $FSLDIR/etc/fslversion` >> $log_file
 
 # FreeSurfer version
 echo FreeSurfer,`cat $FREESURFER_HOME/build-stamp.txt` >> $log_file
+
+# Linux version
+echo Computer,`cat /etc/system-release` `uname -nr` >> $log_file
+
+# NVIDIA version
+echo NVIDIA,`nvidia-smi | grep NVIDIA-SMI` >> $log_file
+
+# GPUs
+echo GPUs,`nvidia-smi -L` >> $log_file
 
