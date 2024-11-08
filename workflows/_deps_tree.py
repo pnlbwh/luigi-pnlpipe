@@ -61,7 +61,7 @@ def get_record_id(task_id):
     # useful debug commands
     # full path necessary after .open
     # sqlite3
-    #   sqlite> .open /home/tb571/luigi-task-hist.db
+    #   sqlite> .open /path/to/luigi-task-hist.db
     #   sqlite> SELECT * FROM tasks;
     #   sqlite> .quit
     cur = conn.cursor()
