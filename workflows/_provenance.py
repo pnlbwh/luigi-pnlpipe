@@ -23,7 +23,7 @@ def _get_env():
     
     # read hashes
     with open(hash_file) as f:
-        content= f.read().split()
+        content= f.read().strip().split('\n')
     
     # save hashes in a dictionary for integrating with json provenance
     hash_dict={}
