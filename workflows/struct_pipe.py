@@ -211,7 +211,7 @@ class N4BiasCorrect(Task):
 
 
     def output(self):
-        prefix= self.input()['aligned'].basename
+        prefix= self.input()['aligned'].name
         
         if '_T1w' in prefix:
             outPrefix= pjoin(self.input()['aligned'].dirname, prefix.split('_T1w.nii')[0])

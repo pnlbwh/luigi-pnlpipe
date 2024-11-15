@@ -102,14 +102,14 @@ class CnnMask(Task):
     def run(self):
         
         with TemporaryDirectory() as tmpdir, local.cwd(tmpdir):
-            copyfile(self.input()['dwi'],self.input()['dwi'].basename)
-            copyfile(self.input()['bval'],self.input()['bval'].basename)
-            copyfile(self.input()['bvec'],self.input()['bvec'].basename)
+            copyfile(self.input()['dwi'],self.input()['dwi'].name)
+            copyfile(self.input()['bval'],self.input()['bval'].name)
+            copyfile(self.input()['bvec'],self.input()['bvec'].name)
             
             
             dwi_list= 'dwi_list.txt'
             with open(dwi_list,'w') as f:
-                f.write(pjoin(tmpdir,self.input()['dwi'].basename))
+                f.write(pjoin(tmpdir,self.input()['dwi'].name))
             
 
             cmd = (' ').join(['dwi_masking.py',
