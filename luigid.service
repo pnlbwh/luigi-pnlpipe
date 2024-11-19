@@ -1,0 +1,17 @@
+[Unit]
+Description=PNL Luigi server at http://pnl-elite-1.partners.org/
+After=network-online.target nginx.service
+Wants=network-online.target nginx.service
+
+[Service]
+User=sf284
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/start_server.sh
+ExecStop=pkill luigid
+KillMode=process
+TimeoutSec=60
+
+[Install]
+WantedBy=multi-user.target
+
