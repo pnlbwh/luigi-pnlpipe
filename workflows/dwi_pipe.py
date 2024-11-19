@@ -588,19 +588,11 @@ class HcpPipe(ExternalTask):
                                       'via HcpOutDir parameter in {getenv("LUIGI_CONFIG_PATH")}')
         
         # construct HCP pipe outputs
-        '''
-        Observe the following output files in ${StudyFolder}/${Subject}:
-        dwi:   Diffusion/eddy/eddy_unwarped_images.nii.gz
-        bvals: Diffusion/eddy/Pos_Neg.bvals
-        bvecs: Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs
-        mask:  Diffusion/eddy/nodif_brain_mask.nii.gz
-        bse:   Diffusion/topup/hifib0.nii.gz
-        '''
-        dwiHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.nii.gz'
-        bvalHcp= f'{hcpOutDir}/Diffusion/eddy/Pos_Neg.bvals'
-        bvecHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs'
-        maskHcp= f'{hcpOutDir}/Diffusion/eddy/nodif_brain_mask.nii.gz'
-        bseHcp= f'{hcpOutDir}/Diffusion/topup/hifib0.nii.gz'
+        dwiHcp= f'{self.HcpOutDir}/Diffusion/eddy/eddy_unwarped_images.nii.gz'
+        bvalHcp= f'{self.HcpOutDir}/Diffusion/eddy/Pos_Neg.bvals'
+        bvecHcp= f'{self.HcpOutDir}/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs'
+        maskHcp= f'{self.HcpOutDir}/Diffusion/eddy/nodif_brain_mask.nii.gz'
+        bseHcp= f'{self.HcpOutDir}/Diffusion/topup/hifib0.nii.gz'
 
         
         # determine luigi-pnlpipe outputs
@@ -615,7 +607,7 @@ class HcpPipe(ExternalTask):
 
         # find dir field
         if '_dir-' in dwiRaw:
-            dir= load_nifti(dwiHcp).shape[3]
+            dir= load_nifti(pjoin(hcpEddyDir,'eddy_unwarped_images.nii.gz')).shape[3]
             eddy_epi_prefix= local.path(re.sub('_dir-(.+?)_', f'_dir-{dir}_', eddy_epi_prefix))
 
         dwi = local.path(eddy_epi_prefix+ '_dwi.nii.gz')
@@ -644,11 +636,11 @@ class HcpPipe(ExternalTask):
         
         
         if not isfile(dwi):
-            move(dwiHcp, dwi)
-            move(bvalHcp, bval)
-            move(bvecHcp, bvec)
-            move(maskHcp, mask)
-            move(bseHcp, bse)
+            symlink(dwiHcp, dwi)
+            symlink(bvalHcp, bval)
+            symlink(bvecHcp, bvec)
+            symlink(maskHcp, mask)
+            symlink(bseHcp, bse)
        
         check_call('cp $FSLDIR/etc/fslversion {}'.format(dwi.dirname), shell=True)
 
