@@ -588,11 +588,11 @@ class HcpPipe(ExternalTask):
                                       'via HcpOutDir parameter in {getenv("LUIGI_CONFIG_PATH")}')
         
         # construct HCP pipe outputs
-        dwiHcp= f'{self.HcpOutDir}/Diffusion/eddy/eddy_unwarped_images.nii.gz'
-        bvalHcp= f'{self.HcpOutDir}/Diffusion/eddy/Pos_Neg.bvals'
-        bvecHcp= f'{self.HcpOutDir}/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs'
-        maskHcp= f'{self.HcpOutDir}/Diffusion/eddy/nodif_brain_mask.nii.gz'
-        bseHcp= f'{self.HcpOutDir}/Diffusion/topup/hifib0.nii.gz'
+        dwiHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.nii.gz'
+        bvalHcp= f'{hcpOutDir}/Diffusion/eddy/Pos_Neg.bvals'
+        bvecHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs'
+        maskHcp= f'{hcpOutDir}/Diffusion/eddy/nodif_brain_mask.nii.gz'
+        bseHcp= f'{hcpOutDir}/Diffusion/topup/hifib0.nii.gz'
 
         
         # determine luigi-pnlpipe outputs
@@ -636,12 +636,17 @@ class HcpPipe(ExternalTask):
         
         
         if not isfile(dwi):
-            symlink(dwiHcp, dwi)
-            symlink(bvalHcp, bval)
-            symlink(bvecHcp, bvec)
-            symlink(maskHcp, mask)
-            symlink(bseHcp, bse)
-       
+            move(dwiHcp, dwi)
+            move(bvalHcp, bval)
+            move(bvecHcp, bvec)
+            move(maskHcp, mask)
+            move(bseHcp, bse)
+            
+            # create a placeholder so that future HCP pipe attempt can skip rerun
+            with open(dwiHcp,'w') as f:
+                f.write('')
+
+
         check_call('cp $FSLDIR/etc/fslversion {}'.format(dwi.dirname), shell=True)
 
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
