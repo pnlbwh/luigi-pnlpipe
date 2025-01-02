@@ -569,10 +569,27 @@ class TopupEddy(Task):
 
 
 @inherits(SelectDwiFiles, DwiAlign)
-class HcpPipe(ExternalTask):
+class HcpPipe(Task):
 
     HcpOutDir= Parameter(default='hcppipe')
     
+    def run(self):
+    
+        if not isfile(self.output()['dwi']):
+            move(self.dwiHcp, self.output()['dwi'])
+            move(self.bvalHcp, self.output()['bval'])
+            move(self.bvecHcp, self.output()['bvec'])
+            move(self.maskHcp, self.output()['mask'])
+            move(self.bseHcp, self.output()['bse'])
+            
+            # create a placeholder so that future HCP pipe attempt can skip rerun
+            with open(self.dwiHcp,'w') as f:
+                f.write('')
+
+
+        check_call('cp $FSLDIR/etc/fslversion {}'.format(self.output()['dwi'].dirname), shell=True)
+
+
     def output(self):
 
         # read one dwi to learn name and containing directory
@@ -587,18 +604,15 @@ class HcpPipe(ExternalTask):
             raise NotADirectoryError(f'{hcpEddyDir} does not exist. Provide HCP pipe output directory '
                                       'via HcpOutDir parameter in {getenv("LUIGI_CONFIG_PATH")}')
         
+
         # construct HCP pipe outputs
-        dwiHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.nii.gz'
-        bvalHcp= f'{hcpOutDir}/Diffusion/eddy/Pos_Neg.bvals'
-        bvecHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs'
-        maskHcp= f'{hcpOutDir}/Diffusion/eddy/nodif_brain_mask.nii.gz'
-        bseHcp= f'{hcpOutDir}/Diffusion/topup/hifib0.nii.gz'
+        self.dwiHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.nii.gz'
+        self.bvalHcp= f'{hcpOutDir}/Diffusion/eddy/Pos_Neg.bvals'
+        self.bvecHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs'
+        self.maskHcp= f'{hcpOutDir}/Diffusion/eddy/nodif_brain_mask.nii.gz'
+        self.bseHcp= f'{hcpOutDir}/Diffusion/topup/hifib0.nii.gz'
 
         
-        # determine luigi-pnlpipe outputs
-        # in https://github.com/pnlbwh/luigi-pnlpipe/commit/fc3a1a5319d027e3dad9e6afb393e7399a3d3c62
-        # lines 549-581 nearly replicates lines 480-505 of TopupEddy task
-
         # remove _acq-*
         eddy_epi_prefix= dwiRaw.rsplit('_dwi.nii.gz')[0]
         eddy_epi_prefix= eddy_epi_prefix.replace('_acq-PA','')
@@ -607,7 +621,8 @@ class HcpPipe(ExternalTask):
 
         # find dir field
         if '_dir-' in dwiRaw:
-            dir= load_nifti(pjoin(hcpEddyDir,'eddy_unwarped_images.nii.gz')).shape[3]
+            with open(pjoin(hcpEddyDir,'index.txt')) as f:
+                dir= len(f.read().split())
             eddy_epi_prefix= local.path(re.sub('_dir-(.+?)_', f'_dir-{dir}_', eddy_epi_prefix))
 
         dwi = local.path(eddy_epi_prefix+ '_dwi.nii.gz')
@@ -635,20 +650,6 @@ class HcpPipe(ExternalTask):
         bse= local.path(bse_prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
         
         
-        if not isfile(dwi):
-            move(dwiHcp, dwi)
-            move(bvalHcp, bval)
-            move(bvecHcp, bvec)
-            move(maskHcp, mask)
-            move(bseHcp, bse)
-            
-            # create a placeholder so that future HCP pipe attempt can skip rerun
-            with open(dwiHcp,'w') as f:
-                f.write('')
-
-
-        check_call('cp $FSLDIR/etc/fslversion {}'.format(dwi.dirname), shell=True)
-
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
 
 
