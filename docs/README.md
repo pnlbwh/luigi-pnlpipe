@@ -110,6 +110,15 @@ However, `luigi` history feature does not work with the latest `sqlalchemy`. Ins
 
 Reference: https://github.com/spotify/luigi/issues/3320
 
+If you are an outside collaborator, you can launch a Luigi server as:
+
+    luigi-pnlpipe/start_server.sh
+
+And subsequently, uncomment this line in `luigi-pnlpipe/luigi.cfg` to use it:
+
+    default-scheduler-url = http://localhost:8082/
+
+Psychiatry Neuroimaging Laboratory staff have it available readily. They do not need to launch one.
 
 ## CNN-Diffusion-MRIBrain-Segmentation
 
