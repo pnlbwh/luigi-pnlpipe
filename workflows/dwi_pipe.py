@@ -5,7 +5,7 @@ from luigi.util import inherits, requires
 from glob import glob
 from os.path import join as pjoin, abspath, isfile, basename, dirname, isdir
 from os import symlink, getenv
-from shutil import move, rmtree
+from shutil import move, rmtree, copyfile
 
 from plumbum import local
 from subprocess import Popen, check_call
@@ -102,14 +102,14 @@ class CnnMask(Task):
     def run(self):
         
         with TemporaryDirectory() as tmpdir, local.cwd(tmpdir):
-            symlink(self.input()['dwi'],self.input()['dwi'].basename)
-            symlink(self.input()['bval'],self.input()['bval'].basename)
-            symlink(self.input()['bvec'],self.input()['bvec'].basename)
+            copyfile(self.input()['dwi'],self.input()['dwi'].name)
+            copyfile(self.input()['bval'],self.input()['bval'].name)
+            copyfile(self.input()['bvec'],self.input()['bvec'].name)
             
             
             dwi_list= 'dwi_list.txt'
             with open(dwi_list,'w') as f:
-                f.write(pjoin(tmpdir,self.input()['dwi'].basename))
+                f.write(pjoin(tmpdir,self.input()['dwi'].name))
             
 
             cmd = (' ').join(['dwi_masking.py',
@@ -292,8 +292,7 @@ class FslEddy(Task):
                 p = Popen(cmd, shell=True)
                 p.wait()
                 
-                version_file= outDir.join('fsl_version.txt')
-                check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell= True)
+                check_call('cp $FSLDIR/etc/fslversion {}'.format(self.output()['dwi'].dirname), shell= True)
                 
                 # fsl_eddy.py writes with this outPrefix
                 outPrefix= outDir.join(self.input()[0]['dwi'].stem)+'_Ed'
@@ -333,6 +332,7 @@ class SynB0(Task):
     
     def run(self):
         
+
         # synb0 wrapper
         DIR= abspath(dirname(__file__))
         cmd = (' ').join([f'{DIR}/_synb0_eddy.sh',
@@ -347,9 +347,7 @@ class SynB0(Task):
         p = Popen(cmd, shell=True)
         p.wait()
         
-        version_file= self.output()['dwi'].dirname.join('fsl_version.txt')
-        check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell= True)
-
+        check_call('cp $FSLDIR/etc/fslversion {}'.format(self.output()['dwi'].dirname), shell= True)
 
         write_provenance(self, self.output()['dwi'])
 
@@ -519,8 +517,7 @@ class TopupEddy(Task):
                 p = Popen(cmd, shell=True)
                 p.wait()
 
-                version_file = outDir.join('fsl_version.txt')
-                check_call(f'eddy_openmp 2>&1 | grep Part > {version_file}', shell=True)
+                check_call('cp $FSLDIR/etc/fslversion {}'.format(self.output()['dwi'].dirname), shell=True)
 
 
                 with open(outDir.join('.outPrefix.txt')) as f:
@@ -572,10 +569,27 @@ class TopupEddy(Task):
 
 
 @inherits(SelectDwiFiles, DwiAlign)
-class HcpPipe(ExternalTask):
+class HcpPipe(Task):
 
     HcpOutDir= Parameter(default='hcppipe')
     
+    def run(self):
+    
+        if not isfile(self.output()['dwi']):
+            move(self.dwiHcp, self.output()['dwi'])
+            move(self.bvalHcp, self.output()['bval'])
+            move(self.bvecHcp, self.output()['bvec'])
+            move(self.maskHcp, self.output()['mask'])
+            move(self.bseHcp, self.output()['bse'])
+            
+            # create a placeholder so that future HCP pipe attempt can skip rerun
+            with open(self.dwiHcp,'w') as f:
+                f.write('')
+
+
+        check_call('cp $FSLDIR/etc/fslversion {}'.format(self.output()['dwi'].dirname), shell=True)
+
+
     def output(self):
 
         # read one dwi to learn name and containing directory
@@ -590,26 +604,15 @@ class HcpPipe(ExternalTask):
             raise NotADirectoryError(f'{hcpEddyDir} does not exist. Provide HCP pipe output directory '
                                       'via HcpOutDir parameter in {getenv("LUIGI_CONFIG_PATH")}')
         
+
         # construct HCP pipe outputs
-        '''
-        Observe the following output files in ${StudyFolder}/${Subject}:
-        dwi:   Diffusion/eddy/eddy_unwarped_images.nii.gz
-        bvals: Diffusion/eddy/Pos_Neg.bvals
-        bvecs: Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs
-        mask:  Diffusion/eddy/nodif_brain_mask.nii.gz
-        bse:   Diffusion/topup/hifib0.nii.gz
-        '''
-        dwiHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.nii.gz'
-        bvalHcp= f'{hcpOutDir}/Diffusion/eddy/Pos_Neg.bvals'
-        bvecHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs'
-        maskHcp= f'{hcpOutDir}/Diffusion/eddy/nodif_brain_mask.nii.gz'
-        bseHcp= f'{hcpOutDir}/Diffusion/topup/hifib0.nii.gz'
+        self.dwiHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.nii.gz'
+        self.bvalHcp= f'{hcpOutDir}/Diffusion/eddy/Pos_Neg.bvals'
+        self.bvecHcp= f'{hcpOutDir}/Diffusion/eddy/eddy_unwarped_images.eddy_rotated_bvecs'
+        self.maskHcp= f'{hcpOutDir}/Diffusion/eddy/nodif_brain_mask.nii.gz'
+        self.bseHcp= f'{hcpOutDir}/Diffusion/topup/hifib0.nii.gz'
 
         
-        # determine luigi-pnlpipe outputs
-        # in https://github.com/pnlbwh/luigi-pnlpipe/commit/fc3a1a5319d027e3dad9e6afb393e7399a3d3c62
-        # lines 549-581 nearly replicates lines 480-505 of TopupEddy task
-
         # remove _acq-*
         eddy_epi_prefix= dwiRaw.rsplit('_dwi.nii.gz')[0]
         eddy_epi_prefix= eddy_epi_prefix.replace('_acq-PA','')
@@ -618,7 +621,8 @@ class HcpPipe(ExternalTask):
 
         # find dir field
         if '_dir-' in dwiRaw:
-            dir= load_nifti(dwiHcp).shape[3]
+            with open(pjoin(hcpEddyDir,'index.txt')) as f:
+                dir= len(f.read().split())
             eddy_epi_prefix= local.path(re.sub('_dir-(.+?)_', f'_dir-{dir}_', eddy_epi_prefix))
 
         dwi = local.path(eddy_epi_prefix+ '_dwi.nii.gz')
@@ -645,14 +649,6 @@ class HcpPipe(ExternalTask):
         desc= 'dwi'+ desc
         bse= local.path(bse_prefix.split('_desc-')[0]+ '_desc-'+ desc+ '_bse.nii.gz')
         
-        
-        # create symlinks
-        if not isfile(dwi):
-            symlink(dwiHcp, dwi)
-            symlink(bvalHcp, bval)
-            symlink(bvecHcp, bvec)
-            symlink(maskHcp, mask)
-            symlink(bseHcp, bse)
         
         return dict(dwi=dwi, bval=bval, bvec=bvec, bse=bse, mask=mask)
 
@@ -736,7 +732,7 @@ class Wma800(Task):
         write_provenance(self, outDir)
 
     def output(self):
-        prefix= self.input().dirname.join('wma800',self.input().basename.split('.vtk')[0],
+        prefix= self.input().dirname.join('wma800',self.input().name.split('.vtk')[0],
             'FiberClustering/SeparatedClusters')
         
         clusters=[]

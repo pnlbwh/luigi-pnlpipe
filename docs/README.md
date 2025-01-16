@@ -99,16 +99,26 @@ Finally, see [here](#running-luigi-pnlpipe) for instructions about running the p
 
 ## luigi package
 
-A *client* (PNL external collaborator) can use the official luigi package installed in `pnlpipe3` conda environment.
-However, a *server* should install Tashrif's development for `/history/by_task_id/` URL to function:
+Tashrif's development of `/history/by_task_id/` feature got merged in the official `luigi` package.
+Until a release is available, you should install it as:
 
-    pip install git+https://github.com/tashrifbillah/luigi.git@89c9aa750de8ae2badabe435d98c02e44a1aa8b4
+    pip install git+https://github.com/spotify/luigi.git@172128c3de7a41411a10e61e3c675b76595793e2
 
-*luigi-pnlpipe* itself will not fail without Tashrif's development on the *server* side. That means, you can 
-also use the official luigi package on the *server* side. But you will not be able to redirect to 
-`/history/by_task_id/` URLs generated in `*.log.html` provenance files. Notably, the provenance files 
-are generated on the *client* side by [_provenance.py](https://github.com/pnlbwh/luigi-pnlpipe/blob/afa6c8a86d481d8fe5d04ba1ceb533b5da740c32/workflows/_provenance.py) when *luigi-pipeline* is run.
+However, `luigi` history feature does not work with the latest `sqlalchemy`. Install an older version as:
 
+    pip install sqlalchemy==1.4.54
+
+Reference: https://github.com/spotify/luigi/issues/3320
+
+If you are an outside collaborator, you can launch a Luigi server as:
+
+    luigi-pnlpipe/start_server.sh
+
+And subsequently, uncomment this line in `luigi-pnlpipe/luigi.cfg` to use it:
+
+    default-scheduler-url = http://localhost:8082/
+
+Psychiatry Neuroimaging Laboratory staff have it available readily. They do not need to launch one.
 
 ## CNN-Diffusion-MRIBrain-Segmentation
 

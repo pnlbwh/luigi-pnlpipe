@@ -2,7 +2,7 @@
 
 import argparse
 from conversion import read_cases
-from luigi import build, configuration
+from luigi import build, configuration, parameter
 from _define_outputs import IO
 from struct_pipe import StructMask, Freesurfer
 from dwi_pipe import DwiAlign, GibbsUn, CnnMask, \
@@ -13,6 +13,8 @@ from os import getenv, stat, remove
 from tempfile import gettempdir
 from glob import glob
 
+import warnings
+warnings.filterwarnings(action='ignore', category=parameter.UnconsumedParameterWarning)
 
 def _rm_tempfiles(names):
 

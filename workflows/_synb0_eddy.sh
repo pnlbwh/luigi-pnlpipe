@@ -32,7 +32,7 @@ if [ ! -f OUTPUTS/b0_all_topup.nii.gz ]
 then
     TMPDIR=$TMPDIR \
     singularity run -e -B INPUTS/:/INPUTS -B OUTPUTS/:/OUTPUTS \
-    -B ${NEW_SOFT_DIR}/fs7.1.0/license.txt:/extra/freesurfer/license.txt \
+    -B ${FREESURFER_HOME}/license.txt:/extra/freesurfer/license.txt \
     ${NEW_SOFT_DIR}/containers/synb0-disco_v3.0.sif --stripped
 fi
 

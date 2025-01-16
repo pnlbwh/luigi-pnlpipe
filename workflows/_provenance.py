@@ -1,6 +1,6 @@
 from _deps_tree import print_tree, print_history_tree
 from os.path import join as pjoin, dirname, isfile
-from os import getpid, environ
+from os import getpid
 from subprocess import check_call, check_output
 from tempfile import gettempdir
 
@@ -23,7 +23,7 @@ def _get_env():
     
     # read hashes
     with open(hash_file) as f:
-        content= f.read().split()
+        content= f.read().strip().split('\n')
     
     # save hashes in a dictionary for integrating with json provenance
     hash_dict={}
@@ -34,7 +34,7 @@ def _get_env():
     # export conda env
     env_file= pjoin(gettempdir(), f'env-{getpid()}.yml')
     if not isfile(env_file):
-        check_output(f"{environ['CONDA_EXE']} env export > {env_file}", shell=True)
+        check_output(f"conda env export > {env_file}", shell=True)
     
     with open(env_file) as f:
         hash_dict['conda_env']= f.read()
@@ -66,7 +66,7 @@ def write_provenance(obj, output=None):
     
     logfile= output.dirname.join(output.stem)+'.log.html'
     with open(logfile,'w') as f:
-        template= template.replace('{{output}}',output.basename)
+        template= template.replace('{{output}}',output.name)
         template= template.replace('{{textHistory}}',tree)
         template= template.replace('{{htmlHistory}}',history_tree)
         f.write(template)
