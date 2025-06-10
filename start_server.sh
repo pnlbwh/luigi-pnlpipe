@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd /tmp/
+mkdir -p luigi-server
 luigid --background --logdir luigi-server
