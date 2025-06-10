@@ -84,7 +84,7 @@ https://github.com/pnlbwh/luigi-pnlpipe, 2020, DOI: 10.5281/zenodo.3666802
 # Installation
 
 ## luigi-pnlpipe
-The pipeline depends on [external software](https://github.com/pnlbwh/pnlNipype#dependencies). Please follow [this](https://github.com/pnlbwh/pnlNipype#ii-independently) 
+The pipeline depends on [external software](https://github.com/pnlbwh/pnlNipype#dependencies). Please follow [this](https://github.com/pnlbwh/pnlNipype?tab=readme-ov-file#1-install-prerequisites)
 instruction to install those software. Then, you can clone *luigi-pnlpipe* as follows:
 
     git clone https://github.com/pnlbwh/luigi-pnlpipe.git
@@ -109,6 +109,10 @@ However, `luigi` history feature does not work with the latest `sqlalchemy`. Ins
     pip install sqlalchemy==1.4.54
 
 Reference: https://github.com/spotify/luigi/issues/3320
+
+You may also need:
+
+    pip install "setuptools<81"
 
 If you are an outside collaborator, you can launch a Luigi server as:
 
