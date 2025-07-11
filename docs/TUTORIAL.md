@@ -195,6 +195,7 @@ As simple as that! However, it is advisable to run this program on a GPU enabled
 run on a CPU enabled device but quite slowly. To do that, you need an additional parameter `hdbet_device: cpu` in
 the above configuration.
 
+**NOTE** Though the rest of the tutorial references *MABS* mask, it can also mean *HD-BET* mask.
 
 ### Warped mask
 
