@@ -17,6 +17,8 @@ Table of Contents
          * [Warped mask](#warped-mask)
       * [Run FreeSurfer](#run-freesurfer)
          * [With T1w only](#with-t1w-only)
+            * [Mask created using T1w](#mask-created-using-t1w)
+            * [Mask created using T2w](#mask-created-using-t2w)
          * [With both T1w and T2w](#with-both-t1w-and-t2w)
    * [DWI pipeline](#dwi-pipeline)
       * [Create masks](#create-masks-1)
@@ -251,6 +253,51 @@ task will generate T1w masks to fulfill its requirement.
 
 ### With T1w only
 
+#### Mask created using T1w
+
+This method is used when you acquired only T1w scan.
+
+```cfg
+[DEFAULT]
+reg_method: rigid
+
+
+[StructMask]
+
+
+[N4BiasCorrect]
+
+
+[Freesurfer]
+t1_mask_method: none
+t1_csvFile:
+t1_ref_img: *_desc-Xc_T1w.nii.gz
+t1_ref_mask: *_desc-T1wXcMabsQc_mask.nii.gz
+
+freesurfer_nproc: 4
+expert_file:
+no_hires: True
+no_skullstrip: True
+no_rand: False
+subfields: True
+fs_dirname: freesurfer
+```
+
+Notice the introduction of `t1_` prefix parameters defined for `StructMask` task. 
+The purpose of this introduction would be clear in the following section. Run `Freesurfer` task as follows:
+
+```bash
+export LUIGI_CONFIG_PATH=/path/to/freesurfer_only_t1.cfg
+
+exec/ExecuteTask --task Freesurfer \
+--bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --t1-template sub-*/ses-01/anat/*_T1w.nii.gz
+```
+
+#### Mask created using T2w
+
+This method is used when you also acquired T2w scan but want to do FreeSurfer with T1w only.
+Historically, we have first created T2w mask and warped that to the space of T1w image.
+
 ```cfg
 [DEFAULT]
 
@@ -280,11 +327,8 @@ fs_dirname: freesurfer
 [Freesurfer]
 ```
 
-Notice the introduction of `t1_` prefix preceding parameters defined for `StructMask` task itself. 
-The purpose of this introduction would be clear in the following section. Run `Freesurfer` task as follows:
-
 ```bash
-export LUIGI_CONFIG_PATH=/path/to/fs_with_t1.cfg
+export LUIGI_CONFIG_PATH=/path/to/struct_pipe_params.cfg
 
 exec/ExecuteTask --task Freesurfer \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 --t1-template sub-*/ses-01/anat/*_T1w.nii.gz
@@ -310,7 +354,7 @@ t1_ref_img: *_desc-Xc_T2w.nii.gz
 t1_ref_mask: *_desc-T2wXcMabsQc_mask.nii.gz
 t1_mask_qc: False
 
-t2_csvFile: /path/to/trainingDataT2Masks.csv
+t2_csvFile: HD-BET
 t2_ref_img:
 t2_ref_mask:
 t2_mask_qc: True
@@ -335,7 +379,7 @@ the pipeline to look for T2w masks with `Qc` suffix in `desc` field.
 Finally, to tell `Freesurfer` task to use both T1w and T2w images, we shall provide both templates:
 
 ```bash
-export LUIGI_CONFIG_PATH=/path/to/fs_with_both_t1_t2.cfg
+export LUIGI_CONFIG_PATH=/path/to/struct_pipe_params.cfg
 
 exec/ExecuteTask --task Freesurfer \
 --bids-data-dir /data/pnl/DIAGNOSE_CTE_U01/rawdata -c 1001 \
