@@ -138,7 +138,12 @@ class StructMask(Task):
         
         if self.mask_method.lower() in ['mabs','hd-bet']:
             desc= 'T1wXcMabs' if '_T1w' in prefix else 'T2wXcMabs'
-        
+
+        elif self.mask_method.lower()=='none':
+            desc= 'T1wXcMabsQc'
+            # this is the situation when only T1w is available
+            # and user wants to do FreeSurfer with only T1w
+
         elif self.ref_img:
             ref_mask_pattern= pjoin(self.input().dirname, self.ref_mask)
             try:
