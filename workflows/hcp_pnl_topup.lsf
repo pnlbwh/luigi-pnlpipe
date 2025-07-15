@@ -50,7 +50,7 @@ task=HcpPipe
 cluster=`hostname | grep pnl-.*.partners.org`
 if [ -z $cluster ]
 then
-    SOFTDIR=/data/pnl/soft/pnlpipe3
+    SOFTDIR=/data/pnl/soft/pnlpipe9
     source ${SOFTDIR}/bashrc3-gpu
 else
     SOFTDIR=/software/rocky9/
