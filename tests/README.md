@@ -14,7 +14,7 @@ cd luigi-tutorial/
 tree
 ```
 
-And then follow the [PNLPIPE_RUN.md]() steps to test *luigi-pipeline* fully. Two example scripts are already given in `luigi-tutorial/hcp/hcp_pnl_topup*`.
+And then follow the [PNLPIPE_RUN.md](./PNLPIPE_RUN.md) steps to test *luigi-pipeline* fully. Two example scripts are already given in `luigi-tutorial/hcp/hcp_pnl_topup*`.
 You are welcome to adapt those to your needs.
 
 ---
