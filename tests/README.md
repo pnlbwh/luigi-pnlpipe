@@ -1,7 +1,7 @@
 ## As of October 2025
 
 We moved away from our earlier test method. This [gist](https://gist.github.com/tashrifbillah/29d5f6d68da41114491d20585e3c0942)
-documented our test steps for HCP, CTE, and SynB0 branches of the pipeline. This gist went through several revisions,
+documented our test steps for HCP, CTE, and SynB0 branches of the pipeline. The gist went through several revisions,
 and is now stable. It has been packaged with this repository.
 
 To follow this new test methodology, download the test data to your workstations. It contains all of HCP, CTE, and SynB0 test data.
@@ -14,7 +14,7 @@ cd luigi-tutorial/
 tree
 ```
 
-And then follow the steps to test *luigi-pipeline* fully. Two example scripts are already given in `luigi-tutorial/hcp/hcp_pnl_topup*`.
+And then follow the [PNLPIPE_RUN.md]() steps to test *luigi-pipeline* fully. Two example scripts are already given in `luigi-tutorial/hcp/hcp_pnl_topup*`.
 You are welcome to adapt those to your needs.
 
 ---
