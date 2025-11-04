@@ -184,7 +184,22 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe9/luigi-pnlpipe/params/synb0/T1w_
 ```
 
 
-#### derivatives
+
+### Diffusion pipeline
+
+Diffusion pipeline is less straightforward to run than structural pipeline because of the SynB0 black box involved. The black box uses slightly modified https://github.com/MASILab/Synb0-DISCO. To allow preceding and following steps to be run by Luigi pipeline, please use `ExecuteTask.py --task SynB0` for running the diffusion pipeline:
+
+```bash
+export LUIGI_CONFIG_PATH=/data/pnlx/Collaborators/EDCRP/1034/BIDS/dwi_pipe_params.cfg
+/data/pnl/soft/pnlpipe9/luigi-pnlpipe/workflows/ExecuteTask.py --task SynB0 \
+--bids-data-dir /data/pnlx/Collaborators/EDCRP/1034/BIDS/rawdata \
+-c ne00056 -s 01 \
+--dwi-template "sub-*/ses-*/anat/*_T1w.nii.gz"
+```
+
+
+
+Output after `SynB0` completes:
 
 ```
 BIDS
@@ -212,15 +227,13 @@ BIDS
                 │   ├── sub-ne00056_ses-01_desc-XcUnEdEp_dwi.bvec
                 │   └── sub-ne00056_ses-01_desc-XcUnEdEp_dwi.nii.gz
                 ├── INPUTS
+                │   ├── ...
+                │   ├── ...
                 └── OUTPUTS
+                    ├── ...
+                    ├── ...
 
 ```
-
-
-
-### Diffusion pipeline
-
-Diffusion pipeline is less straightforward to run than structural pipeline because of the HcpPipe black box involved. The black box uses slightly modified Washington-University/HCPpipelines. To allow preceding and following steps to be run by Luigi pipeline, please use hcp_pnl_topup.lsf script to run the diffusion pipeline:
 
 
 ### Appendix
