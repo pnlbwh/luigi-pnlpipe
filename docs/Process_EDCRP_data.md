@@ -175,6 +175,8 @@ Quality checked : sub-ne00056/ses-01/anat/sub-ne00056_ses-01_desc-T1wXcMabsQc_ma
 
 *(Not yet done)*
 
+(Insert picture here)
+
 ```bash
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe9/luigi-pnlpipe/params/synb0/T1w_mask.cfg
 /data/pnl/soft/pnlpipe9/luigi-pnlpipe/workflows/ExecuteTask.py --task Freesurfer \
@@ -187,6 +189,8 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe9/luigi-pnlpipe/params/synb0/T1w_
 
 ### Diffusion pipeline
 
+(Insert picture here)
+
 Diffusion pipeline is less straightforward to run than structural pipeline because of the SynB0 black box involved. The black box uses slightly modified https://github.com/MASILab/Synb0-DISCO. To allow preceding and following steps to be run by Luigi pipeline, please use `ExecuteTask.py --task SynB0` for running the diffusion pipeline:
 
 ```bash
@@ -194,9 +198,8 @@ export LUIGI_CONFIG_PATH=/data/pnlx/Collaborators/EDCRP/1034/BIDS/dwi_pipe_param
 /data/pnl/soft/pnlpipe9/luigi-pnlpipe/workflows/ExecuteTask.py --task SynB0 \
 --bids-data-dir /data/pnlx/Collaborators/EDCRP/1034/BIDS/rawdata \
 -c ne00056 -s 01 \
---dwi-template "sub-*/ses-*/anat/*_T1w.nii.gz"
+--dwi-template "sub-*/ses-*/dwi/*_dwi.nii.gz"
 ```
-
 
 
 Output after `SynB0` completes:
@@ -240,7 +243,15 @@ BIDS
 
 #### Higher level tasks
 
+![](Fs2Dwi_bottom_up.png)
 
 #### Troubleshooting
 
 https://github.com/pnlbwh/luigi-pnlpipe/blob/hcp/docs/Process_HCP-EP_data.md#troubleshooting
+
+#### More resources
+
+* Background of Luigi: [README.md](README.md)
+* Advanced documentation: [TUTORIAL.md](TUTORIAL.md)
+
+
