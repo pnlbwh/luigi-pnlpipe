@@ -92,6 +92,11 @@ BIDS/
 
 * T1w masking
 
+<img src="T1w_mask.png" width=300>
+
+[HD-BET](https://github.com/MIC-DKFZ/HD-BET) is a deep learning based brain extraction tool.
+It should be run on a GPU device i.e. `dna007` node or `pnl-axon`.
+
 ```bash
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe9/luigi-pnlpipe/params/synb0/T1w_mask.cfg
 /data/pnl/soft/pnlpipe9/luigi-pnlpipe/workflows/ExecuteTask.py --task StructMask \
