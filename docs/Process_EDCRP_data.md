@@ -46,7 +46,42 @@ BIDS
 
 ```python
 BIDS/
-
+├── derivatives
+└── rawdata
+    ├── sub-ne00056
+    │   ├── ses-01
+    │   │   ├── anat
+    │   │   │   ├── sub-ne00056_ses-01_T1w.json
+    │   │   │   └── sub-ne00056_ses-01_T1w.nii.gz
+    │   │   └── dwi
+    │   │       ├── sub-ne00056_ses-01_dwi.bval
+    │   │       ├── sub-ne00056_ses-01_dwi.bvec
+    │   │       ├── sub-ne00056_ses-01_dwi.json
+    │   │       └── sub-ne00056_ses-01_dwi.nii.gz
+    │   └── ses-02
+    │       ├── anat
+    │       └── dwi
+    │           ├── sub-ne00056_ses-02_dwi.bval
+    │           ├── sub-ne00056_ses-02_dwi.bvec
+    │           ├── sub-ne00056_ses-02_dwi.json
+    │           └── sub-ne00056_ses-02_dwi.nii.gz
+    ├── sub-ne00096
+    │   ├── ses-01
+    │   │   ├── anat
+    │   │   │   ├── sub-ne00096_ses-01_T1w.json
+    │   │   │   └── sub-ne00096_ses-01_T1w.nii.gz
+    │   │   └── dwi
+    │   │       ├── sub-ne00096_ses-01_dwi.bval
+    │   │       ├── sub-ne00096_ses-01_dwi.bvec
+    │   │       ├── sub-ne00096_ses-01_dwi.json
+    │   │       └── sub-ne00096_ses-01_dwi.nii.gz
+    │   └── ses-02
+    │       ├── anat
+    │       └── dwi
+    │           ├── sub-ne00096_ses-02_dwi.bval
+    │           ├── sub-ne00096_ses-02_dwi.bvec
+    │           ├── sub-ne00096_ses-02_dwi.json
+    │           └── sub-ne00096_ses-02_dwi.nii.gz
 
 ```
   
@@ -104,30 +139,18 @@ Similarly, the `-s` flag also accepts a `sessions.txt` argument where each line 
 Output after HD-BET masking completes:
 
 ```python
-derivatives/
+derivatives
 └── pnlpipe
-    ├── sub-1003
-    │   └── ses-1
+    ├── sub-ne00056
+    │   └── ses-01
     │       └── anat
-    └── sub-1004
-        └── ses-1
-            └── anat
-
-```
-
-```python
-derivatives/
-└── pnlpipe
-    ├── sub-1003
-    │   └── ses-1
+    │           ├── sub-ne00056_ses-01_desc-T1wXcMabs_mask.nii.gz
+    │           └── sub-ne00056_ses-01_desc-Xc_T1w.nii.gz
+    ├── sub-ne00060
+    │   └── ses-01
     │       └── anat
-    │           ├── sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
-    │           └── sub-1003_ses-1_desc-Xc_T2w.nii.gz
-    └── sub-1004
-        └── ses-1
-            └── anat
-                ├── sub-1004_ses-1_desc-T2wXcMabs_mask.nii.gz
-                └── sub-1004_ses-1_desc-Xc_T2w.nii.gz
+    │           ├── sub-ne00060_ses-01_desc-T1wXcMabs_mask.nii.gz
+    │           └── sub-ne00060_ses-01_desc-Xc_T1w.nii.gz
 
 ```
 
@@ -136,12 +159,11 @@ derivatives/
 
 (Not yet done)
 
-
 Quality checked mask must be saved with Qc suffix in the desc field for its integration with later part of the structural pipeline. Example:
 
 ```
-Automated mask  : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabs_mask.nii.gz
-Quality checked : sub-1003/ses-1/anat/sub-1003_ses-1_desc-T2wXcMabsQc_mask.nii.gz
+Automated mask  : sub-ne00056/ses-01/anat/sub-ne00056_ses-01_desc-T1wXcMabs_mask.nii.gz
+Quality checked : sub-ne00056/ses-01/anat/sub-ne00056_ses-01_desc-T1wXcMabsQc_mask.nii.gz
 ```
 
 * FreeSurfer segmentation
