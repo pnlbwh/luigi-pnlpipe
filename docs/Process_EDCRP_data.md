@@ -157,7 +157,7 @@ derivatives
 
 * Quality checking T1w mask
 
-(Not yet done)
+*(Not yet done)*
 
 Quality checked mask must be saved with Qc suffix in the desc field for its integration with later part of the structural pipeline. Example:
 
@@ -168,7 +168,7 @@ Quality checked : sub-ne00056/ses-01/anat/sub-ne00056_ses-01_desc-T1wXcMabsQc_ma
 
 * FreeSurfer segmentation
 
-(Not yet done)
+*(Not yet done)*
 
 ```bash
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe9/luigi-pnlpipe/params/synb0/T1w_mask.cfg
