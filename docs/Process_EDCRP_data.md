@@ -174,7 +174,7 @@ Quality checked : sub-ne00056/ses-01/anat/sub-ne00056_ses-01_desc-T1wXcMabsQc_ma
 
 *(Not yet done)*
 
-(Insert picture here)
+<img src="only_T1w_Freesurfer.png" width=300>
 
 ```bash
 export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe9/luigi-pnlpipe/params/synb0/T1w_mask.cfg
