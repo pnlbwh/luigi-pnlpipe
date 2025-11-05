@@ -2,7 +2,19 @@
 
 # Copy this file to your project folder (usually called run.lsf), 
 # edit as needed, and then start a cluster job by running: 
-#     bsub < run_luigi_pnlpipe.lsf
+#     sbatch run_luigi_pnlpipe.lsf
+
+# replace NUM_CASES, NUM_PARALLEL, big-multi, and NUM_CORES variables as required by your data
+
+#SBATCH -a 1-NUM_CASES%NUM_PARALLEL
+#SBATCH -J luigi-pnlpipe
+#SBATCH -p pri_pnl
+#SBATCH -o /data/pnlx/tmp/luigi-pnlpipe-%j-%a.out
+#SBATCH -e /data/pnlx/tmp/luigi-pnlpipe-%j-%a.err
+#SBATCH -c NUM_CORES
+#SBATCH --mem 8000
+#SBATCH -t 0-3:00
+
 
 # source pnlpipe3 environment
 source /data/pnl/soft/pnlpipe3/bashrc3
@@ -13,21 +25,12 @@ export LUIGI_CONFIG_PATH=/path/to/your/pipe_params.cfg
 caselist=/path/to/caselist.txt
 sessions=/path/to/sessions.txt
 
-# replace NUM_CASES, NUM_PARALLEL, big-multi, and NUM_CORES variables as required by your data
-
-#BSUB -J luigi-pnlpipe[1-NUM_CASES]%NUM_PARALLEL
-#BSUB -o ~/luigi-pnlpipe-%J-%I.out
-#BSUB -e ~/luigi-pnlpipe-%J-%I.err
-#BSUB -q pri_pnl
-#BSUB -R rusage[mem=8000]
-#BSUB -n NUM_CORES
-
 
 # run command
 if [ -f ${caselist} ]
 then
     # LSF script, list of subjects
-    id=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
+    id=`head -${SLURM_ARRAY_TASK_ID} ${caselist} | tail -1`
 else
     # shell script, one subject
     id=${caselist}
