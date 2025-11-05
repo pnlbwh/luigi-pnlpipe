@@ -6,6 +6,15 @@
 # Useful wiki for executing this script in PNL GPU machines
 # https://github.com/pnlbwh/luigi-pnlpipe/wiki/Run-HCP-pipeline-on-PNL-GPU-machines
 
+#SBATCH -a 1-100%4
+#SBATCH -J my_job
+#SBATCH -p pri_pnl
+#SBATCH -o /data/pnlx/tmp/my_job-%j-%a.out
+#SBATCH -e /data/pnlx/tmp/my_job-%j-%a.err
+#SBATCH -c 4
+#SBATCH --mem 8000
+#SBATCH -t 0-3:00
+
 : << COMMENT
 HCP toolbox accepts an even number (2 or 4) of opposing templates.
 You can write four templates in the following order:
@@ -66,16 +75,16 @@ export HCPPIPEDIR_Global=${SOFTDIR}/HCPpipelines/global/scripts
 
 export LUIGI_CONFIG_PATH
 
-# check LSB_JOBINDEX because it won't exist in /rfanfs/
-if [ ! -z ${LSB_JOBINDEX} ]
+# check SLURM_ARRAY_TASK_ID because it won't exist in /rfanfs/
+if [ ! -z ${SLURM_ARRAY_TASK_ID} ]
 then
-    export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
+    export CUDA_VISIBLE_DEVICES=$(( ${SLURM_ARRAY_TASK_ID}%2 ))
 fi
 
 if [ -f ${caselist} ]
 then
     # LSF script, list of subjects
-    id=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
+    id=`head -${SLURM_ARRAY_TASK_ID} ${caselist} | tail -1`
 else
     # shell script, one subject
     id=${caselist}
