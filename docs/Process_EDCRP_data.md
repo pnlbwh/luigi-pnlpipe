@@ -186,7 +186,7 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe9/luigi-pnlpipe/params/synb0/T1w_
 
 ### Diffusion pipeline
 
-(Insert picture here)
+![](edcrp_diffusion_pipeline.png)
 
 Diffusion pipeline is less straightforward to run than structural pipeline because of the SynB0 black box involved. The black box uses slightly modified https://github.com/MASILab/Synb0-DISCO. To allow preceding and following steps to be run by Luigi pipeline, please use `ExecuteTask.py --task SynB0` for running the diffusion pipeline:
 
