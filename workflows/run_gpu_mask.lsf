@@ -1,17 +1,10 @@
 #!/bin/bash
 
-#BSUB -J gpu-mask[1-N]%2
-#BSUB -q gpu
-#BSUB -m ml001
-#BSUB -R rusage[mem=12000]
-#BSUB -o /data/pnl/projects/tmp/gpu-mask-%J-%I.out
-#BSUB -e /data/pnl/projects/tmp/gpu-mask-%J-%I.err
-#BSUB -n 4
-
-# check LSB_JOBINDEX because it won't exist in /rfanfs/
-if [ ! -z ${LSB_JOBINDEX} ]
+# utilize SLURM_ARRAY_TASK_ID from outside this script to parallelize this script over multiple GPUs
+# check SLURM_ARRAY_TASK_ID because it won't exist in /rfanfs/
+if [ ! -z ${SLURM_ARRAY_TASK_ID} ]
 then
-    export CUDA_VISIBLE_DEVICES=$(( ${LSB_JOBINDEX}%2 ))
+    export CUDA_VISIBLE_DEVICES=$(( ${SLURM_ARRAY_TASK_ID}%2 ))
 fi
 
 # the above %2 indicates how many cases you process parallelly
@@ -28,7 +21,7 @@ fi
 if [ -f ${caselist} ]
 then
     # LSF script, list of subjects
-    id=`head -${LSB_JOBINDEX} ${caselist} | tail -1`
+    id=`head -${SLURM_ARRAY_TASK_ID} ${caselist} | tail -1`
 else
     # shell script, one subject
     id=${caselist}
