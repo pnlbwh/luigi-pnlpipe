@@ -58,7 +58,7 @@ The axial-T2 image is used for EPI correction.
 * Step-2
 
 DWI mask is created using our own [CNN-Diffusion-MRIBrain-Segmentation](https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation) tool.
-It is a deep learning based brain extraction tool. It should be run on a GPU device i.e. `grx**` node or `bhosts gpu_hg` cluster.
+It is a deep learning based brain extraction tool. It should be run on a GPU device.
 The above commands are noted in [run_gpu_mask.lsf](../workflows/run_gpu_mask.lsf) for your convenience.
 
 ```bash
