@@ -1,7 +1,6 @@
-(Figure like https://github.com/pnlbwh/luigi-pnlpipe/blob/hcp/docs/hcp_pipeline.png)
-(Show crossover from Structural to Diffusion like https://github.com/pnlbwh/luigi-pnlpipe/blob/hcp/docs/cte_pipeline.png)
-(Should we make use of the combined flowchart too? https://github.com/pnlbwh/luigi-pnlpipe/blob/hcp/docs/SynB0-Wma800.png)
+![](edcrp_pipeline.png)
 
+---
 
 ### tree command
 
@@ -199,6 +198,7 @@ export LUIGI_CONFIG_PATH=/data/pnlx/Collaborators/EDCRP/1034/BIDS/dwi_pipe_param
 --bids-data-dir /data/pnlx/Collaborators/EDCRP/1034/BIDS/rawdata \
 -c ne00056 -s 01 \
 --dwi-template "sub-*/ses-*/dwi/*_dwi.nii.gz"
+--t1-template "sub-*/ses-*/anat/*_T1w.nii.gz"
 ```
 
 
