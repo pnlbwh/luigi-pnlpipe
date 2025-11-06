@@ -190,6 +190,15 @@ export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe9/luigi-pnlpipe/params/synb0/T1w_
 
 Diffusion pipeline is less straightforward to run than structural pipeline because of the SynB0 black box involved. The black box uses slightly modified https://github.com/MASILab/Synb0-DISCO. To allow preceding and following steps to be run by Luigi pipeline, please use `ExecuteTask.py --task SynB0` for running the diffusion pipeline:
 
+
+It is run in two steps: T1w mask creation and SynB0
+
+* Step-1
+
+Instruction for this step is given above. After quality checking of T1w mask, you can proceed to the next step.
+
+* Step-2
+
 ```bash
 export LUIGI_CONFIG_PATH=/data/pnlx/Collaborators/EDCRP/1034/BIDS/dwi_pipe_params.cfg
 /data/pnl/soft/pnlpipe9/luigi-pnlpipe/workflows/ExecuteTask.py --task SynB0 \
@@ -199,6 +208,8 @@ export LUIGI_CONFIG_PATH=/data/pnlx/Collaborators/EDCRP/1034/BIDS/dwi_pipe_param
 --t1-template "sub-*/ses-*/anat/*_T1w.nii.gz"
 ```
 
+Mask of the distortion corrected b0 is created under the hood using our own [CNN-Diffusion-MRIBrain-Segmentation](https://github.com/pnlbwh/CNN-Diffusion-MRIBrain-Segmentation) tool.
+It is a deep learning based brain extraction tool. Therefore, this pipeline should be run on a GPU device.
 
 Output after `SynB0` completes:
 
