@@ -146,11 +146,13 @@ derivatives
     ├── sub-ne00056
     │   └── ses-01
     │       └── anat
+    │           ├── sub-ne00056_ses-01_desc-T1wXcMabsQc_mask.nii.gz
     │           ├── sub-ne00056_ses-01_desc-T1wXcMabs_mask.nii.gz
     │           └── sub-ne00056_ses-01_desc-Xc_T1w.nii.gz
     ├── sub-ne00060
     │   └── ses-01
     │       └── anat
+    │           ├── sub-ne00060_ses-01_desc-T1wXcMabsQc_mask.nii.gz
     │           ├── sub-ne00060_ses-01_desc-T1wXcMabs_mask.nii.gz
     │           └── sub-ne00060_ses-01_desc-Xc_T1w.nii.gz
 
