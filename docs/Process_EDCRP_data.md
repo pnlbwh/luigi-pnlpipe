@@ -268,7 +268,7 @@ https://github.com/pnlbwh/luigi-pnlpipe/blob/hcp/docs/Process_HCP-EP_data.md#tro
 #### 4. Double execution of CnnMask
 
 [_synb0_eddy.sh](../workflows/_synb0_eddy.sh) script requires b0 of unringed DWI.
-Meanwhile, `CnnMask` task yields both b0 and mask. To avoid writing another Luigi task,
+Meanwhile, `CnnMask` task yields both b0 and mask of unringed DWI. To avoid writing another Luigi task,
 we utilized `CnnMask` task here. In the process, `sub-ne00056_ses-01_desc-dwiXcUnCNN_mask.nii.gz`
 is created but never used downstream. Only the b0 (`sub-ne00056_ses-01_desc-dwiXcUn_bse.nii.gz`)
 is used downstream. However, after distortion correction, `CnnMask` is run again to
