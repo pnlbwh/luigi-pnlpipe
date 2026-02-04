@@ -60,7 +60,7 @@ cluster=`hostname | grep pnl-.*.partners.org`
 if [ -z $cluster ]
 then
     SOFTDIR=/data/pnl/soft/pnlpipe9
-    source ${SOFTDIR}/bashrc3-gpu
+    source ${SOFTDIR}/bashrc9
 else
     SOFTDIR=/software/rocky9/
     source ${SOFTDIR}/bashrc9
