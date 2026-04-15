@@ -95,7 +95,7 @@ BIDS/
 It should be run on a GPU device i.e. `dna007` node or `pnl-axon`.
 
 ```bash
-export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe9/luigi-pnlpipe/params/synb0/T1w_mask.cfg
+export LUIGI_CONFIG_PATH=/data/pnl/soft/pnlpipe9/luigi-pnlpipe/params/synb0/T1w_mask_params.cfg
 /data/pnl/soft/pnlpipe9/luigi-pnlpipe/workflows/ExecuteTask.py --task StructMask \
 --bids-data-dir /data/pnlx/Collaborators/EDCRP/1034/BIDS/rawdata \
 -c ne00056 -s 01 \
